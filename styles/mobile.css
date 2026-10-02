@@ -1,9 +1,8 @@
 @media (max-width:650px) {
    section {
       flex-direction: column;
-
    }
-  
+
    .navbar {
       height: 15vh;
       display: flex;
@@ -13,14 +12,13 @@
    .navitems {
       display: flex;
       justify-content: center;
-      
    }
+
    .navitems ul {
       justify-content: space-around;
-align-items: center;
-padding: 0;
+      align-items: center;
+      padding: 0;
    }
-   
 
    .dtexts {
       width: 100%;
@@ -68,102 +66,122 @@ padding: 0;
       height: 80%;
       padding: 3%;
       width: auto;
-
    }
 
    .dimgs {
       display: none;
    }
-   .cards{
+
+   .cards {
       flex-wrap: wrap;
       flex-direction: column;
    }
-   .card{
+
+   .card {
       width: 60%;
       max-width: none;
    }
-   .fourth{
-      flex-direction: column;
 
+   .fourth {
+      flex-direction: column;
    }
-   .fimg{
+
+   .fimg {
       width: 100%;
    }
-   .over{
+
+   .over {
       display: none;
-     bottom: -25%;
-     width: 120%;
-     left: -10%;
+      bottom: -25%;
+      width: 120%;
+      left: -10%;
    }
-   .ftext{
+
+   .ftext {
       width: 100%;
    }
-   .fifth{
+
+   .fifth {
       flex-direction: column;
       margin-top: 15%;
    }
-   .fitext{
+
+   .fitext {
       width: 100%;
       text-align: center;
    }
-   .ficom{
+
+   .ficom {
       width: 100%;
       align-items: flex-start;
       justify-content: flex-start;
    }
+
    .fiimg {
       display: none;
    }
-   .sbox{
+
+   .sbox {
       border-radius: 5px;
       border-top-left-radius: 15px;
 
    }
-   .foot{
+
+   .foot {
       flex-wrap: wrap;
       flex-direction: column;
 
    }
-   .store{
+
+   .store {
       width: 80%;
       margin: 5%;
-   
+
    }
-   .pas{
+
+   .pas {
       width: 15%;
       align-items: center;
-      
+
    }
-   .lab ,.ccol, .fico{
+
+   .lab,
+   .ccol,
+   .fico {
       width: 100%;
       justify-content: center;
       align-items: center;
-      
-   }
-   .store{
-      width : 100%;
-      justify-content: space-evenly;
-   }
-   .ccol{
-      justify-content: space-evenly;
-   }
-   .sdinp{
-      width: 80%;
-   }
-   .fico{
 
+   }
+
+   .store {
       width: 100%;
       justify-content: space-evenly;
    }
-   .fps{
+
+   .ccol {
+      justify-content: space-evenly;
+   }
+
+   .sdinp {
+      width: 80%;
+   }
+
+   .fico {
+      width: 100%;
+      justify-content: space-evenly;
+   }
+
+   .fps {
       padding: 2%;
       display: flex;
-      justify-content:space-evenly;
+      justify-content: space-evenly;
       align-items: center;
       height: 20%;
       width: 25%;
    }
-   .pas img{
+
+   .pas img {
       width: 100%;
       height: 100%;
    }
