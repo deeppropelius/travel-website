@@ -30,25 +30,34 @@
     <nav>
       <div class="navbar">
         <div class="navlogo">
-          <img src="./assets/Logo.png" alt="Logo">
+          <a href="#"><img src="./assets/Logo.png" alt="Logo"></a>
         </div>
-        <div class="navitems">
+        <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
+        <div class="navitems" id="navitems">
           <ul>
             <li><a href="#" class="navlink">Destinations</a></li>
-            <li><a href="#" class="navlink"> Hotels</a></li>
+            <li><a href="#" class="navlink">Hotels</a></li>
             <li><a href="#" class="navlink">Flights</a></li>
             <li><a href="#" class="navlink">Bookings</a></li>
-            <li><a href="#" class="navlink">Login</a></li>
-            <button class="signup">Sign up</button>
-            <select name="Language" id="lang">
-              <option value="eng">En</option>
-              <option value="Guj">Guj</option>
-              <option value="Hi">Hi</option>
-            </select>
+            <li><a href="./components/signin-signup.html#signin" class="navlink">Login</a></li>
+            <li><button onclick="window.location.href='./components/signin-signup.html#signup'" class="signup">Sign up</button></li>
+            <li>
+              <select name="Language" id="lang" aria-label="Select Language">
+                <option value="eng">En</option>
+                <option value="Guj">Guj</option>
+                <option value="Hi">Hi</option>
+              </select>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
   </header>
-  <section class="destinations">
+  <section class="destinations" id="destinations">
     <div class="dtexts">
       <h4>Best Destinations around the world</h4>
       <h1>Travel, <span class="redstroke"> <img src="./assets/redstroke.png" alt=""></span>enjoy and live a new and full
@@ -68,7 +77,7 @@
     </div>
   </section>
   <!----------------second section ----------------------->
-  <section class="second">
+  <section class="second" id="services">
     <div class="sec">
       <p>CATEGORY</p>
       <h3>We Offer Best Services</h3>
@@ -127,7 +136,7 @@
         <div class="timg"><img src="./assets/rome.png" alt=""></div>
         <div class="ttext">
           <div class="np">
-            <h4>Rome, Italty</h4>
+            <h4>Rome, Italy</h4>
             <h4>$5,42k</h4>
           </div>
           <div class="trip">
@@ -163,7 +172,7 @@
 
   </section>
   <!-------------Fourth Section-------------->
-  <section class="fourth">
+  <section class="fourth" id="bookings">
     <div class="ftext">
       <h4>Easy and Fast</h4>
       <h1>Book your next trip in 3 easy steps</h1>
@@ -211,7 +220,7 @@
     <div class="fimg">
       <div class="fcard">
         <div class="fcimg">
-          <img src="/assets/trip-greece.jpeg" alt="">
+          <img src="./assets/trip-greece.jpeg" alt="">
         </div>
         <div class="ctext">
           <h4>Trip to Greece</h4>
@@ -241,7 +250,7 @@
     </div>
   </section>
   <!------------- fifth section ------------------------->
-  <section class="fifth">
+  <section class="fifth" id="testimonials">
     <div class="fitext">
       <div class="fit">
         <div class="fitp">Testimonials</div>
@@ -270,6 +279,7 @@
           </div>
         </div>
       </div>
+    </div>
   </section>
   <!-- -------------------Section sixth -------------------- -->
   <section class="sponsors">
@@ -313,7 +323,7 @@
           <div class="fch">Contact</div>
           <div class="fcp">Help/FAQ</div>
           <div class="fcp">Press</div>
-          <div class="fcp">Affilates</div>
+          <div class="fcp">Affiliates</div>
         </div>
         <div class="col">
           <div class="fch">More</div>
@@ -344,7 +354,7 @@
               <img src="./assets/apple.png" alt="">
             </div>
             <div class="fit">
-              <div class="apple1">Avalable</div>
+              <div class="apple1">Available</div>
               <div class="apple2">Apple Store</div>
             </div>
           </div>
@@ -353,7 +363,7 @@
     </div>
     <div class="lfp">All rights reserved@jadoo.co</div>
   </footer>
+  <script src="script.js"></script>
 </body>
-<script src="script.js"></script>
 
 </html>

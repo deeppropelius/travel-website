@@ -24,71 +24,189 @@ body {
     padding: 1.5rem;
 }
 
+
 .login {
     display: flex;
+    align-items: center;
+    flex-direction: column;
     width: min(840px, 92%);
-    min-height: 480px;
+    min-height: 520px;
     background: linear-gradient(135deg, #FFF3DE 0%, #FFFFFF 50%, #FFF3DE 100%);
-    padding: 18px;
+    padding: 24px 20px;
     border-radius: 28px;
     position: relative;
     box-shadow: 0 20px 50px -10px rgba(24, 30, 75, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.8);
+   
+}
+
+/* ==========================================================================
+   Top Toggle Slider (Sign In / Sign Up)
+   ========================================================================== */
+.toggle {
+    position: relative;
+    width: 220px;
+    height: 44px;
+    background-color: #E2E8F0;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.toggler {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
+    border-radius: 20px;
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+    box-shadow: 0 4px 10px rgba(223, 105, 81, 0.3);
+    z-index: 1;
+}
+
+.sign-in,
+.sign-up {
+    position: relative;
+    z-index: 2;
+    width: 50%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.sign-in {
+    color: #FFFFFF;
+}
+
+.sign-up {
+    color: #64748B;
+}
+
+/* Toggle Active State */
+.toggle.signup-active .toggler {
+    transform: translateX(100%);
+}
+
+.toggle.signup-active .sign-in {
+    color: #64748B;
+}
+
+.toggle.signup-active .sign-up {
+    color: #FFFFFF;
 }
 
 .login-image {
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 400px;
+    position: relative;
     display: flex;
-    gap: 15px;
 }
 
-/* Left Illustration Panel */
 .login-girl {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 50%;
-    align-items: center;
-    display: flex;
     height: 100%;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    background-color: white;
-    border-top-right-radius: 30px;
-    border-bottom-right-radius: 30px;
-    border-top-left-radius: 9px;
-    border-bottom-left-radius: 9px;
+    z-index: 4;
+    transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
+    pointer-events: none;
 }
 
 .login-girl img {
-    width: 120%;
-    aspect-ratio: 1/1;
-    transform: scaleX(-1);
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    /* Unflipped natural orientation */
+    transform: none;
 }
 
-/* Right Form Panel */
+/* Slide Girl to Right on Sign Up */
+.login.signup-active .login-girl {
+    transform: translateX(100%);
+}
+
+/* ==========================================================================
+   Form Panels
+   ========================================================================== */
 .login-form {
-    width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 1.5rem;
 }
 
+/* Sign In Form (Right side by default) */
+.signin-form {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Sign Up Form (Left side by default, starts hidden) */
+.signup-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-15px);
+    transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* When Sign Up is Active: Switch visibility */
+.login.signup-active .signin-form {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(15px);
+}
+
+.login.signup-active .signup-form {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+/* Form Styling */
 .form {
     width: 100%;
+    max-width: 320px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .label {
     font-family: "Volkhov", Georgia, serif;
-    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+    font-size: clamp(1.6rem, 2.2vw, 2.1rem);
     font-weight: 700;
     color: #181E4B;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     text-align: center;
-    transition: all 0.3s ease;
 }
 
 .input-fields {
@@ -96,16 +214,16 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    gap: 1rem;
+    gap: 0.85rem;
 }
 
 .input-fields input {
-    width: 88%;
-    padding: 13px 18px;
+    width: 100%;
+    padding: 12px 16px;
     border: 1.5px solid #E2E8F0;
     background-color: #FFFFFF;
     border-radius: 12px;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-family: "Poppins", sans-serif;
     color: #181E4B;
     outline: none;
@@ -132,15 +250,15 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    gap: 1rem;
+    gap: 0.9rem;
 }
 
 .login-btn {
-    width: 88%;
-    padding: 13px;
+    width: 100%;
+    padding: 12px;
     background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
     color: #FFFFFF;
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-weight: 600;
     font-family: "Poppins", sans-serif;
     border: none;
@@ -160,20 +278,24 @@ body {
     transform: translateY(0);
 }
 
-/* Secondary Actions (Forgot Password & Sign Up) */
+/* Secondary Links */
 .secondary-actions {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    font-size: 0.88rem;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #64748B;
 }
 
-.forget-btn {
+.forget-btn,
+.switch-to-signin,
+.switch-to-signup,
+.signup-btn {
     background: none;
     border: none;
     color: #5E6282;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-family: "Poppins", sans-serif;
     font-weight: 500;
     cursor: pointer;
@@ -181,7 +303,17 @@ body {
     transition: color 0.2s ease;
 }
 
-.forget-btn:hover {
+.switch-to-signup,
+.signup-btn,
+.switch-to-signin {
+    color: #DF6951;
+    font-weight: 600;
+}
+
+.forget-btn:hover,
+.switch-to-signup:hover,
+.signup-btn:hover,
+.switch-to-signin:hover {
     color: #DF6951;
     text-decoration: underline;
 }
@@ -191,24 +323,9 @@ body {
     user-select: none;
 }
 
-.signup-btn {
-    background: none;
-    border: none;
-    color: #DF6951;
-    font-size: 0.88rem;
-    font-family: "Poppins", sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.signup-btn:hover {
-    color: #c8533c;
-    text-decoration: underline;
-}
-
-/* Flying Airplane Animation */
+/* ==========================================================================
+   Flying Airplane Animation
+   ========================================================================== */
 .login-plane {
     position: absolute;
     width: 10%;
@@ -216,6 +333,7 @@ body {
     right: -5%;
     animation: fly 5s linear forwards;
     will-change: transform;
+    pointer-events: none;
 }
 
 .login-plane img {
@@ -238,19 +356,16 @@ body {
     40% {
         transform: translate(0vw, -10vh) scaleX(-1) rotate(30deg);
         z-index: -1;
-        width: 30%;
     }
 
     55% {
         transform: translate(-55vw, 30vh) scaleX(-1) rotate(15deg);
         z-index: -1;
-        width: 30%;
     }
 
     65% {
         transform: translate(-95vw, 65vh) scaleX(-1) rotate(-10deg);
         z-index: -1;
-        width: 30%;
     }
 
     68% {
@@ -277,37 +392,35 @@ body {
 /* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
-
 @media (max-width: 768px) {
     .login {
         min-height: auto;
-        padding: 20px;
+        padding: 20px 15px;
     }
 
     .login-image {
-        flex-direction: column;
-        align-items: center;
+        min-height: 480px;
     }
 
     .login-girl {
         width: 100%;
-        min-height: 220px;
-        max-height: 240px;
-        border-radius: 16px;
+        height: 200px;
+        position: relative;
+        transform: none !important;
     }
 
     .login-girl img {
-        max-width: 200px;
+        max-width: 180px;
+        transform: none !important;
     }
 
-    .login-form {
+    .signin-form,
+    .signup-form {
         width: 100%;
-        padding: 1rem 0.5rem;
-    }
-
-    .input-fields input,
-    .login-btn {
-        width: 100%;
+        top: 210px;
+        left: 0;
+        right: 0;
+        height: auto;
     }
 
     .login-plane {

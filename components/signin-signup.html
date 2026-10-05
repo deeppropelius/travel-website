@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up - Jadoo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Open+Sans:wght@400;600&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400&family=Volkhov:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles/signin-signup.css">
+</head>
+
+<body>
+    <div class="container">
+        <section class="login" id="loginCard">
+            <!-- Top Slider Toggle -->
+            <div class="toggle" id="togglePill">
+                <div class="toggler"></div>
+                <button type="button" class="sign-in" id="signin">Sign In</button>
+                <button type="button" class="sign-up" id="signup">Sign Up</button>
+            </div>
+
+            <!-- Animated Flying Airplane -->
+            <div class="login-plane">
+                <img src="../assets/login-airplane.png" alt="Airplane">
+            </div>
+
+            <!-- Dual Panel Container -->
+            <div class="login-image">
+                <!-- Sliding Visual Girl Panel (Starts on Left, slides Right on Sign Up) -->
+                <div class="login-girl">
+                    <img src="../assets/login-girl.png" alt="Traveler">
+                </div>
+
+                <!-- Sign Up Form (On Left Side: Hidden by default, shown on Sign Up) -->
+                <div class="login-form signup-form">
+                    <form action="" class="form" onsubmit="event.preventDefault();">
+                        <div class="input-fields">
+                            <label class="label">Sign Up</label>
+                            <input type="text" placeholder="Full Name" required>
+                            <input type="email" placeholder="Email Address" required>
+                            <input type="password" placeholder="Create Password" required>
+                        </div>
+                        <div class="input-buttons">
+                            <button type="submit" class="login-btn">Sign Up</button>
+                            <div class="secondary-actions">
+                                <span>Already have an account?</span>
+                                <a href="#" class="switch-to-signin">Sign In</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sign In Form (On Right Side: Shown by default, hidden on Sign Up) -->
+                <div class="login-form signin-form">
+                    <form action="" class="form" onsubmit="event.preventDefault();">
+                        <div class="input-fields">
+                            <label for="user-id" class="label">Login</label>
+                            <input type="text" id="user-id" placeholder="Your ID or Email" required>
+                            <input type="password" placeholder="Password" required>
+                        </div>
+                        <div class="input-buttons">
+                            <button type="submit" class="login-btn">Login</button>
+                            <div class="secondary-actions">
+                                <a href="#" class="forget-btn">Forgot Password?</a>
+                                <span class="divider-dot">•</span>
+                                <a href="#" class="switch-to-signup">Sign Up</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const card = document.getElementById('loginCard');
+        const toggle = document.getElementById('togglePill');
+        const signinBtn = document.getElementById('signin');
+        const signupBtn = document.getElementById('signup');
+        const switchToSignup = document.querySelector('.switch-to-signup');
+        const switchToSignin = document.querySelector('.switch-to-signin');
+
+        function activateSignUp() {
+            toggle.classList.add('signup-active');
+            card.classList.add('signup-active');
+        }
+
+        function activateSignIn() {
+            toggle.classList.remove('signup-active');
+            card.classList.remove('signup-active');
+        }
+
+        signupBtn.addEventListener('click', activateSignUp);
+        signinBtn.addEventListener('click', activateSignIn);
+        
+        if (switchToSignup) switchToSignup.addEventListener('click', (e) => { e.preventDefault(); activateSignUp(); });
+        if (switchToSignin) switchToSignin.addEventListener('click', (e) => { e.preventDefault(); activateSignIn(); });
+
+        function checkHash() {
+            if (window.location.hash === '#signup') {
+                activateSignUp();
+            } else if (window.location.hash === '#signin') {
+                activateSignIn();
+            }
+        }
+        // Check on initial load and when hash changes
+        window.addEventListener('DOMContentLoaded', checkHash);
+        window.addEventListener('hashchange', checkHash);
+        checkHash();
+    </script>
+</body>
+
+</html>

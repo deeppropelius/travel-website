@@ -4,23 +4,7 @@
 
    }
   
-   .navbar {
-      height: 15vh;
-      display: flex;
-      justify-content: flex-start;
-   }
 
-   .navitems {
-      display: flex;
-      justify-content: center;
-      
-   }
-   .navitems ul {
-      justify-content: space-around;
-align-items: center;
-padding: 0;
-   }
-   
 
    .dtexts {
       width: 100%;
