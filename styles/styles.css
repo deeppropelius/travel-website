@@ -7,17 +7,21 @@ body {
     min-width: 320px;
 
 }
+html {
+  scroll-behavior: smooth;
+}   
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
+
 section {
     margin: 0;
 }
@@ -183,6 +187,8 @@ section {
 .dtexts {
     width: 50%;
     height: max-content;
+        animation: fadeIn 1s ease-in forwards;
+
 }
 
 .dtexts h4 {
@@ -283,6 +289,8 @@ section {
 
 .second {
     margin-top: 5%;
+    animation: fadeIn 1s ease-in forwards;
+
 }
 
 .sec {
@@ -389,49 +397,56 @@ section {
 .third h3 {
     font-size: clamp(.5rem, 5vw, 3rem);
 }
+.carousel {
+    position: relative;
+    height: 50vh;
+    overflow: hidden;
+}
 
 .tcards {
     display: flex;
-    flex: 1 1;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     width: 100%;
-    justify-content: space-evenly;
-
-
+    height: 100%;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .tcard {
-    margin: 2% 1%;
+    flex: 0 0 10%;
+    min-width: 5rem;
+    height: 90%;
+    margin: 5px;
     border-radius: 10px;
-    width: 25%;
-    background-color: white;
-    /* horizontal | vertical | blur | spread | color */
-    box-shadow: 5px 8px 6px -6px rgba(0, 0, 0, 0.3);
-
-    
-
+    position: relative;
+    transition: flex-basis 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tcard:hover {
-    transform: scale(1.1);
-    transition: 0.3s ease;
+    flex-basis: 30%;
     box-shadow: 5px 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
-.tcard:hover::after {
+
+.tcard:hover .ttext{
+    display: block;
+
+}
+
+/* .tcard:hover::after {
     transition: 0.3s ease;
     transform: scale(1);
 
+} */
+.tcards::-webkit-scrollbar {
+    display: none; /* Chrome, Edge, Safari */
 }
 
 .timg {
     width: 100%;
-    height: 70%;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-
-   
-
+    height: 100%;
+   border-radius: 10px;
 }
 
 .timg img {
@@ -455,12 +470,17 @@ section {
 }
 
 .ttext {
-    color: #5E6282;
+    position: absolute;
+    z-index: 2;
+    color: #ffffff;
     font-family: 'poppins', sans-serif;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    margin: 2%;
+    justify-content: center; 
+   display: none;
+    bottom: 0%;
+    width: 100%;
+
 }
 
 .np h4 {
@@ -484,10 +504,7 @@ section {
 
 .trip h4 {
     font-size: clamp(8px, 1.2vw, 1.7rem);
-
     font-weight: normal;
-
-
 }
 
 /*--------------------------------- fourth section ------------------------- */
@@ -497,13 +514,10 @@ section {
 }
 
 .fimg {
-
     width: 50%;
-   
     align-items: center;
     display: flex;
     justify-content: center;
-
 }
 
 .fcard {
@@ -517,20 +531,17 @@ section {
     padding: 5%;
     border-radius: 5%;
     box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
-
 }
 
 .fcimg {
     width: 100%;
     height: 40%;
     border-radius: 10px;
-
 }
 
 .fcimg img {
     width: 100%;
     display: block;
-
     border-radius: inherit;
     object-fit: cover;
     object-position: center;
@@ -548,7 +559,6 @@ section {
     font-family: poppins;
     color: #5E6282;
      font-size:  clamp(.5rem, 1.5vw, 2rem);
-
 }
 
 .ctext {
@@ -557,7 +567,6 @@ section {
     height: 60%;
     width: 100%;
     font-family: poppins;
-
 }
 
 .over {
@@ -584,10 +593,12 @@ section {
     border-radius: 50%;
     aspect-ratio: 1/1;
 }
+
 .otext{
     width: 80%;
 
 }
+
 .oimg img {
     width: 100%;
     border-radius: inherit;
@@ -598,14 +609,11 @@ section {
 }
 
 .prog {
-
     appearance: none;
     width: 100%;
     height: 6px;
     margin-bottom: 2%;
-
 }
-
 /* 2. For Chrome, Safari, and Edge */
 progress::-webkit-progress-bar {
     background-color: #e0e0e0;
@@ -624,7 +632,6 @@ progress::-webkit-progress-value {
     font-family: poppins;
     font-size: clamp(12px, 1.5vw, 1.8rem);
 }
-
 
 .ctext h4 {
     font-size: clamp(15px, 1.7vw, 2rem);
@@ -661,6 +668,7 @@ progress::-webkit-progress-value {
     box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
 
 }
+
 .like:hover {
     background-color: white;
     color: rgb(249, 14, 179);
@@ -679,8 +687,9 @@ progress::-webkit-progress-value {
     margin: 2%;
 
 }
+
 .ch {
-       font-size: clamp(10px, 1.5vw, 20px);
+    font-size: clamp(10px, 1.5vw, 20px);
 }
 
 .fthead {
@@ -688,7 +697,6 @@ progress::-webkit-progress-value {
     flex-direction: column;
     width: 90%;
     padding: 3%;
-
 }
 
 .row {
@@ -699,9 +707,6 @@ progress::-webkit-progress-value {
     align-items: center;
     width: 10%;
     display: flex;
-
-
-
 }
 
 .rimg {
@@ -712,13 +717,11 @@ progress::-webkit-progress-value {
     border-radius: 10px;
     padding: 5%;
     justify-content: center;
-
 }
 
 .rimg img {
     align-items: center;
     width: 50%;
-
 }
 
 .fthead .row:nth-child(1) .rimg {
@@ -740,7 +743,6 @@ progress::-webkit-progress-value {
     justify-content: center;
     font-family: poppins;
     color: #5E6282;
-
 }
 
 .rth {
@@ -750,16 +752,12 @@ progress::-webkit-progress-value {
 
 .ctp {
     margin: 0%;
-     font-size:  clamp(.5rem, 1.2vw, 2rem);
+    font-size:  clamp(.5rem, 1.2vw, 2rem);
 }
-
 /* ------------------ fifth section ------------------------------- */
-
-
 .fifth {
     display: flex;
     margin: 5%;
-
 }
 
 .fitext {
@@ -784,9 +782,7 @@ progress::-webkit-progress-value {
     width: 50%;
     align-items: center;
     display: flex;
-   
 }
-
 .coms {
     position: relative;
     align-items: center;
@@ -806,7 +802,6 @@ progress::-webkit-progress-value {
     padding: 5%;
     border-radius: 10px;
     box-shadow: 1px 1px 5px -2px black;
-
 }
 
 .cp {
@@ -850,7 +845,6 @@ progress::-webkit-progress-value {
     left: 10%;
     z-index: 4;
     transition: opacity .7s ease;
-
 }
 
 :has(> .s:hover)>.f {
@@ -875,13 +869,10 @@ progress::-webkit-progress-value {
     opacity: .2;
     transition: opacity .7s ease;
 }
-
 /* ---------------------section sixth------------------------------- */
 .sponsors {
     display: flex;
     margin: 5%;
-
-
 }
 
 .spons {
@@ -894,7 +885,6 @@ progress::-webkit-progress-value {
 .spon {
     margin: 0 3%;
     width: 20%;
-
 }
 
 .spon img {
@@ -903,7 +893,6 @@ progress::-webkit-progress-value {
     object-fit: contain;
     object-position: center;
 }
-
 /* -------------------- Seventh Section----------------------------- */
 .sev {
     margin: 5%;
@@ -924,7 +913,6 @@ progress::-webkit-progress-value {
     align-items: center;
     justify-content: center;
     color: #5E6282;
-    
 }
 
 .sbh {
@@ -998,19 +986,15 @@ progress::-webkit-progress-value {
     z-index: 2;
     font-size: clamp(.6rem, 1.5vw, 2rem);
 }
-
 /* ------------------------------footer--------------------------------------------------- */
-
 footer{
     margin: 5%;
 }
 .foot {
-    
     width: 100%;
     display: flex;
     justify-content: space-between;
     font-family: poppins;
-
 }
 
 .ccol {
@@ -1022,7 +1006,6 @@ footer{
 .col {
     display: flex;
     flex-direction: column;
-
 }
 
 .lab {
@@ -1101,12 +1084,13 @@ footer{
     justify-content: space-evenly;
     width: 43%;
     height: 100%;
-
 }
+
 .fih{
     font-size: clamp(10px, 1.5vw, 30px);
     text-align: center;
 }
+
 .fit {
     display: flex;
     flex-direction: column;
@@ -1137,16 +1121,11 @@ footer{
 }
 
 .play1 {
-
     font-weight: bold;
 }
 
-
-
 .apple2 {
-
     font-weight: bold;
-
 }
 
 .play1 , .play2 , .apple1 , .apple2{
@@ -1154,6 +1133,7 @@ footer{
     font-family: poppins;
     text-wrap: nowrap;
 }
+
 .rd{
     box-shadow: none;
 }
