@@ -1,0 +1,318 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at 10% 20%, #FFF8EF 0%, #FEEFE3 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.login {
+    display: flex;
+    width: min(840px, 92%);
+    min-height: 480px;
+    background: linear-gradient(135deg, #FFF3DE 0%, #FFFFFF 50%, #FFF3DE 100%);
+    padding: 18px;
+    border-radius: 28px;
+    position: relative;
+    box-shadow: 0 20px 50px -10px rgba(24, 30, 75, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.login-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 15px;
+}
+
+/* Left Illustration Panel */
+.login-girl {
+    width: 50%;
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    background-color: white;
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+    border-top-left-radius: 9px;
+    border-bottom-left-radius: 9px;
+}
+
+.login-girl img {
+    width: 120%;
+    aspect-ratio: 1/1;
+    transform: scaleX(-1);
+}
+
+/* Right Form Panel */
+.login-form {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+}
+
+.form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.label {
+    font-family: "Volkhov", Georgia, serif;
+    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+    font-weight: 700;
+    color: #181E4B;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.input-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+.input-fields input {
+    width: 88%;
+    padding: 13px 18px;
+    border: 1.5px solid #E2E8F0;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: "Poppins", sans-serif;
+    color: #181E4B;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.input-fields input::placeholder {
+    color: #94A3B8;
+}
+
+.input-fields input:hover {
+    border-color: #CBD5E1;
+}
+
+.input-fields input:focus {
+    border-color: #DF6951;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(223, 105, 81, 0.15);
+}
+
+/* Action Buttons */
+.input-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+.login-btn {
+    width: 88%;
+    padding: 13px;
+    background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
+    color: #FFFFFF;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: "Poppins", sans-serif;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(223, 105, 81, 0.28);
+    transition: all 0.25s ease;
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #ce5a43 0%, #dc6c57 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px rgba(223, 105, 81, 0.38);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* Secondary Actions (Forgot Password & Sign Up) */
+.secondary-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: 0.88rem;
+}
+
+.forget-btn {
+    background: none;
+    border: none;
+    color: #5E6282;
+    font-size: 0.88rem;
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.forget-btn:hover {
+    color: #DF6951;
+    text-decoration: underline;
+}
+
+.divider-dot {
+    color: #CBD5E1;
+    user-select: none;
+}
+
+.signup-btn {
+    background: none;
+    border: none;
+    color: #DF6951;
+    font-size: 0.88rem;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.signup-btn:hover {
+    color: #c8533c;
+    text-decoration: underline;
+}
+
+/* Flying Airplane Animation */
+.login-plane {
+    position: absolute;
+    width: 10%;
+    top: -5%;
+    right: -5%;
+    animation: fly 5s linear forwards;
+    will-change: transform;
+}
+
+.login-plane img {
+    width: 100%;
+}
+
+@keyframes fly {
+    0% {
+        transform: translate(90vw, -90vh) scaleX(-1) rotate(45deg);
+        z-index: -1;
+        width: 30%;
+    }
+
+    20% {
+        transform: translate(50vw, -55vh) scaleX(-1) rotate(42deg);
+        width: 30%;
+        z-index: -1;
+    }
+
+    40% {
+        transform: translate(0vw, -10vh) scaleX(-1) rotate(30deg);
+        z-index: -1;
+        width: 30%;
+    }
+
+    55% {
+        transform: translate(-55vw, 30vh) scaleX(-1) rotate(15deg);
+        z-index: -1;
+        width: 30%;
+    }
+
+    65% {
+        transform: translate(-95vw, 65vh) scaleX(-1) rotate(-10deg);
+        z-index: -1;
+        width: 30%;
+    }
+
+    68% {
+        transform: translate(-95vw, 65vh) rotate(-10deg);
+        z-index: -1;
+    }
+
+    75% {
+        transform: translate(-75vw, 55vh) rotate(-20deg);
+        z-index: 3;
+    }
+
+    85% {
+        transform: translate(-45vw, 35vh) rotate(-27deg);
+        z-index: 3;
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(-30deg);
+        z-index: 3;
+    }
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .login {
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .login-image {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .login-girl {
+        width: 100%;
+        min-height: 220px;
+        max-height: 240px;
+        border-radius: 16px;
+    }
+
+    .login-girl img {
+        max-width: 200px;
+    }
+
+    .login-form {
+        width: 100%;
+        padding: 1rem 0.5rem;
+    }
+
+    .input-fields input,
+    .login-btn {
+        width: 100%;
+    }
+
+    .login-plane {
+        width: 60px;
+        top: -15px;
+        right: -15px;
+    }
+}
