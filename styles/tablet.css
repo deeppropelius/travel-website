@@ -2,42 +2,45 @@
     section{
         flex-direction: row;
         margin: 1%;
-        
-
     }
-  
+
     .navlogo{
    height: 100%;
    }
+
    .navlogo img{
     height: clamp();
-   
    }
-   .navitems ul {
-    flex-wrap: wrap;
-     gap: 16px; 
-     width: 90%;
 
-   }
-   .cards{
+  .navitems ul {
+    flex-wrap: wrap;
+    gap: 16px; 
+    width: 90%;
+  }
+  
+  .cards{
     flex-wrap: wrap;
     flex: 1 1 ;
    }
+   
    .card{
     width: 60%;
     max-width: 280px;
    }
+   
    .tcards {
     flex-wrap: wrap;
     flex: 1 1 ;
    }
-      .tcard{
+  
+  .tcard{
     width: 60%;
     max-width: 280px;
-   }
-   .sbox{
+  }
+  
+  .sbox{
     border-radius: 10px;
     border-top-left-radius: 35px;
-   }
+  }
  
 }

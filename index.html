@@ -17,28 +17,31 @@
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/all/all.min.css" rel="stylesheet">
 
-  <link rel="stylesheet" href="./style/styles.css">
-  <link rel="stylesheet" href="./style/tablet.css">
-  <link rel="stylesheet" href="./style/mobile.css">
+  <link rel="stylesheet" href="./styles/styles.css">
+  <link rel="stylesheet" href="./styles/tablet.css">
+  <link rel="stylesheet" href="./styles/mobile.css">
 </head>
 
 <body>
   <div class="image">
-    <img src="./assets/topdes.png" alt="" class="topdes">
+
+    <img src="./assets/hero-section-background.png" alt="" class="topdes">
   </div>
   <header>
     <nav>
       <div class="navbar">
         <div class="navlogo">
-          <img src="./assets/Logo.png" alt="Logo">
+          <a href="#destination">
+            <img src="./assets/logo.png" alt="Logo">
+          </a>
         </div>
         <div class="navitems">
           <ul>
-            <li><a href="#" class="navlink">Destinations</a></li>
-            <li><a href="#" class="navlink"> Hotels</a></li>
-            <li><a href="#" class="navlink">Flights</a></li>
-            <li><a href="#" class="navlink">Bookings</a></li>
-            <li><a href="#" class="navlink">Login</a></li>
+            <li><a href="#destination" class="navlink">Destinations</a></li>
+            <li><a href="#second" class="navlink"> Hotels</a></li>
+            <li><a href="#third" class="navlink">Flights</a></li>
+            <li><a href="#fourth" class="navlink">Bookings</a></li>
+            <li><a href="#fifth" class="navlink">Login</a></li>
             <button class="signup">Sign up</button>
             <select name="Language" id="lang">
               <option value="eng">En</option>
@@ -48,11 +51,13 @@
         </div>
     </nav>
   </header>
-  <section class="destinations">
+  <section class="destinations" id="destination">
     <div class="dtexts">
       <h4>Best Destinations around the world</h4>
-      <h1>Travel, <span class="redstroke"> <img src="./assets/redstroke.png" alt=""></span>enjoy and live a new and full life</h1>
-      <p >Built Wicket longer admire do barton vanity itself do in it. Preferred to sportsmen it engrossed listening.
+      <h1>Travel, <span class="redstroke"> <img src="./assets/red-stroke.png" alt=""></span>enjoy and live a new and
+        full
+        life</h1>
+      <p>Built Wicket longer admire do barton vanity itself do in it. Preferred to sportsmen it engrossed listening.
         Park gate sell they west hard for the.</p>
       <div class="dbutton">
         <button class="dobut">Find out more</button>
@@ -63,11 +68,11 @@
       </div>
     </div>
     <div class="dimgs">
-      <img src="./assets/girl.png" alt="" class="girl">
+      <img src="./assets/hero-section-girl.png" alt="" class="girl">
     </div>
   </section>
-<!----------------second section ----------------------->
-  <section class="second">
+  <!----------------second section ----------------------->
+  <section class="second" id="second">
     <div class="sec">
       <p>CATEGORY</p>
       <h3>We Offer Best Services</h3>
@@ -76,7 +81,7 @@
       <div class="card">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/Group48.png" alt="">
+          <img src="./assets/service-card-1.png" alt="">
         </div>
         <div class="dec">
           <h4>Calculated Weather </h4>
@@ -86,7 +91,7 @@
       <div class="card">
         <div class="rblock"></div>
         <div class="cimg airplain">
-          <img src="./assets/Group51.png" alt="">
+          <img src="./assets/service-card-2.png" alt="">
         </div>
         <div class="dec">
           <h4>Best Flights</h4>
@@ -96,7 +101,7 @@
       <div class="card">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/Group50.png" alt="">
+          <img src="./assets/service-card-3.png" alt="">
         </div>
         <div class="dec">
           <h4>Local Events</h4>
@@ -106,7 +111,7 @@
       <div class="card">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/Group49.png" alt="">
+          <img src="./assets/service-card-4.png" alt="">
         </div>
         <div class="dec">
           <h4>Customization</h4>
@@ -114,103 +119,287 @@
         </div>
       </div>
     </div>
-  </section> 
+  </section>
   <!----------------------------------------------Third Section-------------------------------->
-  <section class="third">
+  <section class="third" id="third">
     <div class="sec">
       <p>Top Selling</p>
       <h3>Top Destinations</h3>
     </div>
-    <div class="tcards">
-      <div class="tcard">
-        <div class="timg"><img src="./assets/rome.png" alt=""></div>
-        <div class="ttext">
-          <div class="np">
-            <h4>Rome, Italty</h4>
-            <h4>$5,42k</h4>
-          </div>
-          <div class="trip">
-            <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-          </div>
-        </div>
-      </div>
-      <div class="tcard">
-        <div class="timg"><img src="./assets/london.jpeg" alt=""></div>
-        <div class="ttext">
-          <div class="np">
-            <h4>London, UK</h4>
-            <h4>$4.2k</h4>
-          </div>
-          <div class="trip">
-            <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+    <div class="carousel">
+      <div class="tcards">
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="tcard">
-        <div class="timg"><img src="./assets/europe.png" alt=""></div>
-        <div class="ttext">
-          <div class="np">
-            <h4>Full Europe</h4>
-            <h4>$15k</h4>
-          </div>
-          <div class="trip">
-            <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
           </div>
         </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+         <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+         <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+         <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+         <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+         <div class="tcard">
+          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Rome, Italty</h4>
+              <h4>$5,42k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>London, UK</h4>
+              <h4>$4.2k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
+          <div class="ttext">
+            <div class="np">
+              <h4>Full Europe</h4>
+              <h4>$15k</h4>
+            </div>
+            <div class="trip">
+              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
+
 
   </section>
   <!-------------Fourth Section-------------->
-  <section class="fourth">
+  <section class="fourth" id="fourth">
     <div class="ftext">
       <h4>Easy and Fast</h4>
-        <h1>Book your next trip in 3 easy steps</h1>
-        <div class="fthead">
-          <div class="row">
-            <div class="rimgs">
-              <div class="rimg"><img src="./assets/group-4.svg" alt=""></div>
-
-            </div>
-            <div class="rt">
-              <h4 class="rth">Choose Destination</h4>
-              <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-                adipiscing elit. Urna, tortor tempus. </p>
-            </div>
-          </div>
-          <div class="row">
-            <div class="rimgs">
-              <div class="rimg">
-                <img src="./assets/group.svg" alt="">
-              </div>
-            </div>
-
-            <div class="rt">
-              <h4 class="rth">Make Payment</h4>
-              <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-                adipiscing elit. Urna, tortor tempus. </p>
-            </div>
+      <h1>Book your next trip in 3 easy steps</h1>
+      <div class="fthead">
+        <div class="row">
+          <div class="rimgs">
+            <div class="rimg"><img src="./assets/easy-fast-1.svg" alt=""></div>
 
           </div>
-          <div class="row">
-
-            <div class="rimgs">
-              <div class="rimg">
-                <img src="./assets/social-instagram.svg" alt="">
-              </div>
-            </div>
-            <div class="rt">
-              <h4 class="rth">Reach Airport on Selected Date</h4>
-              <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-                adipiscing elit. Urna, tortor tempus. </p>
-            </div>
+          <div class="rt">
+            <h4 class="rth">Choose Destination</h4>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit. Urna, tortor tempus. </p>
           </div>
         </div>
+        <div class="row">
+          <div class="rimgs">
+            <div class="rimg">
+              <img src="./assets/easy-fast-2.svg" alt="">
+            </div>
+          </div>
+
+          <div class="rt">
+            <h4 class="rth">Make Payment</h4>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit. Urna, tortor tempus. </p>
+          </div>
+
+        </div>
+        <div class="row">
+
+          <div class="rimgs">
+            <div class="rimg">
+              <img src="./assets/easy-fast-3.svg" alt="">
+            </div>
+          </div>
+          <div class="rt">
+            <h4 class="rth">Reach Airport on Selected Date</h4>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
+              adipiscing elit. Urna, tortor tempus. </p>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="fimg">
       <div class="fcard">
-       <div class="fcimg">
-          <img src="/assets/trip-greece.jpeg" alt="">
+        <div class="fcimg">
+          <img src="/assets/easy-fast-trip-to-greece.jpeg" alt="">
         </div>
         <div class="ctext">
           <h4>Trip to Greece</h4>
@@ -227,8 +416,8 @@
             <div class="like"><i class="fa-regular fa-heart"></i></div>
           </div>
         </div>
-         <div class="over">
-          <div class="oimg"><img src="./assets/trip-rome-avatar.png" alt=""></div>
+        <div class="over">
+          <div class="oimg"><img src="./assets/easy-fast-trip-to-greece.jpeg" alt=""></div>
           <div class="otext">
             <div class="st">Ongoing</div>
             <div class="status">Trip to rome</div>
@@ -236,22 +425,22 @@
             <progress class="prog" value="40" max="100"></progress>
           </div>
         </div>
-      </div>     
+      </div>
     </div>
   </section>
   <!------------- fifth section ------------------------->
-  <section class="fifth">
+  <section class="fifth" id="fifth">
     <div class="fitext">
       <div class="fit">
         <div class="fitp">Testimonials</div>
         <div class="fith">What people say about Us.</div>
       </div>
-      <div class="fiimg"><img src="./assets/google-play.svg" alt=""></div>
+      <div class="fiimg"><img src="./assets/testimonials-dots.svg" alt=""></div>
     </div>
     <div class="ficom">
       <div class="coms ">
         <div class="com f">
-          <div class="ficimg"><img src="./assets/destination-london.png" alt=""></div>
+          <div class="ficimg"><img src="./assets/testimonials-avatar-1.png" alt=""></div>
           <div class="ctext ">
             <div class="cp">“On the Windows talking painted pasture yet its express parties use. Sure last upon he same
               as knew next. Of believed or diverted no.”</div>
@@ -260,7 +449,7 @@
           </div>
         </div>
         <div class="com s ">
-          <div class="ficimg"><img src="./assets/europe.png" alt=""></div>
+          <div class="ficimg"><img src="./assets/testimonials-avatar-2.png" alt=""></div>
           <div class="ctext">
             <div class="cp">“On the Windows talking painted pasture yet its express parties use. Sure last upon he same
               as knew next. Of believed or diverted no.”</div>
@@ -271,21 +460,21 @@
       </div>
   </section>
   <!-- -------------------Section sixth -------------------- -->
-  <section class="sponsors">
+  <section class="sponsors" id="sponsor">
     <div class="spons">
-      <div class="spon"><img src="./assets/background.png" alt=""></div>
-      <div class="spon"><img src="./assets/hero-traveller.png" alt=""></div>
-      <div class="spon"><img src="./assets/destination-rome.png" alt=""></div>
-      <div class="spon"><img src="./assets/logo-image-28.png" alt=""></div>
-      <div class="spon"><img src="./assets/destination-europe.png" alt=""></div>
+      <div class="spon"><img src="./assets/sponsor-1.png" alt=""></div>
+      <div class="spon"><img src="./assets/sponsor-2.png" alt=""></div>
+      <div class="spon"><img src="./assets/sponsor-3.png" alt=""></div>
+      <div class="spon"><img src="./assets/sponsor-4.png" alt=""></div>
+      <div class="spon"><img src="./assets/sponsor-5.png" alt=""></div>
     </div>
   </section>
   <!-- ---------- Seventh Section------------------------------------- -->
-  <section class="sev">
+  <section class="sev" id="sev">
     <div class="ssend"><i class="fa-solid fa-paper-plane"></i></div>
     <div class="sbox">
-      <div class="sbimg"><img src="./assets/Group 42.png" alt=""></div>
-      <div class="sbimg"><img src="./assets/Group 42.png" alt=""></div>
+      <div class="sbimg"><img src="./assets/search-circles.png" alt=""></div>
+      <div class="sbimg"><img src="./assets/search-circles.png" alt=""></div>
       <div class="sbh">Subscribe to get information, latest news and other interesting offers about Jadoo</div>
       <div class="sdinp">
         <input type="text" class="sbinp" placeholder="Your Email">
@@ -331,16 +520,16 @@
         <div class="store">
           <div class="fps">
             <div class="pas">
-              <img src="./assets/googleplay.png" alt="">
+              <img src="./assets/google-play.png" alt="">
             </div>
             <div class="fit">
               <div class="play1">Get it on</div>
               <div class="play2">Google Play</div>
             </div>
           </div>
-          <div class="fps"> 
+          <div class="fps">
             <div class="pas">
-              <img src="./assets/apple.png" alt="">
+              <img src="./assets/apple-store.png" alt="">
             </div>
             <div class="fit">
               <div class="apple1">Avalable</div>
@@ -354,4 +543,5 @@
   </footer>
 </body>
 <script src="script.js"></script>
+
 </html>
