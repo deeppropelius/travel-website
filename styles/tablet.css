@@ -102,19 +102,48 @@
     max-width: 280px;
    }
    
-   .tcards {
-    flex-wrap: wrap;
-    flex: 1 1 ;
+   /* Carousel: 2 cards visible on tablet */
+   .carousel {
+    height: 460px;
    }
-  
-  .tcard{
-    width: 60%;
-    max-width: 280px;
-  }
-  
+
+   .tcard {
+    flex: 0 0 calc(50% - 12px);
+   }
+   
   .sbox{
     border-radius: 10px;
     border-top-left-radius: 35px;
   }
+
+  /* Testimonials on Tablet */
+  .fifth {
+    flex-direction: column;
+    margin: 40px 4%;
+    gap: 30px;
+  }
+
+  .fitext {
+    width: 100%;
+    text-align: center;
+  }
+
+  .fiimg {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .ficom {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .coms {
+    width: 85%;
+    max-width: 480px;
+    min-height: 360px;
+  }
  
-}
+}

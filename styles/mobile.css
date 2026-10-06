@@ -67,6 +67,15 @@
       max-width: none;
    }
 
+   /* Carousel: 1 card visible on mobile */
+   .carousel {
+      height: 440px;
+   }
+
+   .tcard {
+      flex: 0 0 100%;
+   }
+
    .fourth {
       flex-direction: column;
    }
@@ -88,7 +97,8 @@
 
    .fifth {
       flex-direction: column;
-      margin-top: 15%;
+      margin: 40px 4% 50px;
+      gap: 25px;
    }
 
    .fitext {
@@ -96,14 +106,31 @@
       text-align: center;
    }
 
-   .ficom {
-      width: 100%;
-      align-items: flex-start;
-      justify-content: flex-start;
+   .fiimg {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
    }
 
-   .fiimg {
-      display: none;
+   .ficom {
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+   }
+
+   .coms {
+      width: 90%;
+      max-width: 380px;
+      min-height: 360px;
+   }
+
+   .testimonial-arrows {
+      flex-direction: row;
+      margin-left: 0;
+      justify-content: center;
+      gap: 16px;
    }
 
    .sbox {

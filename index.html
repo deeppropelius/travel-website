@@ -20,6 +20,28 @@
   <link rel="stylesheet" href="./styles/styles.css">
   <link rel="stylesheet" href="./styles/tablet.css">
   <link rel="stylesheet" href="./styles/mobile.css">
+  <link rel="stylesheet" href="./styles/dark-theme.css">
+  <!-- Early dark theme execution to prevent light-theme flash -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('jadoo_dark_theme');
+        if (saved === null) {
+          var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+          if (match) {
+            try { saved = JSON.parse(decodeURIComponent(match[1])); } catch(e) { saved = match[1]; }
+          }
+        }
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+        if (isDark) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
 <body>
@@ -31,8 +53,8 @@
     <nav>
       <div class="navbar">
         <div class="navlogo">
-          <a href="#destination">
-            <img src="./assets/logo.png" alt="Logo">
+          <a href="./index.html" title="Jadoo - Home">
+            <img src="./assets/logo.png" alt="Jadoo Travel Logo">
           </a>
         </div>
         <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
@@ -42,10 +64,10 @@
         </button>
         <div class="navitems" id="navitems">
           <ul>
-            <li><a href="#" class="navlink">Destinations</a></li>
-            <li><a href="#" class="navlink">Hotels</a></li>
-            <li><a href="#" class="navlink">Flights</a></li>
-            <li><a href="#" class="navlink">Bookings</a></li>
+            <li><a href="./pages/destinations.html" class="navlink">Destinations</a></li>
+            <li><a href="./pages/hotels.html" class="navlink">Hotels</a></li>
+            <li><a href="./pages/flights.html" class="navlink">Flights</a></li>
+            <li><a href="./pages/bookings.html" class="navlink">Bookings</a></li>
             <li><a href="./components/signin-signup.html#signin" class="navlink">Login</a></li>
             <li><button onclick="window.location.href='./components/signin-signup.html#signup'" class="signup">Sign up</button></li>
             <li>
@@ -63,12 +85,12 @@
   <section class="destinations" id="destinations">
     <div class="dtexts">
       <h4>Best Destinations around the world</h4>
-      <h1>Travel, <span class="redstroke"> <img src="./assets/redstroke.png" alt=""></span>enjoy and live a new and full
+      <h1>Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="" class="red-stroke-img"></span> and live a new and full
         life</h1>
       <p>Built Wicket longer admire do barton vanity itself do in it. Preferred to sportsmen it engrossed listening.
         Park gate sell they west hard for the.</p>
       <div class="dbutton">
-        <button class="dobut">Find out more</button>
+        <button class="dobut" onclick="window.location.href='./pages/destinations.html'">Find out more</button>
         <div class="playdemo">
           <button class="drbut"><i class="fi fi-ss-play rd"></i></button>
           <p>Play Demo</p>
@@ -134,231 +156,157 @@
       <p>Top Selling</p>
       <h3>Top Destinations</h3>
     </div>
-    <div class="carousel">
-      <div class="tcards">
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
+    <div class="carousel-wrapper">
+      <div class="carousel" id="destCarousel">
+        <!-- Prev/Next Navigation Buttons -->
+        <button class="carousel-btn prev" id="carouselPrev" aria-label="Previous destination">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="carousel-btn next" id="carouselNext" aria-label="Next destination">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <!-- Cards Track -->
+        <div class="tcards" id="carouselTrack">
+          <!-- Card 1: Rome, Italy -->
+          <div class="tcard is-active" data-index="0">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.9</span></div>
+              <div class="tcard-badge">Bestseller</div>
             </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+            <div class="timg">
+              <img src="./assets/destination-rome.png" alt="Rome, Italy" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>Rome, Italy</h4>
+                <span class="price-tag">$5.42k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </div>
+          <!-- Card 2: London, UK -->
+          <div class="tcard" data-index="1">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.8</span></div>
+              <div class="tcard-badge">Popular</div>
+            </div>
+            <div class="timg">
+              <img src="./assets/destination-london.jpeg" alt="London, UK" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>London, UK</h4>
+                <span class="price-tag">$4.2k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </div>
+          <!-- Card 3: Full Europe Tour -->
+          <div class="tcard" data-index="2">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>5.0</span></div>
+              <div class="tcard-badge">Trending</div>
+            </div>
+            <div class="timg">
+              <img src="./assets/destination-europe.png" alt="Full Europe Grand Tour" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>Full Europe</h4>
+                <span class="price-tag">$15k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </div>
+          <!-- Card 4: Santorini, Greece -->
+          <div class="tcard" data-index="3">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.9</span></div>
+              <div class="tcard-badge">Hot Deal</div>
+            </div>
+            <div class="timg">
+              <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>Santorini, Greece</h4>
+                <span class="price-tag">$6.8k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 14 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </div>
+          <!-- Card 5: Venice & Tuscany, Italy -->
+          <div class="tcard" data-index="4">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.7</span></div>
+              <div class="tcard-badge">Romantic</div>
+            </div>
+            <div class="timg">
+              <img src="./assets/destination-rome.png" alt="Venice & Tuscany, Italy" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>Venice & Tuscany</h4>
+                <span class="price-tag">$4.85k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 8 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </div>
+          <!-- Card 6: Great Britain & Scotland -->
+          <div class="tcard" data-index="5">
+            <div class="tcard-header-badges">
+              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.8</span></div>
+              <div class="tcard-badge">Adventure</div>
+            </div>
+            <div class="timg">
+              <img src="./assets/destination-london.jpeg" alt="Great Britain & Scotland" loading="lazy" draggable="false">
+            </div>
+            <div class="tcard-overlay"></div>
+            <div class="ttext">
+              <div class="np">
+                <h4>British Discovery</h4>
+                <span class="price-tag">$5.1k</span>
+              </div>
+              <div class="trip">
+                <h4><i class="fa-solid fa-paper-plane"></i> 15 Days Trip</h4>
+                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
+      </div>
+      <!-- Carousel Dots & Progress Indicator Controls -->
+      <div class="carousel-controls">
+        <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Destination slides"></div>
+        <div class="carousel-progress" aria-hidden="true">
+          <div class="carousel-progress-bar" id="carouselProgressBar"></div>
         </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-         <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-         <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-         <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-         <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-         <div class="tcard">
-          <div class="timg"><img src="./assets/destination-rome.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Rome, Italty</h4>
-              <h4>$5,42k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-london.jpeg" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>London, UK</h4>
-              <h4>$4.2k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-        <div class="tcard">
-          <div class="timg"><img src="./assets/destination-europe.png" alt=""></div>
-          <div class="ttext">
-            <div class="np">
-              <h4>Full Europe</h4>
-              <h4>$15k</h4>
-            </div>
-            <div class="trip">
-              <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
-
-
   </section>
+
   <!-------------Fourth Section-------------->
+
   <section class="fourth" id="bookings">
     <div class="ftext">
       <h4>Easy and Fast</h4>
@@ -366,7 +314,7 @@
       <div class="fthead">
         <div class="row">
           <div class="rimgs">
-            <div class="rimg"><img src="./assets/easy-fast-1.svg" alt=""></div>
+            <div class="rimg"><img src="./assets/easy-fast-1.svg" alt="Destination icon"></div>
 
           </div>
           <div class="rt">
@@ -378,7 +326,7 @@
         <div class="row">
           <div class="rimgs">
             <div class="rimg">
-              <img src="./assets/easy-fast-2.svg" alt="">
+              <img src="./assets/easy-fast-2.svg" alt="Payment icon">
             </div>
           </div>
 
@@ -393,7 +341,7 @@
 
           <div class="rimgs">
             <div class="rimg">
-              <img src="./assets/easy-fast-3.svg" alt="">
+              <img src="./assets/easy-fast-3.svg" alt="Airport icon">
             </div>
           </div>
           <div class="rt">
@@ -407,7 +355,7 @@
     <div class="fimg">
       <div class="fcard">
         <div class="fcimg">
-          <img src="/assets/easy-fast-trip-to-greece.jpeg" alt="">
+          <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Trip to Greece">
         </div>
         <div class="ctext">
           <h4>Trip to Greece</h4>
@@ -443,28 +391,115 @@
         <div class="fitp">Testimonials</div>
         <div class="fith">What people say about Us.</div>
       </div>
-      <div class="fiimg"><img src="./assets/testimonials-dots.svg" alt=""></div>
+      <div class="fiimg">
+        <svg class="testimonial-dots-svg" width="87" height="12" viewBox="0 0 87 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Testimonial pagination dots">
+          <circle cx="6" cy="6" r="6" class="dot-active" />
+          <circle cx="44" cy="6" r="6" class="dot-inactive" />
+          <circle cx="81" cy="6" r="6" class="dot-inactive" />
+        </svg>
+      </div>
     </div>
     <div class="ficom">
-      <div class="coms ">
-        <div class="com f">
-          <div class="ficimg"><img src="./assets/testimonials-avatar-1.png" alt=""></div>
-          <div class="ctext ">
-            <div class="cp">“On the Windows talking painted pasture yet its express parties use. Sure last upon he same
-              as knew next. Of believed or diverted no.”</div>
-            <div class="cn">Mike taylor</div>
-            <div class="cl">Lahore, Pakistan</div>
+      <div class="coms">
+        <!-- Testimonial 1: Mike Taylor -->
+        <div class="com f is-front" data-testimonial="0">
+          <div class="ficimg">
+            <img src="./assets/testimonials-avatar-1.png" alt="Mike Taylor portrait" draggable="false">
           </div>
-        </div>
-        <div class="com s ">
-          <div class="ficimg"><img src="./assets/testimonials-avatar-2.png" alt=""></div>
           <div class="ctext">
-            <div class="cp">“On the Windows talking painted pasture yet its express parties use. Sure last upon he same
-              as knew next. Of believed or diverted no.”</div>
-            <div class="cn">Chris Thomas</div>
-            <div class="cl">CEO of Red Button</div>
+            <div class="cmeta">
+              <div class="crating">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <span>5.0</span>
+              </div>
+              <span class="cbadge"><i class="fa-solid fa-shield-heart"></i> Verified Traveler</span>
+            </div>
+            <div class="cp">“Jadoo made our dream vacation to Rome and Santorini an effortless reality. From seamless flight bookings to curated local hidden gems, every detail was executed with perfection!”</div>
+            <div class="cauthor-row">
+              <div class="cauthor-info">
+                <div class="cn">Mike Taylor</div>
+                <div class="cl">Lahore, Pakistan</div>
+              </div>
+              <div class="ctrip-tag">
+                <i class="fa-solid fa-location-dot"></i> Italy & Greece Tour
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Testimonial 2: Chris Thomas -->
+        <div class="com s is-middle" data-testimonial="1">
+          <div class="ficimg">
+            <img src="./assets/testimonials-avatar-2.png" alt="Chris Thomas portrait" draggable="false">
+          </div>
+          <div class="ctext">
+            <div class="cmeta">
+              <div class="crating">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <span>5.0</span>
+              </div>
+              <span class="cbadge"><i class="fa-solid fa-briefcase"></i> Corporate Travel</span>
+            </div>
+            <div class="cp">“Exceptional service and unmatched attention to detail. Organizing high-profile executive retreats across Europe has never been smoother. Jadoo is our trusted travel partner.”</div>
+            <div class="cauthor-row">
+              <div class="cauthor-info">
+                <div class="cn">Chris Thomas</div>
+                <div class="cl">CEO of Red Button • London, UK</div>
+              </div>
+              <div class="ctrip-tag">
+                <i class="fa-solid fa-location-dot"></i> European Executive Retreat
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3: Sophia Martinez -->
+        <div class="com t is-back" data-testimonial="2">
+          <div class="ficimg">
+            <img src="./assets/testimonials-avatar-3.png" alt="Sophia Martinez portrait" draggable="false">
+          </div>
+          <div class="ctext">
+            <div class="cmeta">
+              <div class="crating">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star-half-stroke"></i>
+                <span>4.9</span>
+              </div>
+              <span class="cbadge"><i class="fa-solid fa-camera"></i> Travel Photographer</span>
+            </div>
+            <div class="cp">“The customized itinerary and 24/7 concierge support blew me away. I captured breathtaking sunrises in Tuscany and Swiss alpine peaks without worrying about logistics. Truly world-class!”</div>
+            <div class="cauthor-row">
+              <div class="cauthor-info">
+                <div class="cn">Sophia Martinez</div>
+                <div class="cl">Barcelona, Spain</div>
+              </div>
+              <div class="ctrip-tag">
+                <i class="fa-solid fa-location-dot"></i> Swiss & Tuscany Discovery
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vertical Carousel Controls -->
+      <div class="testimonial-arrows">
+        <button class="t-arrow-btn" id="tArrowUp" aria-label="Previous testimonial" title="Previous testimonial">
+          <i class="fa-solid fa-chevron-up"></i>
+        </button>
+        <button class="t-arrow-btn" id="tArrowDown" aria-label="Next testimonial" title="Next testimonial">
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
       </div>
     </div>
   </section>
@@ -495,28 +530,28 @@
   <footer>
     <div class="foot">
       <div class="col lab">
-        <div class="fh">Jadoo.</div>
+        <div class="fh"><a href="./index.html">Jadoo.</a></div>
         <div class="fp">Book your trip in minute, get full Control for much longer.
         </div>
       </div>
       <div class="ccol">
         <div class="col">
           <div class="fch">Company</div>
-          <div class="fcp">About</div>
-          <div class="fcp">Careers</div>
-          <div class="fcp">Mobile</div>
+          <div class="fcp"><a href="./pages/about.html">About</a></div>
+          <div class="fcp"><a href="./pages/about.html#careers">Careers</a></div>
+          <div class="fcp"><a href="./pages/about.html#mobile">Mobile</a></div>
         </div>
         <div class="col">
           <div class="fch">Contact</div>
-          <div class="fcp">Help/FAQ</div>
-          <div class="fcp">Press</div>
-          <div class="fcp">Affiliates</div>
+          <div class="fcp"><a href="./pages/contact.html">Help/FAQ</a></div>
+          <div class="fcp"><a href="./pages/contact.html#press">Press</a></div>
+          <div class="fcp"><a href="./pages/contact.html#affiliates">Affiliates</a></div>
         </div>
         <div class="col">
           <div class="fch">More</div>
-          <div class="fcp">Airlinefees</div>
-          <div class="fcp">Airline</div>
-          <div class="fcp">Low fare tips</div>
+          <div class="fcp"><a href="./pages/flights.html#airlinefees">Airlinefees</a></div>
+          <div class="fcp"><a href="./pages/flights.html#airlines">Airlines</a></div>
+          <div class="fcp"><a href="./pages/destinations.html#tips">Low fare tips</a></div>
         </div>
       </div>
       <div class="col fico">
@@ -550,8 +585,12 @@
     </div>
     <div class="lfp">All rights reserved@jadoo.co</div>
   </footer>
+
+  <!-- Floating Dark Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+    <i class="fa-solid fa-moon" id="themeIcon" aria-hidden="true"></i>
+  </button>
+
   <script src="script.js"></script>
 </body>
-<script src="script.js"></script>
-
 </html>

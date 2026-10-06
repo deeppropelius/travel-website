@@ -13,6 +13,75 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+/* Back to Home Button */
+.back-home-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #181E4B;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: "Poppins", sans-serif;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.back-home-btn:hover {
+    background: #DF6951;
+    border-color: #DF6951;
+    color: #FFFFFF;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 20px rgba(223, 105, 81, 0.35);
+}
+
+.auth-status-banner {
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 14px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(223, 105, 81, 0.1);
+    border: 1px solid rgba(223, 105, 81, 0.25);
+    color: #181E4B;
+    font-size: 0.86rem;
+    font-family: "Poppins", sans-serif;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 5;
+}
+
+.auth-status-banner a {
+    color: #DF6951;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.auth-status-banner button {
+    background: #DF6951;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .container {
@@ -22,7 +91,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-}
+}   
 
 
 .login {
@@ -393,9 +462,17 @@ body {
    Responsive Breakpoints
    ========================================================================== */
 @media (max-width: 768px) {
+    .back-home-btn {
+        top: 0.85rem;
+        left: 0.85rem;
+        padding: 6px 13px;
+        font-size: 0.8rem;
+    }
+
     .login {
         min-height: auto;
         padding: 20px 15px;
+        margin-top: 45px;
     }
 
     .login-image {
@@ -428,4 +505,81 @@ body {
         top: -15px;
         right: -15px;
     }
+}
+
+/* ============================================================
+   DARK THEME - Sign In / Sign Up Page (Luxury Edition)
+   ============================================================ */
+[data-theme="dark"] body {
+    background: radial-gradient(circle at 15% 15%, rgba(223, 105, 81, 0.08) 0%, #090D16 45%, #0F1626 100%);
+    color: #F8FAFC;
+}
+
+[data-theme="dark"] .login {
+    background: linear-gradient(135deg, rgba(20, 27, 43, 0.85) 0%, rgba(25, 35, 56, 0.75) 50%, rgba(20, 27, 43, 0.85) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.75), 0 0 35px rgba(223, 105, 81, 0.12);
+}
+
+[data-theme="dark"] .toggle {
+    background-color: #101625;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sign-up {
+    color: #94A3B8;
+}
+
+[data-theme="dark"] .sign-in {
+    color: #F8FAFC;
+}
+
+[data-theme="dark"] .toggle.signup-active .sign-in {
+    color: #94A3B8;
+}
+
+[data-theme="dark"] .toggle.signup-active .sign-up {
+    color: #F8FAFC;
+}
+
+[data-theme="dark"] .label {
+    color: #F8FAFC;
+}
+
+[data-theme="dark"] .input-fields input {
+    background-color: #0D1321;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #F8FAFC;
+}
+
+[data-theme="dark"] .input-fields input::placeholder {
+    color: #64748B;
+}
+
+[data-theme="dark"] .input-fields input:focus {
+    background-color: #131A2B;
+    border-color: #DF6951;
+    box-shadow: 0 0 0 4px rgba(223, 105, 81, 0.25);
+}
+
+[data-theme="dark"] .secondary-actions {
+    color: #94A3B8;
+}
+
+[data-theme="dark"] .forget-btn,
+[data-theme="dark"] .switch-to-signin,
+[data-theme="dark"] .switch-to-signup {
+    color: #DF6951;
+}
+
+[data-theme="dark"] .forget-btn:hover,
+[data-theme="dark"] .switch-to-signin:hover,
+[data-theme="dark"] .switch-to-signup:hover {
+    color: #F1A501;
+}
+
+[data-theme="dark"] .divider-dot {
+    color: rgba(255, 255, 255, 0.25);
 }

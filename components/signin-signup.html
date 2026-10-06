@@ -10,12 +10,46 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Open+Sans:wght@400;600&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400&family=Volkhov:wght@700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+        integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="../styles/signin-signup.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <!-- Early dark theme execution to prevent light-theme flash -->
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch(e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 
 <body>
+    <!-- Back to Home Button -->
+    <a href="../index.html" class="back-home-btn" title="Back to Homepage">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Back to Home</span>
+    </a>
+
     <div class="container">
         <section class="login" id="loginCard">
+            <!-- Dynamic Authentication Status Banner -->
+            <div id="authStatusBanner" class="auth-status-banner" style="display: none;"></div>
+
             <!-- Top Slider Toggle -->
             <div class="toggle" id="togglePill">
                 <div class="toggler"></div>
@@ -37,15 +71,15 @@
 
                 <!-- Sign Up Form (On Left Side: Hidden by default, shown on Sign Up) -->
                 <div class="login-form signup-form">
-                    <form action="" class="form" onsubmit="event.preventDefault();">
+                    <form action="" class="form" id="signupForm" onsubmit="event.preventDefault();">
                         <div class="input-fields">
                             <label class="label">Sign Up</label>
-                            <input type="text" placeholder="Full Name" required>
-                            <input type="email" placeholder="Email Address" required>
-                            <input type="password" placeholder="Create Password" required>
+                            <input type="text" id="signup-fullname" placeholder="Full Name" required>
+                            <input type="email" id="signup-email" placeholder="Email Address" required>
+                            <input type="password" id="signup-password" placeholder="Create Password" required>
                         </div>
                         <div class="input-buttons">
-                            <button type="submit" class="login-btn">Sign Up</button>
+                            <button type="submit" id="signup-submit-btn" class="login-btn">Sign Up</button>
                             <div class="secondary-actions">
                                 <span>Already have an account?</span>
                                 <a href="#" class="switch-to-signin">Sign In</a>
@@ -56,14 +90,14 @@
 
                 <!-- Sign In Form (On Right Side: Shown by default, hidden on Sign Up) -->
                 <div class="login-form signin-form">
-                    <form action="" class="form" onsubmit="event.preventDefault();">
+                    <form action="" class="form" id="signinForm" onsubmit="event.preventDefault();">
                         <div class="input-fields">
                             <label for="user-id" class="label">Login</label>
                             <input type="text" id="user-id" placeholder="Your ID or Email" required>
-                            <input type="password" placeholder="Password" required>
+                            <input type="password" id="signin-password" placeholder="Password" required>
                         </div>
                         <div class="input-buttons">
-                            <button type="submit" class="login-btn">Login</button>
+                            <button type="submit" id="signin-submit-btn" class="login-btn">Login</button>
                             <div class="secondary-actions">
                                 <a href="#" class="forget-btn">Forgot Password?</a>
                                 <span class="divider-dot">•</span>
@@ -110,7 +144,11 @@
         // Check on initial load and when hash changes
         window.addEventListener('DOMContentLoaded', checkHash);
         window.addEventListener('hashchange', checkHash);
-        checkHash();
+    </script>
+    <!-- Dark Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
     <script src="../script.js"></script>
 </body>
 

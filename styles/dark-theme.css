@@ -1,0 +1,725 @@
+
+[data-theme="dark"] {
+  --bg-primary:       #090D16;          /* Deep luxury obsidian slate */
+  --bg-secondary:     #0F1626;          /* Deep dark navy */
+  --bg-card:          #141B2B;          /* Premium glassmorphic card base */
+  --bg-card-hover:    #192338;          /* Card hover background */
+  --bg-surface:       #1E283D;          /* Elevated surface */
+  --border-light:     rgba(255, 255, 255, 0.08);
+  --border-medium:    rgba(255, 255, 255, 0.14);
+  --border-glow:      rgba(223, 105, 81, 0.45);
+  --text-primary:     #F8FAFC;          /* Crisp white */
+  --text-secondary:   #94A3B8;          /* Slate muted */
+  --text-muted:       #64748B;          /* Darker muted */
+  --accent-coral:     #DF6951;          /* Jadoo signature coral */
+  --accent-coral-glow:rgba(223, 105, 81, 0.35);
+  --accent-gold:      #F1A501;          /* Jadoo warm gold */
+  --accent-purple:    #8A79DF;          /* Lilac purple */
+  --nav-bg:           rgba(9, 13, 22, 0.85);
+  --shadow-card:      0 10px 32px rgba(0, 0, 0, 0.45);
+  --shadow-elevation: 0 20px 50px -10px rgba(0, 0, 0, 0.7);
+  --shadow-glow:      0 0 30px rgba(223, 105, 81, 0.25);
+  color-scheme: dark;
+}
+
+/* ── Smooth Theme Transition ────────────────────────────────── */
+body,
+.navbar,
+.card,
+.tcard,
+.fcard,
+.over,
+.com,
+.sbox,
+footer,
+.theme-toggle {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* ── Global Dark Base ───────────────────────────────────────── */
+[data-theme="dark"] body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(223, 105, 81, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(138, 121, 223, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 75%, rgba(241, 165, 1, 0.04) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ── Navbar ─────────────────────────────────────────────────── */
+[data-theme="dark"] .navbar {
+  background-color: var(--nav-bg);
+  border-bottom: 1px solid var(--border-light);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .navlogo img {
+  filter: brightness(0) invert(1);
+  transition: filter 0.3s ease;
+}
+
+[data-theme="dark"] .navlink {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .navlink:hover {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .navitems button.signup {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .navitems button.signup:hover {
+  background-color: var(--accent-coral);
+  border-color: var(--accent-coral);
+  color: #ffffff;
+  box-shadow: 0 4px 18px var(--accent-coral-glow);
+}
+
+[data-theme="dark"] .navitems select {
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+[data-theme="dark"] .hamburger .bar {
+  background-color: var(--text-primary);
+}
+
+/* Mobile nav drawer */
+@media (max-width: 768px) {
+  [data-theme="dark"] .navitems {
+    background: rgba(15, 22, 38, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid var(--border-light);
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ── Hero Section ───────────────────────────────────────────── */
+[data-theme="dark"] .destinations {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .image img.topdes {
+  opacity: 0.18;
+  filter: hue-rotate(220deg) saturate(0.8) brightness(0.9);
+}
+
+[data-theme="dark"] .dtexts h4 {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .dtexts h1 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .dtexts p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .playdemo p {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .drbut {
+  box-shadow: 0 10px 24px var(--accent-coral-glow);
+}
+
+/* ── Section Headings Universal ─────────────────────────────── */
+[data-theme="dark"] .sec p {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .sec h3 {
+  color: var(--text-primary);
+}
+
+/* ── Category / Services Cards ──────────────────────────────── */
+[data-theme="dark"] .second {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .card h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .card p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-elevation), 0 0 25px rgba(223, 105, 81, 0.12);
+  transform: translateY(-8px);
+}
+
+/* ── Upgraded Destinations Carousel (Dark Theme) ────────────── */
+[data-theme="dark"] .third {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .third h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .tcard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .tcard:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-elevation), var(--shadow-glow);
+}
+
+[data-theme="dark"] .tcard.is-active {
+  border-color: rgba(223, 105, 81, 0.45);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(223, 105, 81, 0.2);
+}
+
+[data-theme="dark"] .ttext {
+  background: var(--bg-card);
+}
+
+[data-theme="dark"] .ttext .np h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .ttext .price-tag {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .ttext .trip h4 {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .ttext .trip h4 i {
+  color: var(--accent-gold);
+}
+
+[data-theme="dark"] .carousel-btn {
+  background: rgba(20, 27, 43, 0.85);
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .carousel-btn:hover {
+  background: var(--accent-coral);
+  border-color: var(--accent-coral);
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(223, 105, 81, 0.5);
+}
+
+[data-theme="dark"] .carousel-dot {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] .carousel-dot.active {
+  background: var(--accent-coral);
+  box-shadow: 0 0 14px rgba(223, 105, 81, 0.6);
+}
+
+[data-theme="dark"] .carousel-progress {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .carousel-progress-bar {
+  background: linear-gradient(90deg, #F1A501, #DF6951);
+  box-shadow: 0 0 8px rgba(223, 105, 81, 0.5);
+}
+
+/* ── Fourth Section (Bookings) & SVG Color Adaptation ───────── */
+[data-theme="dark"] .fourth {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .ftext h4 {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .ftext h1 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .rth {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .ctp {
+  color: var(--text-secondary);
+}
+
+/* SVG Icon Badges in Steps: Rich gradients and glowing shadows */
+[data-theme="dark"] .fthead .row:nth-child(1) .rimg {
+  background: linear-gradient(135deg, #F0BB1F 0%, #D49A0A 100%);
+  box-shadow: 0 6px 20px rgba(240, 187, 31, 0.35);
+}
+
+[data-theme="dark"] .fthead .row:nth-child(2) .rimg {
+  background: linear-gradient(135deg, #F15A2B 0%, #D13E12 100%);
+  box-shadow: 0 6px 20px rgba(241, 90, 43, 0.35);
+}
+
+[data-theme="dark"] .fthead .row:nth-child(3) .rimg {
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+}
+
+[data-theme="dark"] .rimg img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+/* Trip Card */
+[data-theme="dark"] .fcard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-elevation);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .ctext h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .ptext p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .cicon {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .cicon:hover {
+  background: var(--accent-coral);
+  color: #ffffff;
+  border-color: var(--accent-coral);
+}
+
+[data-theme="dark"] .cfoot {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .like:hover {
+  background-color: var(--bg-surface);
+  color: #F43F5E;
+}
+
+/* Floating Status Widget (.over) */
+[data-theme="dark"] .over {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-elevation);
+}
+
+[data-theme="dark"] .st {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .status {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .otext .ch {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] progress::-webkit-progress-bar {
+  background-color: #242E44;
+  border-radius: 10px;
+}
+
+[data-theme="dark"] progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #8A79DF, #A78BFA);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(138, 121, 223, 0.5);
+}
+
+/* ── Fifth Section (Testimonials) & SVG Pagination Adaptation ─ */
+[data-theme="dark"] .fifth {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .fitp {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .fith {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .com {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .com.is-middle {
+  background: var(--bg-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .com.is-back {
+  background: #0B101D !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .com.is-front {
+  background: var(--bg-card) !important;
+  border-color: rgba(223, 105, 81, 0.3) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(223, 105, 81, 0.15) !important;
+}
+
+[data-theme="dark"] .ficimg {
+  border-color: var(--bg-card);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .crating span {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .cbadge {
+  background: rgba(223, 105, 81, 0.2);
+  color: #F87171;
+}
+
+[data-theme="dark"] .cp {
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .cauthor-row {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .cn {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .cl {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .ctrip-tag {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .t-arrow-btn {
+  background: var(--bg-card);
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .t-arrow-btn:hover {
+  background: var(--accent-coral);
+  border-color: var(--accent-coral);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(223, 105, 81, 0.5);
+}
+
+/* SVG Testimonial Dots: High contrast and glowing active indicator */
+[data-theme="dark"] .testimonial-dots-svg .dot-active {
+  fill: var(--accent-coral);
+  filter: drop-shadow(0 0 6px rgba(223, 105, 81, 0.8));
+}
+
+[data-theme="dark"] .testimonial-dots-svg .dot-inactive {
+  fill: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Sponsors Section ───────────────────────────────────────── */
+[data-theme="dark"] .sponsors {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .spon img {
+  filter: brightness(0) invert(1) opacity(0.45);
+  transition: all 0.35s ease;
+}
+
+[data-theme="dark"] .spon img:hover {
+  filter: brightness(0) invert(1) opacity(0.95) drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+  transform: scale(1.05);
+}
+
+/* ── Seventh Section (Newsletter Subscribe) ─────────────────── */
+[data-theme="dark"] .sev {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .sbox {
+  background: linear-gradient(135deg, #131A2C 0%, #1A243D 50%, #101625 100%);
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-elevation), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .sbh {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .sbinp {
+  background-color: #0B101D;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-medium);
+}
+
+[data-theme="dark"] .sbinp::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .sbinp:focus {
+  outline: none;
+  border-color: var(--accent-coral);
+  box-shadow: 0 0 0 4px rgba(223, 105, 81, 0.2);
+}
+
+[data-theme="dark"] .sbut {
+  background: linear-gradient(135deg, #DF6951 0%, #FF7D61 100%);
+  box-shadow: 0 8px 24px rgba(223, 105, 81, 0.4);
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+[data-theme="dark"] footer {
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .fh {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fp {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .fch {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fcp {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .fcp:hover {
+  color: var(--accent-coral);
+}
+
+[data-theme="dark"] .lfp {
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .fi {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .fi:hover {
+  background-color: var(--accent-coral);
+  border-color: var(--accent-coral);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow);
+}
+
+[data-theme="dark"] .fps {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+/* ── Floating Theme Toggle Button ───────────────────────────── */
+.theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, #181E4B 0%, #2A3375 100%);
+  color: #F8FAFC;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s ease,
+              background 0.4s ease,
+              border-color 0.4s ease;
+  outline: none;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.12) rotate(15deg);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: linear-gradient(135deg, #F1A501 0%, #DF6951 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  box-shadow: 0 8px 30px rgba(223, 105, 81, 0.4);
+}
+
+@media (max-width: 650px) {
+  .theme-toggle {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+  }
+}
+
+/* ── Navbar Theme Toggle Switch (Dark Theme) ────────────────── */
+[data-theme="dark"] .toggle-track {
+  background: #182236;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 12px rgba(223, 105, 81, 0.25);
+}
+
+[data-theme="dark"] .toggle-track .icon-sun {
+  color: #475569;
+  text-shadow: none;
+}
+
+[data-theme="dark"] .toggle-track .icon-moon {
+  color: #DF6951;
+  text-shadow: 0 0 10px rgba(223, 105, 81, 0.8);
+}
+
+[data-theme="dark"] .toggle-thumb {
+  transform: translateX(28px);
+  background: linear-gradient(135deg, #F1A501 0%, #DF6951 100%);
+  box-shadow: 0 0 12px rgba(223, 105, 81, 0.6);
+}
+
+/* ── Testimonial Dots (Dark Theme) ─────────────────────────── */
+[data-theme="dark"] .testimonial-dots-svg .dot-active {
+  fill: #DF6951;
+}
+
+[data-theme="dark"] .testimonial-dots-svg .dot-inactive {
+  fill: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Sign In / Sign Up Page (Luxury Dark Edition) ───────────── */
+[data-theme="dark"] .back-home-btn {
+  background: rgba(20, 27, 43, 0.85);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #F8FAFC;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .back-home-btn:hover {
+  background: #DF6951;
+  border-color: #DF6951;
+  color: #FFFFFF;
+  box-shadow: 0 6px 22px rgba(223, 105, 81, 0.45);
+}
+
+[data-theme="dark"] .login {
+  background: linear-gradient(135deg, rgba(20, 27, 43, 0.92) 0%, rgba(25, 35, 56, 0.88) 50%, rgba(20, 27, 43, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(223, 105, 81, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+[data-theme="dark"] .toggle {
+  background-color: #101625;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .sign-in {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .sign-up {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .toggle.signup-active .sign-in {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .toggle.signup-active .sign-up {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .label {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .input-fields input {
+  background-color: #0D1321;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .input-fields input::placeholder {
+  color: #64748B;
+}
+
+[data-theme="dark"] .input-fields input:focus {
+  background-color: #131A2B;
+  border-color: #DF6951;
+  box-shadow: 0 0 0 4px rgba(223, 105, 81, 0.25);
+}
+
+[data-theme="dark"] .secondary-actions {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .forget-btn,
+[data-theme="dark"] .switch-to-signin,
+[data-theme="dark"] .switch-to-signup {
+  color: #DF6951;
+}
+
+[data-theme="dark"] .forget-btn:hover,
+[data-theme="dark"] .switch-to-signin:hover,
+[data-theme="dark"] .switch-to-signup:hover {
+  color: #F1A501;
+}
+
+[data-theme="dark"] .auth-status-banner {
+  background: rgba(223, 105, 81, 0.15);
+  border: 1px solid rgba(223, 105, 81, 0.35);
+  color: #F8FAFC;
+}
+
