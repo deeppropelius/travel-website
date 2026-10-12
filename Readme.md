@@ -24,3 +24,6 @@ A modern, responsive travel agency landing page built with HTML, CSS, and Vanill
 ## Getting Started
 
 Open `index.html` in any modern web browser or run with a local live server.
+
+##
+live on "https://jadoowapp.netlify.app"
