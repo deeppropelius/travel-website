@@ -1,43 +1,211 @@
 @media (max-width:768px) {
-    section{
-        flex-direction: row;
+    section {
         margin: 1%;
-        
+    }
 
+    .destinations {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-top: 100px;
+        gap: 32px;
+    }
+
+    .dtexts {
+        flex: 1 1 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dtexts h1 {
+        font-size: clamp(2.2rem, 5vw, 3.5rem);
+    }
+
+    .dtexts p {
+        max-width: 540px;
+        text-align: center;
+    }
+
+    .dbutton {
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .dimgs {
+        flex: 1 1 100%;
+        max-width: 480px;
     }
   
-    .navlogo{
-   height: 100%;
-   }
-   .navlogo img{
-    height: clamp();
-   
-   }
-   .navitems ul {
-    flex-wrap: wrap;
-     gap: 16px; 
-     width: 90%;
+    .navbar {
+        height: 70px;
+        padding: 0 6%;
+        box-sizing: border-box;
+        justify-content: space-between;
+        backdrop-filter: blur(12px);
+    }
 
-   }
+    .navlogo {
+        width: auto;
+        padding: 0;
+        height: auto;
+    }
+
+    .navlogo img {
+        height: 34px;
+        width: auto;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .navitems {
+        position: fixed;
+        top: 70px;
+        right: -100%;
+        width: 280px;
+        max-width: 80vw;
+        height: calc(100vh - 70px);
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(16px);
+        box-shadow: -6px 0 25px rgba(0, 0, 0, 0.1);
+        padding: 35px 25px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        border-bottom-left-radius: 20px;
+    }
+
+    .navitems.active {
+        right: 0;
+    }
+
+    .navitems ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .navlink {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #212832;
+        transition: color 0.2s ease;
+    }
+
+    .navlink:hover {
+        color: #DF6951;
+    }
+
+    .navitems .signup {
+        width: 100%;
+        padding: 8px 24px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1.5px solid #212832;
+        background-color: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .navitems .signup:hover {
+        background-color: #212832;
+        color: #ffffff;
+    }
+
+    .navitems select {
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
    .cards{
     flex-wrap: wrap;
-    flex: 1 1 ;
+    row-gap:20px;
+    flex: 1 1 auto;
    }
+   
    .card{
     width: 60%;
     max-width: 280px;
    }
-   .tcards {
-    flex-wrap: wrap;
-    flex: 1 1 ;
+   
+   /* Carousel: 2 cards visible on tablet */
+   .carousel {
+    height: 460px;
    }
-      .tcard{
-    width: 60%;
-    max-width: 280px;
+
+   .tcard {
+    flex: 0 0 calc(50% - 12px);
    }
-   .sbox{
+   
+  .sbox{
     border-radius: 10px;
     border-top-left-radius: 35px;
-   }
+  }
+
+  /* Testimonials on Tablet */
+  .fifth {
+    flex-direction: column;
+    margin: 40px 4%;
+    gap: 30px;
+  }
+
+  .fitext {
+    width: 100%;
+    text-align: center;
+  }
+
+  .fiimg {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .ficom {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .coms {
+    width: 85%;
+    max-width: 480px;
+    min-height: 360px;
+  }
+
+  /* Footer on Tablet */
+  footer {
+    margin: 4.5rem 5% 2.5rem 5%;
+  }
+
+  .foot {
+    flex-wrap: wrap;
+    gap: 36px;
+    justify-content: space-between;
+  }
+
+  .lab {
+    flex: 0 0 100%;
+    max-width: 450px;
+  }
+
+  .ccol {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .fico {
+    flex: 0 0 100%;
+    align-items: flex-start;
+  }
  
 }
