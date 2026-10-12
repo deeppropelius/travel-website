@@ -179,7 +179,7 @@ margin: 2.5%;
     position: fixed;
     height: 10%;
     top: 0;
-    left: 0;
+    right: 0;
     justify-content: space-evenly;
     width: 100%;
     flex-wrap: nowrap;
@@ -218,8 +218,7 @@ margin: 2.5%;
     width: 100%;
     display: flex;
     justify-content: space-around;
-
-
+    align-items: center;
 }
 
 .navitems ul li {
