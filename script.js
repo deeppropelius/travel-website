@@ -1,17 +1,4 @@
-/**
- * Jadoo Travel - LocalStorage & Multi-Layer Persistence
- * Features:
- * 1. Double-Layer Storage: LocalStorage + Long-Lived Cookies (Prevents loss on browser restart)
- * 2. Real-time Form Input Draft Persistence (Keeps typed input values after restart)
- * 3. User Registration, Authentication & Session Persistence
- * 4. Dynamic Navbar State (User Greeting & Logout)
- * 5. Language Preference Persistence
- * 6. Responsive Mobile Drawer Navigation
- */
 
-// ==========================================
-// 1. COOKIE BACKUP HELPERS
-// ==========================================
 const CookieStorage = {
     set(name, value, days = 365) {
         try {
@@ -126,9 +113,6 @@ const STORAGE_KEYS = {
     THEME: 'jadoo_dark_theme'
 };
 
-// ==========================================
-// 3. AUTHENTICATION SERVICE
-// ==========================================
 const AuthService = {
     getUsers() {
         return Storage.get(STORAGE_KEYS.USERS, []);
@@ -263,6 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- D. Form Handlers & Input Auto-Save/Restore ---
     initAuthForms();
     restoreFormDrafts();
+
+    // --- E. Newsletter Subscription & Demo Player ---
+    initNewsletter();
+    initDemoPlayer();
+
+    // --- F. Scroll Reveal Engine ---
+    initScrollReveal();
 });
 
 // Update navbar with user greeting & logout
@@ -409,6 +400,71 @@ function initAuthForms() {
     }
 }
 
+function initNewsletter() {
+    const form = document.getElementById('subscribeForm');
+    const emailInput = document.getElementById('subscribeEmail');
+    if (!form || !emailInput) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        const subscribers = Storage.get('jadoo_newsletter_subscribers', []);
+        if (!subscribers.includes(email)) {
+            subscribers.push(email);
+            Storage.set('jadoo_newsletter_subscribers', subscribers);
+        }
+
+        emailInput.value = '';
+        alert(`Thank you for subscribing to Jadoo updates! (${email})`);
+    });
+}
+
+function initDemoPlayer() {
+    const demoBtn = document.getElementById('playDemoBtn');
+    if (!demoBtn) return;
+
+    demoBtn.addEventListener('click', () => {
+        alert('✨ Jadoo Experience Demo: Explore top destinations, book curated flights & hotels, and manage your travel itineraries in one click!');
+    });
+}
+
+// Scroll Reveal Observer Engine
+function initScrollReveal() {
+    const revealElements = document.querySelectorAll('[data-reveal]');
+    if (!revealElements.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+        revealElements.forEach(el => el.classList.add('is-revealed'));
+        return;
+    }
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    revealElements.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.95 && rect.bottom > 0) {
+            el.classList.add('is-revealed');
+        } else {
+            revealObserver.observe(el);
+        }
+    });
+}
+
 // Helper to execute when DOM is ready safely
 function onReady(callback) {
     if (document.readyState !== 'loading') {
@@ -514,7 +570,7 @@ function onReady(callback) {
         window.addEventListener('storage', (e) => {
             if (e.key === DARK_KEY || e.key === STORAGE_KEYS.THEME) {
                 let val = e.newValue;
-                try { val = JSON.parse(val); } catch (_) {}
+                try { val = JSON.parse(val); } catch (_) { }
                 const newIsDark = val === true || val === 'true';
                 if (newIsDark !== isDark) {
                     isDark = newIsDark;
@@ -545,9 +601,7 @@ function onReady(callback) {
     });
 })();
 
-// ==========================================
-// UPGRADED DESTINATION CAROUSEL
-// ==========================================
+
 (function initCarousel() {
     onReady(() => {
         const track = document.getElementById('carouselTrack');
@@ -822,8 +876,9 @@ function onReady(callback) {
                     return;
                 }
                 const maxIdx = maxIndex();
-                if (idx <= maxIdx && idx !== currentIndex) {
-                    goTo(idx);
+                const targetIdx = Math.min(idx, maxIdx);
+                if (targetIdx !== currentIndex) {
+                    goTo(targetIdx);
                     resetAutoPlay();
                 }
             });
@@ -1011,7 +1066,6 @@ function onReady(callback) {
                 resetAuto();
             });
         }
-
         // Touch swipe gestures on cards container
         if (cardsContainer) {
             let touchStartX = 0;

@@ -128,11 +128,22 @@ footer,
 }
 
 [data-theme="dark"] .playdemo p {
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  transition: color 0.25s ease;
+}
+
+[data-theme="dark"] .playdemo:hover p {
+  color: #ffffff;
 }
 
 [data-theme="dark"] .drbut {
-  box-shadow: 0 10px 24px var(--accent-coral-glow);
+  background: linear-gradient(135deg, #DF6951 0%, #FF7D61 100%);
+  box-shadow: 0 10px 28px rgba(223, 105, 81, 0.55);
+}
+
+[data-theme="dark"] .playdemo:hover .drbut {
+  transform: scale(1.12);
+  box-shadow: 0 14px 34px rgba(223, 105, 81, 0.75), 0 0 20px rgba(223, 105, 81, 0.4);
 }
 
 /* ── Section Headings Universal ─────────────────────────────── */
@@ -506,12 +517,16 @@ footer,
 
 /* ── Footer ─────────────────────────────────────────────────── */
 [data-theme="dark"] footer {
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-light);
+  background-color: transparent;
 }
 
-[data-theme="dark"] .fh {
+[data-theme="dark"] .fh,
+[data-theme="dark"] .fh a {
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .fh a:hover {
+  color: var(--accent-coral);
 }
 
 [data-theme="dark"] .fp {
@@ -522,26 +537,30 @@ footer,
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .fcp {
+[data-theme="dark"] .fcp a {
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .fcp:hover {
+[data-theme="dark"] .fcp a:hover {
   color: var(--accent-coral);
+}
+
+[data-theme="dark"] .fih {
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .lfp {
   color: var(--text-muted);
-  border-top: 1px solid var(--border-light);
+  border-top-color: var(--border-light);
 }
 
-[data-theme="dark"] .fi {
+[data-theme="dark"] .footer-social-icon {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .fi:hover {
+[data-theme="dark"] .footer-social-icon:hover {
   background-color: var(--accent-coral);
   border-color: var(--accent-coral);
   color: #ffffff;
@@ -549,9 +568,15 @@ footer,
 }
 
 [data-theme="dark"] .fps {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .fps:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-coral);
+  box-shadow: 0 4px 18px var(--accent-coral-glow);
 }
 
 /* ── Floating Theme Toggle Button ───────────────────────────── */
@@ -559,9 +584,9 @@ footer,
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 9999;
-  width: 52px;
-  height: 52px;
+  z-index: 9;
+  width: clamp(5rem,52px, 5vw);
+  aspect-ratio: 1/1;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;

@@ -15,42 +15,36 @@
    }
 
    .dbutton {
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
       width: 100%;
-      gap: clamp(3px, 4px, 6px);
+      gap: 16px;
+      justify-content: center;
       align-items: center;
-      font-size: small;
    }
 
    .dtexts h1 {
-      line-height: 1;
+      line-height: 1.15;
       text-align: center;
    }
 
    .dtexts p {
       width: 100%;
       text-align: center;
-
    }
 
    .playdemo {
-      width: 100%;
-      margin: 3%;
-      height: 100%;
-      display: flex;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-
-   }
-
-   .playdemo p {
-      width: fit-content;
-
+      gap: 12px;
    }
 
    .drbut {
-      height: 80%;
-      padding: 3%;
-      width: auto;
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
+      min-height: 46px;
    }
 
    .dimgs {
@@ -139,62 +133,82 @@
 
    }
 
+   /* Footer on Mobile */
+   footer {
+      margin: 3.5rem 5% 2rem 5%;
+   }
+
    .foot {
-      flex-wrap: wrap;
       flex-direction: column;
-
-   }
-
-   .store {
-      width: 80%;
-      margin: 5%;
-
-   }
-
-   .pas {
-      width: 15%;
+      gap: 32px;
       align-items: center;
-
+      text-align: center;
    }
 
-   .lab,
-   .ccol,
-   .fico {
+   .lab {
       width: 100%;
-      justify-content: center;
+      max-width: 100%;
       align-items: center;
-
+      text-align: center;
    }
 
-   .store {
-      width: 100%;
-      justify-content: space-evenly;
+   .fh {
+      font-size: 2.2rem;
+   }
+
+   .fp {
+      font-size: 0.85rem;
+      max-width: 320px;
    }
 
    .ccol {
-      justify-content: space-evenly;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      gap: 24px;
    }
 
-   .sdinp {
-      width: 80%;
+   .col {
+      align-items: center;
+      min-width: 90px;
+   }
+
+   .fch {
+      font-size: 1.15rem;
+   }
+
+   .fcp a {
+      font-size: 0.95rem;
    }
 
    .fico {
       width: 100%;
-      justify-content: space-evenly;
+      align-items: center;
+      gap: 16px;
+   }
+
+   .footi {
+      justify-content: center;
+   }
+
+   .fih {
+      text-align: center;
+      font-size: 1.1rem;
+   }
+
+   .store {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
    }
 
    .fps {
-      padding: 2%;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      height: 20%;
-      width: 25%;
+      max-width: 150px;
+      padding: 8px 14px;
    }
 
-   .pas img {
-      width: 100%;
-      height: 100%;
+   .lfp {
+      margin-top: 3rem;
+      font-size: 0.82rem;
    }
 }

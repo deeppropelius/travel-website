@@ -1,7 +1,41 @@
 @media (max-width:768px) {
-    section{
-        flex-direction: row;
+    section {
         margin: 1%;
+    }
+
+    .destinations {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-top: 100px;
+        gap: 32px;
+    }
+
+    .dtexts {
+        flex: 1 1 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dtexts h1 {
+        font-size: clamp(2.2rem, 5vw, 3.5rem);
+    }
+
+    .dtexts p {
+        max-width: 540px;
+        text-align: center;
+    }
+
+    .dbutton {
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .dimgs {
+        flex: 1 1 100%;
+        max-width: 480px;
     }
   
     .navbar {
@@ -94,7 +128,8 @@
     }
    .cards{
     flex-wrap: wrap;
-    flex: 1 1 ;
+    row-gap:20px;
+    flex: 1 1 auto;
    }
    
    .card{
@@ -145,5 +180,32 @@
     max-width: 480px;
     min-height: 360px;
   }
+
+  /* Footer on Tablet */
+  footer {
+    margin: 4.5rem 5% 2.5rem 5%;
+  }
+
+  .foot {
+    flex-wrap: wrap;
+    gap: 36px;
+    justify-content: space-between;
+  }
+
+  .lab {
+    flex: 0 0 100%;
+    max-width: 450px;
+  }
+
+  .ccol {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .fico {
+    flex: 0 0 100%;
+    align-items: flex-start;
+  }
  
-}
+}
