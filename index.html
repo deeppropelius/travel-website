@@ -4,16 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Travel Agency Landing Page</title>
+  <title>Jadoo - Travel Agency & Destination Booking</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
-    integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg=="
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
     crossorigin="anonymous" referrerpolicy="no-referrer">
   <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&family=Open+Sans:wght@400;600&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400&family=Volkhov:wght@700&display=swap"
-    rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&family=Volkhov:wght@700&display=swap"
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/all/all.min.css" rel="stylesheet">
 
@@ -23,13 +21,13 @@
   <link rel="stylesheet" href="./styles/dark-theme.css">
   <!-- Early dark theme execution to prevent light-theme flash -->
   <script>
-    (function() {
+    (function () {
       try {
         var saved = localStorage.getItem('jadoo_dark_theme');
         if (saved === null) {
           var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
           if (match) {
-            try { saved = JSON.parse(decodeURIComponent(match[1])); } catch(e) { saved = match[1]; }
+            try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
           }
         }
         var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -39,15 +37,14 @@
         } else {
           document.documentElement.removeAttribute('data-theme');
         }
-      } catch (e) {}
+      } catch (e) { }
     })();
   </script>
 </head>
 
 <body>
   <div class="image">
-
-    <img src="./assets/hero-section-background.png" alt="" class="topdes">
+    <img src="./assets/hero-section-background.png" alt="Decorative hero background" class="topdes">
   </div>
   <header>
     <nav>
@@ -64,12 +61,13 @@
         </button>
         <div class="navitems" id="navitems">
           <ul>
-            <li><a href="./pages/destinations.html" class="navlink">Destinations</a></li>
-            <li><a href="./pages/hotels.html" class="navlink">Hotels</a></li>
-            <li><a href="./pages/flights.html" class="navlink">Flights</a></li>
-            <li><a href="./pages/bookings.html" class="navlink">Bookings</a></li>
+            <li><a href="#third" class="navlink">Destinations</a></li>
+            <li><a href="#services" class="navlink">Services</a></li>
+            <li><a href="#bookings" class="navlink">Bookings</a></li>
+            <li><a href="#fifth" class="navlink">Testimonials</a></li>
             <li><a href="./components/signin-signup.html#signin" class="navlink">Login</a></li>
-            <li><button onclick="window.location.href='./components/signin-signup.html#signup'" class="signup">Sign up</button></li>
+            <li><button onclick="window.location.href='./components/signin-signup.html#signup'" class="signup">Sign
+                up</button></li>
             <li>
               <select name="Language" id="lang" aria-label="Select Language">
                 <option value="eng">En</option>
@@ -83,65 +81,67 @@
     </nav>
   </header>
   <section class="destinations" id="destinations">
-    <div class="dtexts">
+    <div class="dtexts" data-reveal="left">
       <h4>Best Destinations around the world</h4>
-      <h1>Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="" class="red-stroke-img"></span> and live a new and full
+      <h1>Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="Underline highlight"
+            class="red-stroke-img"></span> and live a new and full
         life</h1>
       <p>Built Wicket longer admire do barton vanity itself do in it. Preferred to sportsmen it engrossed listening.
         Park gate sell they west hard for the.</p>
       <div class="dbutton">
-        <button class="dobut" onclick="window.location.href='./pages/destinations.html'">Find out more</button>
-        <div class="playdemo">
-          <button class="drbut"><i class="fi fi-ss-play rd"></i></button>
+        <button class="dobut" onclick="document.getElementById('third').scrollIntoView({behavior: 'smooth'})">Find out
+          more</button>
+        <div class="playdemo" id="playDemoBtn" style="cursor: pointer;">
+          <button class="drbut" aria-label="Play Demo"><i class="fa-solid fa-play"></i></button>
           <p>Play Demo</p>
         </div>
       </div>
     </div>
-    <div class="dimgs">
-      <img src="./assets/hero-section-girl.png" alt="" class="girl">
+    <div class="dimgs" data-reveal="right">
+      <img src="./assets/hero-section-girl.png" alt="Traveler exploring destinations" class="girl">
     </div>
   </section>
   <!----------------second section ----------------------->
   <section class="second" id="services">
-    <div class="sec">
+    <div class="sec" data-reveal="up">
       <p>CATEGORY</p>
       <h3>We Offer Best Services</h3>
     </div>
     <div class="cards">
-      <div class="card">
+      <div class="card" data-reveal="up" data-delay="1">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/service-card-1.png" alt="">
+          <img src="./assets/service-card-1.png" alt="Calculated Weather service icon">
         </div>
         <div class="dec">
-          <h4>Calculated Weather </h4>
+          <h4>Calculated Weather</h4>
           <p>Built Wicket longer admire do barton vanity itself do in it.</p>
         </div>
       </div>
-      <div class="card">
+      <div class="card" data-reveal="up" data-delay="2">
         <div class="rblock"></div>
         <div class="cimg airplain">
-          <img src="./assets/service-card-2.png" alt="">
+          <img src="./assets/service-card-2.png" alt="Best Flights service icon">
         </div>
         <div class="dec">
           <h4>Best Flights</h4>
           <p>Engrossed listening. Park gate sell they west hard for the.</p>
         </div>
       </div>
-      <div class="card">
+      <div class="card" data-reveal="up" data-delay="3">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/service-card-3.png" alt="">
+          <img src="./assets/service-card-3.png" alt="Local Events service icon">
         </div>
         <div class="dec">
           <h4>Local Events</h4>
-          <p>Barton vanity itself do in it. Preferd to men it engrossed listening. </p>
+          <p>Barton vanity itself do in it. Preferred to men it engrossed listening.</p>
         </div>
       </div>
-      <div class="card">
+      <div class="card" data-reveal="up" data-delay="4">
         <div class="rblock"></div>
         <div class="cimg">
-          <img src="./assets/service-card-4.png" alt="">
+          <img src="./assets/service-card-4.png" alt="Customization service icon">
         </div>
         <div class="dec">
           <h4>Customization</h4>
@@ -152,11 +152,11 @@
   </section>
   <!----------------------------------------------Third Section-------------------------------->
   <section class="third" id="third">
-    <div class="sec">
+    <div class="sec" data-reveal="up">
       <p>Top Selling</p>
       <h3>Top Destinations</h3>
     </div>
-    <div class="carousel-wrapper">
+    <div class="carousel-wrapper" data-reveal="up">
       <div class="carousel" id="destCarousel">
         <!-- Prev/Next Navigation Buttons -->
         <button class="carousel-btn prev" id="carouselPrev" aria-label="Previous destination">
@@ -237,7 +237,8 @@
               <div class="tcard-badge">Hot Deal</div>
             </div>
             <div class="timg">
-              <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" loading="lazy" draggable="false">
+              <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" loading="lazy"
+                draggable="false">
             </div>
             <div class="tcard-overlay"></div>
             <div class="ttext">
@@ -279,7 +280,8 @@
               <div class="tcard-badge">Adventure</div>
             </div>
             <div class="timg">
-              <img src="./assets/destination-london.jpeg" alt="Great Britain & Scotland" loading="lazy" draggable="false">
+              <img src="./assets/destination-london.jpeg" alt="Great Britain & Scotland" loading="lazy"
+                draggable="false">
             </div>
             <div class="tcard-overlay"></div>
             <div class="ttext">
@@ -308,37 +310,31 @@
   <!-------------Fourth Section-------------->
 
   <section class="fourth" id="bookings">
-    <div class="ftext">
+    <div class="ftext" data-reveal="left">
       <h4>Easy and Fast</h4>
       <h1>Book your next trip in 3 easy steps</h1>
       <div class="fthead">
-        <div class="row">
+        <div class="row" data-reveal="left" data-delay="1">
           <div class="rimgs">
             <div class="rimg"><img src="./assets/easy-fast-1.svg" alt="Destination icon"></div>
-
           </div>
           <div class="rt">
             <h4 class="rth">Choose Destination</h4>
-            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-              adipiscing elit. Urna, tortor tempus. </p>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Urna, tortor tempus. </p>
           </div>
         </div>
-        <div class="row">
+        <div class="row" data-reveal="left" data-delay="2">
           <div class="rimgs">
             <div class="rimg">
               <img src="./assets/easy-fast-2.svg" alt="Payment icon">
             </div>
           </div>
-
           <div class="rt">
             <h4 class="rth">Make Payment</h4>
-            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-              adipiscing elit. Urna, tortor tempus. </p>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Urna, tortor tempus. </p>
           </div>
-
         </div>
-        <div class="row">
-
+        <div class="row" data-reveal="left" data-delay="3">
           <div class="rimgs">
             <div class="rimg">
               <img src="./assets/easy-fast-3.svg" alt="Airport icon">
@@ -346,13 +342,12 @@
           </div>
           <div class="rt">
             <h4 class="rth">Reach Airport on Selected Date</h4>
-            <p class="ctp">Lorem ipsum dolor sit amet, consectetur
-              adipiscing elit. Urna, tortor tempus. </p>
+            <p class="ctp">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Urna, tortor tempus. </p>
           </div>
         </div>
       </div>
     </div>
-    <div class="fimg">
+    <div class="fimg" data-reveal="right">
       <div class="fcard">
         <div class="fcimg">
           <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Trip to Greece">
@@ -373,10 +368,10 @@
           </div>
         </div>
         <div class="over">
-          <div class="oimg"><img src="./assets/easy-fast-trip-to-greece.jpeg" alt=""></div>
+          <div class="oimg"><img src="./assets/easy-fast-trip-rome-avatar.png" alt="Rome destination icon"></div>
           <div class="otext">
             <div class="st">Ongoing</div>
-            <div class="status">Trip to rome</div>
+            <div class="status">Trip to Rome</div>
             <div class="ch"><span style="color: #8A79DF;">40%</span> Completed</div>
             <progress class="prog" value="40" max="100"></progress>
           </div>
@@ -386,20 +381,21 @@
   </section>
   <!------------- fifth section ------------------------->
   <section class="fifth" id="fifth">
-    <div class="fitext">
+    <div class="fitext" data-reveal="left">
       <div class="fit">
         <div class="fitp">Testimonials</div>
         <div class="fith">What people say about Us.</div>
       </div>
       <div class="fiimg">
-        <svg class="testimonial-dots-svg" width="87" height="12" viewBox="0 0 87 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Testimonial pagination dots">
+        <svg class="testimonial-dots-svg" width="87" height="12" viewBox="0 0 87 12" fill="none"
+          xmlns="http://www.w3.org/2000/svg" aria-label="Testimonial pagination dots">
           <circle cx="6" cy="6" r="6" class="dot-active" />
           <circle cx="44" cy="6" r="6" class="dot-inactive" />
           <circle cx="81" cy="6" r="6" class="dot-inactive" />
         </svg>
       </div>
     </div>
-    <div class="ficom">
+    <div class="ficom" data-reveal="right">
       <div class="coms">
         <!-- Testimonial 1: Mike Taylor -->
         <div class="com f is-front" data-testimonial="0">
@@ -418,7 +414,8 @@
               </div>
               <span class="cbadge"><i class="fa-solid fa-shield-heart"></i> Verified Traveler</span>
             </div>
-            <div class="cp">“Jadoo made our dream vacation to Rome and Santorini an effortless reality. From seamless flight bookings to curated local hidden gems, every detail was executed with perfection!”</div>
+            <div class="cp">“Jadoo made our dream vacation to Rome and Santorini an effortless reality. From seamless
+              flight bookings to curated local hidden gems, every detail was executed with perfection!”</div>
             <div class="cauthor-row">
               <div class="cauthor-info">
                 <div class="cn">Mike Taylor</div>
@@ -448,7 +445,8 @@
               </div>
               <span class="cbadge"><i class="fa-solid fa-briefcase"></i> Corporate Travel</span>
             </div>
-            <div class="cp">“Exceptional service and unmatched attention to detail. Organizing high-profile executive retreats across Europe has never been smoother. Jadoo is our trusted travel partner.”</div>
+            <div class="cp">“Exceptional service and unmatched attention to detail. Organizing high-profile executive
+              retreats across Europe has never been smoother. Jadoo is our trusted travel partner.”</div>
             <div class="cauthor-row">
               <div class="cauthor-info">
                 <div class="cn">Chris Thomas</div>
@@ -478,7 +476,8 @@
               </div>
               <span class="cbadge"><i class="fa-solid fa-camera"></i> Travel Photographer</span>
             </div>
-            <div class="cp">“The customized itinerary and 24/7 concierge support blew me away. I captured breathtaking sunrises in Tuscany and Swiss alpine peaks without worrying about logistics. Truly world-class!”</div>
+            <div class="cp">“The customized itinerary and 24/7 concierge support blew me away. I captured breathtaking
+              sunrises in Tuscany and Swiss alpine peaks without worrying about logistics. Truly world-class!”</div>
             <div class="cauthor-row">
               <div class="cauthor-info">
                 <div class="cn">Sophia Martinez</div>
@@ -505,66 +504,71 @@
   </section>
   <!-- -------------------Section sixth -------------------- -->
   <section class="sponsors" id="sponsor">
-    <div class="spons">
-      <div class="spon"><img src="./assets/sponsor-1.png" alt=""></div>
-      <div class="spon"><img src="./assets/sponsor-2.png" alt=""></div>
-      <div class="spon"><img src="./assets/sponsor-3.png" alt=""></div>
-      <div class="spon"><img src="./assets/sponsor-4.png" alt=""></div>
-      <div class="spon"><img src="./assets/sponsor-5.png" alt=""></div>
+    <div class="spons" data-reveal="up">
+      <div class="spon" data-reveal="scale" data-delay="1"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo">
+      </div>
+      <div class="spon" data-reveal="scale" data-delay="2"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo">
+      </div>
+      <div class="spon" data-reveal="scale" data-delay="3"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo">
+      </div>
+      <div class="spon" data-reveal="scale" data-delay="4"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo">
+      </div>
+      <div class="spon" data-reveal="scale" data-delay="5"><img src="./assets/sponsor-5.png"
+          alt="Alitalia sponsor logo"></div>
     </div>
   </section>
-  <!-- ---------- Seventh Section------------------------------------- -->
+  <!-- ---------- Seventh Section------------------->
   <section class="sev" id="sev">
     <div class="ssend"><i class="fa-solid fa-paper-plane"></i></div>
-    <div class="sbox">
-      <div class="sbimg"><img src="./assets/search-circles.png" alt=""></div>
-      <div class="sbimg"><img src="./assets/search-circles.png" alt=""></div>
+    <div class="sbox" data-reveal="scale">
+      <div class="sbimg"><img src="./assets/search-circles.png" alt="Decorative background rings"></div>
+      <div class="sbimg"><img src="./assets/search-circles.png" alt="Decorative background rings"></div>
       <div class="sbh">Subscribe to get information, latest news and other interesting offers about Jadoo</div>
-      <div class="sdinp">
-        <input type="text" class="sbinp" placeholder="Your Email">
-        <button class="sub"> Subscribe</button>
-      </div>
+      <form class="sdinp" id="subscribeForm" onsubmit="event.preventDefault();">
+        <input type="email" class="sbinp" id="subscribeEmail" placeholder="Your Email" required>
+        <button type="submit" class="sub" id="subscribeBtn">Subscribe</button>
+      </form>
     </div>
   </section>
   <!-----------------footer--------------------- -->
   <footer>
-    <div class="foot">
+    <div class="foot" data-reveal="up">
       <div class="col lab">
-        <div class="fh"><a href="./index.html">Jadoo.</a></div>
-        <div class="fp">Book your trip in minute, get full Control for much longer.
+        <div class="fh"><a href="./index.html" style="text-decoration: none; color: inherit;">Jadoo.</a></div>
+        <div class="fp">Book your trip in minutes, get full control for much longer.
         </div>
       </div>
       <div class="ccol">
         <div class="col">
           <div class="fch">Company</div>
-          <div class="fcp"><a href="./pages/about.html">About</a></div>
-          <div class="fcp"><a href="./pages/about.html#careers">Careers</a></div>
-          <div class="fcp"><a href="./pages/about.html#mobile">Mobile</a></div>
+          <div class="fcp"><a href="#destinations">About</a></div>
+          <div class="fcp"><a href="#services">Services</a></div>
+          <div class="fcp"><a href="#third">Destinations</a></div>
         </div>
         <div class="col">
           <div class="fch">Contact</div>
-          <div class="fcp"><a href="./pages/contact.html">Help/FAQ</a></div>
-          <div class="fcp"><a href="./pages/contact.html#press">Press</a></div>
-          <div class="fcp"><a href="./pages/contact.html#affiliates">Affiliates</a></div>
+          <div class="fcp"><a href="#bookings">Help/FAQ</a></div>
+          <div class="fcp"><a href="#fifth">Press</a></div>
+          <div class="fcp"><a href="#sponsor">Affiliates</a></div>
         </div>
         <div class="col">
           <div class="fch">More</div>
-          <div class="fcp"><a href="./pages/flights.html#airlinefees">Airlinefees</a></div>
-          <div class="fcp"><a href="./pages/flights.html#airlines">Airlines</a></div>
-          <div class="fcp"><a href="./pages/destinations.html#tips">Low fare tips</a></div>
+          <div class="fcp"><a href="#services">Airline fees</a></div>
+          <div class="fcp"><a href="#services">Airlines</a></div>
+          <div class="fcp"><a href="#third">Low fare tips</a></div>
         </div>
       </div>
       <div class="col fico">
         <div class="footi">
-          <div class="fi"><i class="fa-brands fa-facebook-f"></i></div>
-          <div class="fi instagram"><i class="fa-brands fa-instagram"></i></div>
-          <div class="fi"><i class="fa-brands fa-twitter"></i></div>
+          <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+          <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
+          <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
         </div>
         <div class="fih">Discover our app</div>
         <div class="store">
           <div class="fps">
             <div class="pas">
-              <img src="./assets/google-play.png" alt="">
+              <img src="./assets/google-play.png" alt="Google Play store badge">
             </div>
             <div class="fit">
               <div class="play1">Get it on</div>
@@ -573,7 +577,7 @@
           </div>
           <div class="fps">
             <div class="pas">
-              <img src="./assets/apple-store.png" alt="">
+              <img src="./assets/apple-store.png" alt="Apple App Store badge">
             </div>
             <div class="fit">
               <div class="apple1">Available</div>
@@ -583,7 +587,7 @@
         </div>
       </div>
     </div>
-    <div class="lfp">All rights reserved@jadoo.co</div>
+    <div class="lfp">All rights reserved @ jadoo.co</div>
   </footer>
 
   <!-- Floating Dark Theme Toggle Button -->
@@ -593,4 +597,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>
