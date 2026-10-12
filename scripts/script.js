@@ -268,12 +268,16 @@ function updateNavbarAuthState() {
 
     const loginLinkLi = Array.from(navList.children).find(li => {
         const a = li.querySelector('a');
-        return a && (a.textContent.trim().toLowerCase() === 'login' || a.href.includes('signin'));
+        if (!a) return false;
+        const text = a.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+        return text === 'login' || a.href.includes('signin') || a.href.includes('auth.html');
     });
 
     const signupLi = Array.from(navList.children).find(li => {
-        const btn = li.querySelector('.signup') || li.querySelector('button');
-        return btn && btn.textContent.trim().toLowerCase().includes('sign up');
+        const btn = li.querySelector('.signup, button');
+        if (!btn) return false;
+        const text = btn.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+        return btn.classList.contains('signup') || text.includes('sign up') || text.includes('signup') || (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('signup'));
     });
 
     if (loginLinkLi) {
