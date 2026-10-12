@@ -1,5 +1,5 @@
 body {
-    /* max-width: 1440px; */
+
     display: block;
     margin: 0;
     position: relative;
@@ -179,7 +179,7 @@ margin: 2.5%;
     position: fixed;
     height: 10%;
     top: 0;
-    left: 0;
+    right: 0;
     justify-content: space-evenly;
     width: 100%;
     flex-wrap: nowrap;
@@ -218,8 +218,7 @@ margin: 2.5%;
     width: 100%;
     display: flex;
     justify-content: space-around;
-
-
+    align-items: center;
 }
 
 .navitems ul li {
@@ -499,62 +498,123 @@ margin: 2.5%;
     width: 20%;
     height: 100%;
     padding: 1.5%;
-    border-radius: 10px;
+    border-radius: 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: white;
+    background: transparent;
     position: relative;
     animation: fadeIn .7s ease-in forwards;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: white;
+    z-index: 0;
+    border: 1px solid transparent;
+    transition: background-color 0.4s ease, box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease;
+}
+
+.cimg,
+.dec {
+    position: relative;
+    z-index: 1;
 }
 
 .cimg {
-       height: clamp(8vh, 8vw, 4rem);
+    height: clamp(8vh, 8vw, 4rem);
     aspect-ratio: 1/1;
-  
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .cimg img {
     height: 100%;
     aspect-ratio: 1/1;
     object-fit: contain;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.05));
 }
 
 .card:hover {
-    transition: 0.3s ease;
-    transform: scale(1.1);
-    box-shadow: 2px 2px 5px 6px rgba(0, 0, 0, 0.3);
-
-}
-.card::before {
-    transition: 0.3s ease;
+    transform: translateY(-10px) scale(1.05);
 }
 
+.card:hover::before {
+    box-shadow: 0 24px 48px -12px rgba(24, 30, 75, 0.14), 0 10px 24px -6px rgba(223, 105, 81, 0.12);
+    border-color: rgba(223, 105, 81, 0.2);
+}
+
+.card:hover .cimg img {
+    transform: translateY(-8px) scale(1.14);
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.12));
+}
+
+/* Playful flight tilt for airplane icon on hover */
+.card:hover .cimg.airplain img {
+    transform: translateY(-10px) scale(1.18) rotate(-8deg);
+    filter: drop-shadow(0 12px 22px rgba(223, 105, 81, 0.25));
+}
+
+.rblock {
+    background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
+    width: clamp(24%, 32%, 42%);
+    aspect-ratio: 1/1;
+    z-index: -1;
+    position: absolute;
+    bottom: -10%;
+    left: -15%;
+    border-top-left-radius: 28px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-top-right-radius: 8px;
+    box-shadow: 0 12px 24px rgba(223, 105, 81, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(8px, -8px) scale(0.7) rotate(0deg);
+    transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1), 
+                visibility 0.4s ease, 
+                box-shadow 0.4s ease;
+    pointer-events: none;
+}
 
 .card:hover .rblock {
-    background-color: #DF6951;
-    width: clamp(20%, 30%, 40%);
-    aspect-ratio: 1/1;
-    z-index: -1 !important;
-    position: absolute;
-    bottom: -12%;
-    left: -18%;
-    border-top-left-radius: 30%;
-    border-bottom-right-radius: 10%;
-    box-shadow: 5px 8px 6px -6px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, 0) scale(1) rotate(-4deg);
+    box-shadow: 0 16px 32px rgba(223, 105, 81, 0.42);
 }
 
 .card h4 {
     font-family: "Open Sans", sans-serif;
     font-size: clamp(12px, 1.5vw, 1.5rem);
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover h4 {
+    color: #181E4B;
+    transform: translateY(-2px);
 }
 
 .card p {
     font-family: "Poppins", sans-serif;
     color: #5E6282;
-    font-size:clamp(10px,1.5vw, 1.5rem);
+    font-size: clamp(10px, 1.5vw, 1.5rem);
+    transition: color 0.3s ease;
+}
+
+.card:hover p {
+    color: #333A56;
 }
 
 

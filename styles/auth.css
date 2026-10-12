@@ -109,9 +109,7 @@ body {
    
 }
 
-/* ==========================================================================
-   Top Toggle Slider (Sign In / Sign Up)
-   ========================================================================== */
+
 .toggle {
     position: relative;
     width: 220px;
@@ -313,6 +311,50 @@ body {
     box-shadow: 0 0 0 4px rgba(223, 105, 81, 0.15);
 }
 
+/* Validation States */
+.input-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-fields input.input-error {
+    border-color: #E11D48 !important;
+    background-color: #FFF1F2 !important;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15) !important;
+}
+
+.input-fields input.input-success {
+    border-color: #10B981 !important;
+}
+
+.field-error-msg {
+    display: none;
+    font-size: 0.78rem;
+    color: #E11D48;
+    font-weight: 500;
+    margin-top: 4px;
+    padding-left: 4px;
+    text-align: left;
+    width: 100%;
+}
+
+.field-error-msg.visible {
+    display: block;
+    animation: fadeInError 0.2s ease-in-out;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Action Buttons */
 .input-buttons {
     display: flex;
@@ -457,7 +499,9 @@ body {
         z-index: 3;
     }
 }
-
+.active{
+    display: block;
+}
 /* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
@@ -470,46 +514,132 @@ body {
     }
 
     .login {
+        width: min(440px, 92%);
         min-height: auto;
-        padding: 20px 15px;
-        margin-top: 45px;
+        padding: 24px 16px 28px;
+        margin-top: 35px;
     }
 
     .login-image {
-        min-height: 480px;
+        min-height: auto;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        position: relative;
     }
 
     .login-girl {
-        width: 100%;
-        height: 200px;
         position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: 170px;
+        margin-bottom: 8px;
         transform: none !important;
     }
 
     .login-girl img {
-        max-width: 180px;
+        max-width: 160px;
+        max-height: 160px;
+        object-fit: contain;
         transform: none !important;
     }
 
+    .login.signup-active .login-girl {
+        transform: none !important;
+    }
+
+    /* In media view: show only the active form cleanly without gap */
     .signin-form,
     .signup-form {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
         width: 100%;
-        top: 210px;
-        left: 0;
-        right: 0;
         height: auto;
+        padding: 0;
+        transform: none !important;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Default (Sign In is active): Show Sign In, hide Sign Up */
+    .signin-form {
+        display: flex;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .signup-form {
+        display: none !important;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* When Sign Up is active: Hide Sign In, show Sign Up */
+    .login.signup-active .signin-form {
+        display: none !important;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .login.signup-active .signup-form {
+        display: flex !important;
+        opacity: 1;
+        pointer-events: auto;
+        animation: authFadeIn 0.3s ease forwards;
     }
 
     .login-plane {
-        width: 60px;
-        top: -15px;
-        right: -15px;
+        width: 55px;
+        top: -12px;
+        right: -10px;
     }
 }
 
-/* ============================================================
-   DARK THEME - Sign In / Sign Up Page (Luxury Edition)
-   ============================================================ */
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .login {
+        width: 94%;
+        padding: 20px 14px 24px;
+        border-radius: 20px;
+    }
+
+    .login-girl {
+        height: 150px;
+    }
+
+    .login-girl img {
+        max-width: 140px;
+        max-height: 140px;
+    }
+
+    .label {
+        font-size: 1.6rem;
+    }
+
+    .input-fields input {
+        padding: 10px 14px;
+        font-size: 0.88rem;
+    }
+
+    .login-btn {
+        padding: 11px;
+        font-size: 0.94rem;
+    }
+}
+
+
 [data-theme="dark"] body {
     background: radial-gradient(circle at 15% 15%, rgba(223, 105, 81, 0.08) 0%, #090D16 45%, #0F1626 100%);
     color: #F8FAFC;
@@ -583,3 +713,18 @@ body {
 [data-theme="dark"] .divider-dot {
     color: rgba(255, 255, 255, 0.25);
 }
+
+[data-theme="dark"] .input-fields input.input-error {
+    background-color: rgba(225, 29, 72, 0.15) !important;
+    border-color: #FB7185 !important;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.3) !important;
+}
+
+[data-theme="dark"] .input-fields input.input-success {
+    border-color: #34D399 !important;
+}
+
+[data-theme="dark"] .field-error-msg {
+    color: #FB7185;
+}
+
