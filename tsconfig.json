@@ -9,6 +9,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "scripts/auth.ts"
+    "scripts/**/*"
   ]
 }
