@@ -9,7 +9,11 @@
     // Regular Expressions
     const PATTERNS = {
         name: /^[a-zA-Z\s'-]{2,50}$/,
-        email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+        email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+        hasUppercase: /[A-Z]/,
+        hasLowercase: /[a-z]/,
+        hasNumber: /[0-9]/,
+        hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/
     };
 
     // Validation Rules
@@ -29,7 +33,11 @@
         },
         'signup-password': (value) => {
             if (!value) return 'Password is required.';
-            if (value.length < 6) return 'Password must be at least 6 characters.';
+            if (value.length < 8) return 'Password must be at least 8 characters long.';
+            if (!PATTERNS.hasUppercase.test(value)) return 'Password must include at least one uppercase letter (A-Z).';
+            if (!PATTERNS.hasLowercase.test(value)) return 'Password must include at least one lowercase letter (a-z).';
+            if (!PATTERNS.hasNumber.test(value)) return 'Password must include at least one number (0-9).';
+            if (!PATTERNS.hasSpecial.test(value)) return 'Password must include at least one special character (e.g. !@#$%&*).';
             return '';
         },
         'user-id': (value) => {

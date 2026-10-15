@@ -83,7 +83,21 @@
                                 <span class="field-error-msg" id="signup-email-error"></span>
                             </div>
                             <div class="input-group">
-                                <input type="password" id="signup-password" placeholder="Create Password" required autocomplete="new-password">
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="signup-password" placeholder="Create Password" required autocomplete="new-password">
+                                    <button type="button" class="toggle-password-btn" id="toggle-signup-password" data-target="signup-password" aria-label="Show password" title="Show password">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength-meter" id="signup-password-strength" style="display: none;">
+                                    <div class="strength-bars">
+                                        <div class="strength-segment"></div>
+                                        <div class="strength-segment"></div>
+                                        <div class="strength-segment"></div>
+                                        <div class="strength-segment"></div>
+                                    </div>
+                                    <span class="strength-label" id="signup-password-strength-label">Password strength: Weak</span>
+                                </div>
                                 <span class="field-error-msg" id="signup-password-error"></span>
                             </div>
                         </div>
@@ -107,7 +121,12 @@
                                 <span class="field-error-msg" id="user-id-error"></span>
                             </div>
                             <div class="input-group">
-                                <input type="password" id="signin-password" placeholder="Password" required autocomplete="current-password">
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="signin-password" placeholder="Password" required autocomplete="current-password">
+                                    <button type="button" class="toggle-password-btn" id="toggle-signin-password" data-target="signin-password" aria-label="Show password" title="Show password">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
                                 <span class="field-error-msg" id="signin-password-error"></span>
                             </div>
                         </div>

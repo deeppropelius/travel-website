@@ -129,6 +129,8 @@
    .cards{
     flex-wrap: wrap;
     row-gap:20px;
+    height: 60%;
+   
     flex: 1 1 auto;
    }
    
