@@ -143,6 +143,127 @@ section {
     }
 }
 
+/* Pulse glow wave ripples for Play Demo button */
+@keyframes playPulseWave {
+    0% {
+        transform: scale(1);
+        opacity: 0.85;
+    }
+    50% {
+        opacity: 0.45;
+    }
+    100% {
+        transform: scale(2.05);
+        opacity: 0;
+    }
+}
+
+/* Diagonal glossy shimmer sweep for buttons & cards */
+@keyframes btnShimmerSweep {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.85;
+    }
+    80% {
+        opacity: 0.85;
+    }
+    100% {
+        left: 200%;
+        opacity: 0;
+    }
+}
+
+/* Gentle undulating wave for decorative title stroke */
+@keyframes underlineGlow {
+    0%, 100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 2px 6px rgba(223, 105, 81, 0.3));
+    }
+    50% {
+        transform: scale(1.04) translateY(-2px);
+        filter: drop-shadow(0 6px 14px rgba(223, 105, 81, 0.6));
+    }
+}
+
+/* Subtle 3D floating animation for category service icons */
+@keyframes iconFloatGentle {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-7px) rotate(2deg);
+    }
+}
+
+/* Heartbeat micro-animation for trip card favorite heart */
+@keyframes heartBeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    14% {
+        transform: scale(1.35);
+    }
+    28% {
+        transform: scale(1);
+    }
+    42% {
+        transform: scale(1.22);
+    }
+    70% {
+        transform: scale(1);
+    }
+}
+
+/* Live status pulsing beacon dot */
+@keyframes liveBeaconPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.85);
+    }
+    70% {
+        box-shadow: 0 0 0 9px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Progress bar animated shimmer fill */
+@keyframes progressShimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Floating paper plane with smooth aerodynamic tilt */
+@keyframes paperPlaneGlide {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    30% {
+        transform: translateY(-8px) rotate(-6deg) scale(1.06);
+    }
+    70% {
+        transform: translateY(4px) rotate(4deg) scale(0.98);
+    }
+}
+
+/* Floating dark mode toggle button breathing glow */
+@keyframes themeGlowPulse {
+    0%, 100% {
+        box-shadow: 0 4px 18px rgba(223, 105, 81, 0.35);
+    }
+    50% {
+        box-shadow: 0 6px 28px rgba(241, 165, 1, 0.65);
+    }
+}
+
+
 @media (prefers-reduced-motion: reduce) {
     [data-reveal] {
         opacity: 1 !important;
@@ -237,12 +358,34 @@ section {
     display: flex;
 }
 
+.navlogo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
 .navlogo img {
     height: 38px;
     width: auto;
     align-items: center;
     object-fit: contain;
     display: block;
+}
+
+.navlogo .dark-logo {
+    display: none !important;
+}
+
+.navlogo .light-logo {
+    display: block !important;
+}
+
+[data-theme="dark"] .navlogo .light-logo {
+    display: none !important;
+}
+
+[data-theme="dark"] .navlogo .dark-logo {
+    display: block !important;
 }
 
 .navitems {
@@ -272,8 +415,30 @@ section {
     text-decoration: none;
     font-size: 0.95rem;
     color: #212832;
-    transition: color 0.2s ease;
+    transition: color 0.25s ease, transform 0.25s ease;
     white-space: nowrap;
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.navlink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #DF6951 0%, #F1A501 100%);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navlink:hover::after,
+.navlink.active-page::after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .navlink:hover,
@@ -288,17 +453,21 @@ section {
     font-weight: 500;
     color: #212832;
     background-color: transparent;
-    padding: 7px 18px;
-    border-radius: 6px;
-    border: 1.2px solid #212832;
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: 1.5px solid #212832;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
 }
 
 .navitems button.signup:hover {
     background-color: #212832;
     color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(33, 40, 50, 0.25);
 }
 
 .navitems select {
@@ -410,24 +579,47 @@ section {
 }
 
 .dobut {
-    background-color: #F1A501;
-    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #F1A501 0%, #E29A00 100%);
+    border-radius: 12px;
     color: white;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 600;
     border: none;
-    padding: 16px 32px;
-    box-shadow: 0 10px 24px rgba(241, 165, 1, 0.38);
+    padding: 16px 36px;
+    box-shadow: 0 10px 24px rgba(241, 165, 1, 0.4), 0 2px 6px rgba(0, 0, 0, 0.08);
     white-space: nowrap;
     font-size: 1rem;
     cursor: pointer;
     flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dobut::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.35),
+        transparent
+    );
+    transform: rotate(25deg);
+    pointer-events: none;
 }
 
 .dobut:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(241, 165, 1, 0.55);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(241, 165, 1, 0.58), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dobut:hover::after {
+    animation: btnShimmerSweep 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .playdemo {
@@ -441,6 +633,7 @@ section {
 }
 
 .drbut {
+    position: relative;
     background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
     border-radius: 50%;
     color: white;
@@ -453,10 +646,27 @@ section {
     justify-content: center;
     align-items: center;
     font-size: 1.05rem;
-    box-shadow: 0 10px 24px rgba(223, 105, 81, 0.4);
+    box-shadow: 0 10px 24px rgba(223, 105, 81, 0.42);
     cursor: pointer;
     flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Multi-ring glowing pulse wave ripples */
+.drbut::before,
+.drbut::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: rgba(223, 105, 81, 0.5);
+    z-index: -1;
+    pointer-events: none;
+    animation: playPulseWave 2.8s cubic-bezier(0.25, 0, 0.35, 1) infinite;
+}
+
+.drbut::after {
+    animation-delay: 1.4s;
 }
 
 .drbut i {
@@ -470,6 +680,7 @@ section {
     box-shadow: none;
     border: none;
     pointer-events: none;
+    transition: transform 0.3s ease;
 }
 
 .playdemo p {
@@ -479,17 +690,22 @@ section {
     color: #686D77;
     margin: 0;
     white-space: nowrap;
-    transition: color 0.25s ease;
+    transition: color 0.25s ease, transform 0.25s ease;
 }
 
 .playdemo:hover .drbut {
-    transform: scale(1.12);
-    box-shadow: 0 14px 30px rgba(223, 105, 81, 0.6);
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 16px 34px rgba(223, 105, 81, 0.65);
     background: linear-gradient(135deg, #FF7D61 0%, #DF6951 100%);
+}
+
+.playdemo:hover .drbut i {
+    transform: scale(1.1);
 }
 
 .playdemo:hover p {
     color: #DF6951;
+    transform: translateX(2px);
 }
 
 .dimgs {
@@ -1198,23 +1414,46 @@ section {
 }
 
 .over {
-    padding: 2%;
+    padding: 3%;
     z-index: 3;
-    width: 60%;
+    width: 62%;
     position: absolute;
     background-color: white;
     display: flex;
-    border-radius: 10px;
+    border-radius: 16px;
     right: -25%;
     bottom: 20%;
     height: 28%;
-    box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 20px 48px -10px rgba(24, 30, 75, 0.18), 0 8px 24px -6px rgba(0, 0, 0, 0.06);
     animation: floatCard 4.5s ease-in-out infinite;
     max-height: 12rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.over:hover {
+    transform: scale(1.04) translateY(-4px);
+    box-shadow: 0 28px 56px -10px rgba(24, 30, 75, 0.24);
 }
 
 .st {
-    font-size: clamp(10px, 1.5vw, 35px);
+    font-size: clamp(10px, 1.2vw, 15px);
+    color: #8A79DF;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.st::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    animation: liveBeaconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .oimg {
@@ -1244,27 +1483,30 @@ section {
 .prog {
     appearance: none;
     width: 100%;
-    height: 6px;
+    height: 7px;
     margin-bottom: 2%;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 /* 2. For Chrome, Safari, and Edge */
 progress::-webkit-progress-bar {
-    background-color: #e0e0e0;
-    /* The empty track background color */
+    background-color: #E2E8F0;
     border-radius: 10px;
 }
 
 progress::-webkit-progress-value {
-    background-color: #8A79DF;
-    /* The filled progress bar color */
+    background: linear-gradient(90deg, #8A79DF 0%, #B8ACF6 50%, #8A79DF 100%);
+    background-size: 200% 100%;
+    animation: progressShimmer 2.5s linear infinite;
     border-radius: 10px;
 }
 
 .status {
-    color: black;
+    color: #181E4B;
     font-family: poppins;
     font-size: clamp(12px, 1.5vw, 1.8rem);
+    font-weight: 600;
 }
 
 .ctext h4 {
@@ -1283,37 +1525,49 @@ progress::-webkit-progress-value {
 
 .cicons {
     display: flex;
+    gap: 8px;
 }
 
 .cicon {
-    font-size: clamp(10px, 1.5vw, 25px);
+    font-size: clamp(10px, 1.3vw, 18px);
     background-color: #F5F5F5;
     margin: 2%;
-    padding: 2%;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cicon:hover {
-    background-color: white;
-    color: black;
-    transform: scale(1.1);
-    transition: ease .2s;
-    box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
+    background-color: #DF6951;
+    color: white;
+    transform: scale(1.18);
+    box-shadow: 0 8px 18px rgba(223, 105, 81, 0.35);
+}
+
+.like {
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
 }
 
 .like:hover {
-    background-color: white;
-    color: rgb(249, 14, 179);
-    transform: scale(1.1);
-    transition: ease .2s;
-    box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
-    font-weight: bolder;
-
+    transform: scale(1.2);
+    background-color: rgba(225, 29, 72, 0.08);
 }
 
-.like:hover .like i {
-    color: rgb(249, 14, 179);
+.like:hover i {
+    color: #E11D48 !important;
+    animation: heartBeat 0.85s ease-in-out infinite;
 }
 
 .cfoot {
@@ -1341,27 +1595,42 @@ progress::-webkit-progress-value {
 
 .row {
     display: flex;
+    align-items: center;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: default;
+}
+
+.row:hover {
+    transform: translateX(8px);
 }
 
 .rimgs {
     align-items: center;
-    width: 10%;
+    width: 12%;
     display: flex;
 }
 
 .rimg {
-    width: 70%;
+    width: 50px;
+    height: 50px;
     aspect-ratio: 1/1;
     align-items: center;
     display: flex;
-    border-radius: 10px;
-    padding: 5%;
+    border-radius: 14px;
+    padding: 10px;
     justify-content: center;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+}
+
+.row:hover .rimg {
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
 }
 
 .rimg img {
     align-items: center;
-    width: 50%;
+    width: 55%;
 }
 
 .fthead .row:nth-child(1) .rimg {
@@ -1787,20 +2056,62 @@ progress::-webkit-progress-value {
 }
 
 .sbinp {
-    padding: 2%;
+    padding: 12px 20px;
     width: 65%;
-    border-radius: 3px;
-    border: none;
-    font-size: clamp(.6rem, 1.5vw, 2rem);
+    border-radius: 10px;
+    border: 1.5px solid transparent;
+    font-size: clamp(.8rem, 1.1vw, 1rem);
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.sbinp:focus {
+    border-color: #747DEF;
+    box-shadow: 0 0 0 4px rgba(116, 125, 239, 0.25), 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .sub {
     width: 25%;
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(180deg, #FF946D 0%, #FF7D68 100%);
-    border-radius: 5px;
+    border-radius: 10px;
     color: white;
     border: none;
-    font-size: clamp(.6rem, 1.5vw, 2rem);
+    font-size: clamp(.8rem, 1.2vw, 1.05rem);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255, 125, 104, 0.4);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sub::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    transform: rotate(25deg);
+    pointer-events: none;
+}
+
+.sub:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(255, 125, 104, 0.6);
+}
+
+.sub:hover::after {
+    animation: btnShimmerSweep 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sbimg:nth-child(1) {
@@ -1815,21 +2126,29 @@ progress::-webkit-progress-value {
 }
 
 .ssend {
-    width: 3%;
+    width: clamp(48px, 4.5vw, 68px);
+    height: clamp(48px, 4.5vw, 68px);
     border-radius: 50%;
     align-items: center;
     display: flex;
     justify-content: center;
     aspect-ratio: 1/1;
     color: white;
-    padding: 1%;
     position: absolute;
     background: linear-gradient(201.65deg, #747DEF 10.27%, #5E3BE1 100%);
-    top: -5%;
-    right: -3%;
-    z-index: 2;
-    font-size: clamp(.6rem, 1.5vw, 2rem);
-    animation: floatPlane 3.5s ease-in-out infinite;
+    top: -24px;
+    right: -24px;
+    z-index: 4;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    animation: paperPlaneGlide 4s ease-in-out infinite;
+    box-shadow: 0 10px 24px rgba(94, 59, 225, 0.45);
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+}
+
+.ssend:hover {
+    transform: scale(1.18) rotate(10deg);
+    box-shadow: 0 16px 36px rgba(94, 59, 225, 0.65);
 }
 
 /* ------------------------------footer--------------------------------------------------- */

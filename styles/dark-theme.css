@@ -56,6 +56,14 @@ footer,
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
+[data-theme="dark"] .navlogo .light-logo {
+  display: none !important;
+}
+
+[data-theme="dark"] .navlogo .dark-logo {
+  display: block !important;
+}
+
 [data-theme="dark"] .navlogo img {
   filter: none;
   transition: filter 0.3s ease;
@@ -659,6 +667,16 @@ footer,
   border-color: rgba(255, 255, 255, 0.35);
   color: #ffffff;
   box-shadow: 0 8px 30px rgba(223, 105, 81, 0.4);
+  animation: themeGlowPulse 3.5s ease-in-out infinite;
+}
+
+@keyframes themeGlowPulse {
+  0%, 100% {
+    box-shadow: 0 8px 25px rgba(223, 105, 81, 0.4);
+  }
+  50% {
+    box-shadow: 0 12px 35px rgba(241, 165, 1, 0.7);
+  }
 }
 
 @media (max-width: 650px) {
