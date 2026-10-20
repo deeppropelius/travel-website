@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destinations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/tablet.css">
+    <link rel="stylesheet" href="../styles/mobile.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <!-- Early dark theme execution to prevent light-theme flash -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="navbar">
+                <div class="navlogo">
+                    <a href="../index.html" title="Jadoo - Home">
+                        <img src="../assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+                        <img src="../assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
+                    </a>
+                </div>
+                <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="navitems" id="navitems">
+                    <ul>
+                        <li><a href="../index.html" class="navlink">Home</a></li>
+                        <li><a href="./destination-page.html" class="navlink active-page">Destinations</a></li>
+                        <li><a href="../index.html#services" class="navlink">Services</a></li>
+                        <li><a href="../index.html#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
+                        <li><a href="../index.html#testimonials" class="navlink">Testimonials</a></li>
+                        <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-user-li" class="nav-user-item" style="display: none;">
+                            <div class="user-profile-dropdown" id="userProfileDropdown">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" aria-label="User Account Menu" aria-haspopup="true" aria-expanded="false">
+                                    <span class="user-avatar-circle">
+                                        <i class="fa-solid fa-user"></i>
+                                    </span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">User</span>
+                                    <i class="fa-solid fa-chevron-down user-chevron"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                                    <div class="dropdown-user-header">
+                                        <div class="dropdown-avatar-circle">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <div class="dropdown-user-info">
+                                            <span class="dropdown-user-name" id="dropdownUserName">User Name</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">user@example.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item" id="navMyBookingsBtn" role="menuitem">
+                                        <i class="fa-solid fa-suitcase-rolling"></i>
+                                        <span>My Bookings</span>
+                                        <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" role="menuitem">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <select name="Language" id="lang" aria-label="Select Language">
+                                <option value="eng">En</option>
+                                <option value="Guj">Guj</option>
+                                <option value="Hi">Hi</option>
+                            </select>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="destination-hero">
+        <div class="hero-badge">Explore The World</div>
+        <h1 class="hero-title">Discover Top Tourist Destinations</h1>
+        <p class="hero-subtitle">Search iconic landmarks, view ticket prices, ratings, and plan your next journey</p>
+        
+        <form class="search-form" id="destination-form">
+            <div class="search-input-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-destination" placeholder="Search city, e.g. Paris, Tokyo, Rome, New York..." autocomplete="off">
+                <button type="button" id="clear-search" class="clear-btn" aria-label="Clear search" style="display: none;">&times;</button>
+            </div>
+            <button id="search-button" type="submit" class="search-btn">
+                <span>Explore</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-arrow">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
+        </form>
+
+        <div class="quick-destinations" id="quick-destinations">
+            <span class="quick-label">Trending:</span>
+            <button type="button" class="quick-chip" data-city="Paris"><i class="fa-solid fa-location-dot"></i> Paris</button>
+            <button type="button" class="quick-chip" data-city="Tokyo"><i class="fa-solid fa-location-dot"></i> Tokyo</button>
+            <button type="button" class="quick-chip" data-city="Rome"><i class="fa-solid fa-location-dot"></i> Rome</button>
+            <button type="button" class="quick-chip" data-city="New York"><i class="fa-solid fa-location-dot"></i> New York</button>
+            <button type="button" class="quick-chip" data-city="Dubai"><i class="fa-solid fa-location-dot"></i> Dubai</button>
+            <button type="button" class="quick-chip" data-city="Agra"><i class="fa-solid fa-location-dot"></i> Agra</button>
+        </div>
+    </section>
+
+    <section class="destination-results-container">
+        <!-- Controls bar with sorting and filter info -->
+        <div class="results-toolbar" id="results-toolbar" style="display: none;">
+            <div class="toolbar-info">
+                <h2 id="destination-title" class="destination-heading"></h2>
+                <span id="places-count-badge" class="count-badge">0 places found</span>
+            </div>
+
+            <div class="toolbar-controls">
+                <label for="sort-select" class="sort-label">Sort By:</label>
+                <div class="select-wrapper">
+                    <select id="sort-select" class="sort-dropdown">
+                        <option value="famous">Most Famous (Default)</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="rating-desc">Highest Rated</option>
+                        <option value="reviews-desc">Most Reviewed</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="results"></div>
+
+        <!-- Pagination Controls -->
+        <nav class="pagination-container" id="pagination-container" style="display: none;" aria-label="Attractions pagination">
+            <button class="page-btn page-nav-btn" id="prev-page-btn" aria-label="Previous Page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+            </button>
+            <div class="page-numbers" id="page-numbers"></div>
+            <button class="page-btn page-nav-btn" id="next-page-btn" aria-label="Next Page">
+                <span>Next</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+        </nav>
+    </section>
+
+    <!-- Fullscreen Place Details Modal with Background Image & Foreground Content -->
+    <div id="place-modal-overlay" class="place-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="place-modal-backdrop"></div>
+        <div class="place-modal-card">
+            <!-- Background Image with Gradient Overlay -->
+            <div class="modal-bg-cover" id="modal-bg-cover"></div>
+            <div class="modal-gradient-overlay"></div>
+
+            <!-- Close Button -->
+            <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- Foreground Content Layer -->
+            <div class="modal-front-content">
+                <div class="modal-top-meta">
+                    <span class="modal-badge" id="modal-badge">Top Rated</span>
+                    <div class="modal-rating-badge">
+                        <span class="modal-star"><i class="fa-solid fa-star"></i></span>
+                        <span id="modal-rating">4.8</span>
+                        <span class="modal-reviews-count" id="modal-reviews">(1,240 reviews)</span>
+                    </div>
+                </div>
+
+                <h2 class="modal-title" id="modal-title">Eiffel Tower</h2>
+                <div class="modal-location-tag" id="modal-location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span id="modal-destination-name">Paris, France</span>
+                </div>
+
+                <div class="modal-body-scroll">
+                    <h4 class="modal-section-title">About this Landmark</h4>
+                    <p class="modal-description" id="modal-description">
+                        Detailed extract description...
+                    </p>
+
+                    <div class="modal-perks-grid">
+                        <div class="perk-item">
+                            <span class="perk-icon"><i class="fa-regular fa-clock"></i></span>
+                            <div>
+                                <span class="perk-label">Duration</span>
+                                <strong id="modal-duration">2-3 Hours</strong>
+                            </div>
+                        </div>
+                        <div class="perk-item">
+                            <span class="perk-icon"><i class="fa-solid fa-ticket"></i></span>
+                            <div>
+                                <span class="perk-label">Entry / Tour</span>
+                                <strong>Instant Confirmation</strong>
+                            </div>
+                        </div>
+                        <div class="perk-item">
+                            <span class="perk-icon"><i class="fa-solid fa-earth-americas"></i></span>
+                            <div>
+                                <span class="perk-label">Language</span>
+                                <strong>English / Multi-lingual</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-bottom-bar">
+                    <div class="modal-price-box">
+                        <span class="modal-price-label">Price per person</span>
+                        <div class="modal-price-val">
+                            <span class="modal-price" id="modal-price">$45</span>
+                            <span class="modal-unit">USD</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions-wrap">
+                        <a id="modal-wiki-link" href="#" target="_blank" rel="noopener noreferrer" class="modal-wiki-btn">
+                            <span>Read Article</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                        <button type="button" class="modal-book-cta" id="modal-book-cta">
+                            <span>Book Tickets Now</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         Booking Form Modal Overlay
+         ========================================== -->
+    <div class="booking-modal-overlay" id="bookingModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="booking-modal-backdrop" id="bookingModalBackdrop"></div>
+        <div class="booking-modal-card">
+            <button type="button" class="booking-modal-close" id="bookingModalClose" aria-label="Close booking form">&times;</button>
+            
+            <!-- Booking Form View -->
+            <div class="booking-form-content" id="bookingFormContent">
+                <div class="booking-modal-header">
+                    <span class="booking-badge"><i class="fa-solid fa-plane-departure"></i> Reserve Your Experience</span>
+                    <h2 class="booking-modal-title">Book Your Journey</h2>
+                    <p class="booking-modal-subtitle">Fill in your details below to secure your tickets and travel reservation.</p>
+                </div>
+
+                <div class="booking-trip-preview" id="bookingTripPreview">
+                    <div class="preview-img-wrap">
+                        <img id="bookingPreviewImg" src="../assets/destination-rome.png" alt="Trip destination">
+                    </div>
+                    <div class="preview-details">
+                        <span class="preview-destination" id="bookingPreviewDestination">Rome, Italy</span>
+                        <h3 class="preview-title" id="bookingPreviewTitle">Colosseum & Historic Walking Tour</h3>
+                        <div class="preview-price-tag">
+                            <span class="preview-rate-label">Rate:</span>
+                            <strong class="preview-rate-val" id="bookingPreviewRate">$55</strong>
+                            <span class="preview-rate-unit">/ person</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="tripBookingForm" class="booking-form" novalidate>
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="bookingFullName">Traveler Full Name <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="bookingFullName" name="fullName" placeholder="e.g. John Doe" required>
+                            </div>
+                            <span class="booking-field-error" id="bookingFullNameError">Please enter your full name.</span>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="bookingEmail">Email Address <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-envelope input-icon"></i>
+                                <input type="email" id="bookingEmail" name="email" placeholder="e.g. john@example.com" required>
+                            </div>
+                            <span class="booking-field-error" id="bookingEmailError">Please enter a valid email.</span>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="bookingPhone">Phone Number</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <input type="tel" id="bookingPhone" name="phone" placeholder="+1 (555) 000-0000">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="bookingDate">Travel Date <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-calendar-days input-icon"></i>
+                                <input type="date" id="bookingDate" name="travelDate" required>
+                            </div>
+                            <span class="booking-field-error" id="bookingDateError">Please choose a travel date.</span>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="bookingGuests">Travelers / Guests <span class="required-star">*</span></label>
+                            <div class="stepper-input-wrap">
+                                <button type="button" class="stepper-btn" id="stepperMinusBtn" aria-label="Decrease guests">&minus;</button>
+                                <input type="number" id="bookingGuests" name="guests" min="1" max="15" value="1" required readonly>
+                                <button type="button" class="stepper-btn" id="stepperPlusBtn" aria-label="Increase guests">&plus;</button>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="bookingPackage">Package Tier</label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-award input-icon"></i>
+                                <select id="bookingPackage" name="packageTier">
+                                    <option value="Standard" data-multiplier="1.0">Standard Explorer (Included)</option>
+                                    <option value="Guided VIP" data-multiplier="1.25">Guided VIP Tour (+25%)</option>
+                                    <option value="Luxury All-Inclusive" data-multiplier="1.5">Luxury All-Inclusive (+50%)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="bookingRequests">Special Requests / Preferences (Optional)</label>
+                        <textarea id="bookingRequests" name="requests" rows="2" placeholder="e.g. Dietary preferences, wheelchair accessibility, preferred morning departure..."></textarea>
+                    </div>
+
+                    <!-- Price Calculation Breakdown Card -->
+                    <div class="booking-price-summary">
+                        <div class="price-row">
+                            <span class="price-label">Tickets (<span id="summaryGuests">1</span> guest &times; <span id="summaryBasePrice">$55</span>):</span>
+                            <span class="price-value" id="summarySubtotal">$55.00</span>
+                        </div>
+                        <div class="price-row" id="summaryTierRow" style="display: none;">
+                            <span class="price-label" id="summaryTierLabel">VIP Tier Upgrade:</span>
+                            <span class="price-value" id="summaryTierAmount">+$0.00</span>
+                        </div>
+                        <div class="price-row fee-row">
+                            <span class="price-label">Service Fee & Taxes:</span>
+                            <span class="price-value" style="color: #10B981; font-weight: 600;">FREE</span>
+                        </div>
+                        <div class="price-divider"></div>
+                        <div class="price-row total-row">
+                            <span class="total-label">Total Amount:</span>
+                            <span class="total-value" id="bookingTotalAmount">$55.00</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-form-actions">
+                        <button type="button" class="booking-btn-secondary" id="bookingCancelBtn">Cancel</button>
+                        <button type="submit" class="booking-btn-primary" id="bookingSubmitBtn">
+                            <span>Confirm & Book Trip</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Booking Confirmation Success View -->
+            <div class="booking-success-view" id="bookingSuccessView" style="display: none;">
+                <div class="success-icon-wrap">
+                    <div class="success-checkmark-circle">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+                <h2 class="success-title">Trip Booked Successfully!</h2>
+                <p class="success-subtitle">Your reservation is confirmed. We have saved your booking to local storage.</p>
+                
+                <div class="booking-receipt-card">
+                    <div class="receipt-header">
+                        <span class="receipt-id-label">Booking Reference:</span>
+                        <strong class="receipt-id-val" id="successBookingId">#BK-92841</strong>
+                    </div>
+                    <div class="receipt-body">
+                        <div class="receipt-item">
+                            <span class="item-label">Destination:</span>
+                            <strong class="item-val" id="successDestination">Rome, Italy</strong>
+                        </div>
+                        <div class="receipt-item">
+                            <span class="item-label">Attraction / Tour:</span>
+                            <strong class="item-val" id="successTripTitle">Colosseum Tour</strong>
+                        </div>
+                        <div class="receipt-item">
+                            <span class="item-label">Travel Date:</span>
+                            <strong class="item-val" id="successDate">Nov 12, 2026</strong>
+                        </div>
+                        <div class="receipt-item">
+                            <span class="item-label">Travelers:</span>
+                            <strong class="item-val" id="successGuests">2 Guests</strong>
+                        </div>
+                        <div class="receipt-item">
+                            <span class="item-label">Package:</span>
+                            <strong class="item-val" id="successPackage">Guided VIP</strong>
+                        </div>
+                        <div class="receipt-item total-item">
+                            <span class="item-label">Total Paid:</span>
+                            <strong class="item-val total-price-color" id="successTotal">$110.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-actions">
+                    <button type="button" class="btn-view-my-bookings" id="successViewBookingsBtn">
+                        <i class="fa-solid fa-suitcase-rolling"></i>
+                        <span>View in My Bookings</span>
+                    </button>
+                    <button type="button" class="btn-success-done" id="successDoneBtn">
+                        <span>Done</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         My Bookings Modal Overlay
+         ========================================== -->
+    <div class="my-bookings-overlay" id="myBookingsModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="my-bookings-backdrop" id="myBookingsBackdrop"></div>
+        <div class="my-bookings-modal-card">
+            <div class="my-bookings-header">
+                <div class="header-left">
+                    <div class="bookings-icon-circle">
+                        <i class="fa-solid fa-suitcase-rolling"></i>
+                    </div>
+                    <div>
+                        <h2 class="my-bookings-title">My Bookings</h2>
+                        <p class="my-bookings-subtitle" id="myBookingsSubtitle">Manage your upcoming and past travel itineraries</p>
+                    </div>
+                </div>
+                <button type="button" class="my-bookings-close" id="myBookingsClose" aria-label="Close my bookings">&times;</button>
+            </div>
+
+            <div class="my-bookings-body">
+                <div class="bookings-list" id="myBookingsList">
+                    <!-- Dynamically populated or empty state -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Dark Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <script src="../scripts/script.js"></script>
+    <script src="/scripts/destination.js" type="module"></script>
+</body>
+</html>
