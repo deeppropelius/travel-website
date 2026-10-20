@@ -39,6 +39,13 @@
 </head>
 
 <body>
+    <!-- Dynamic Ambient Lighting Blobs -->
+    <div class="auth-ambient-blobs" aria-hidden="true">
+        <div class="ambient-blob blob-coral"></div>
+        <div class="ambient-blob blob-gold"></div>
+        <div class="ambient-blob blob-purple"></div>
+    </div>
+
     <!-- Back to Home Button -->
     <a href="../index.html" class="back-home-btn" title="Back to Homepage">
         <i class="fa-solid fa-arrow-left"></i>
@@ -53,8 +60,8 @@
             <!-- Top Slider Toggle -->
             <div class="toggle" id="togglePill">
                 <div class="toggler"></div>
-                <button type="button" class="sign-in" id="signin">Sign In</button>
-                <button type="button" class="sign-up" id="signup">Sign Up</button>
+                <button type="button" class="sign-in" id="signin"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+                <button type="button" class="sign-up" id="signup"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
             </div>
 
             <!-- Animated Flying Airplane -->
@@ -66,24 +73,46 @@
             <div class="login-image">
                 <!-- Sliding Visual Girl Panel (Starts on Left, slides Right on Sign Up) -->
                 <div class="login-girl">
-                    <img src="../assets/login-girl.png" alt="Traveler">
+                    <img src="../assets/login-girl.png" alt="Traveler" class="girl-img">
+                    <!-- Floating Interactive Travel Badges -->
+                    <div class="floating-travel-chip chip-globe">
+                        <div class="chip-icon-box"><i class="fa-solid fa-earth-americas"></i></div>
+                        <div class="chip-info">
+                            <strong>130,000+</strong>
+                            <span>Global Cities</span>
+                        </div>
+                    </div>
+                    <div class="floating-travel-chip chip-rating">
+                        <div class="chip-icon-box star-box"><i class="fa-solid fa-star"></i></div>
+                        <div class="chip-info">
+                            <strong>4.9 / 5.0</strong>
+                            <span>Verified Trips</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Sign Up Form (On Left Side: Hidden by default, shown on Sign Up) -->
-                <div class="login-form signup-form ">
+                <div class="login-form signup-form">
                     <form action="" class="form" id="signupForm" onsubmit="event.preventDefault();" novalidate>
+                        <label class="label">Sign Up</label>
                         <div class="input-fields">
-                            <label class="label">Sign Up</label>
                             <div class="input-group">
-                                <input type="text" id="signup-fullname" placeholder="Full Name" required autocomplete="name">
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-user field-icon"></i>
+                                    <input type="text" id="signup-fullname" placeholder="Full Name" required autocomplete="name">
+                                </div>
                                 <span class="field-error-msg" id="signup-fullname-error"></span>
                             </div>
                             <div class="input-group">
-                                <input type="email" id="signup-email" placeholder="Email Address" required autocomplete="email">
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-envelope field-icon"></i>
+                                    <input type="email" id="signup-email" placeholder="Email Address" required autocomplete="email">
+                                </div>
                                 <span class="field-error-msg" id="signup-email-error"></span>
                             </div>
                             <div class="input-group">
-                                <div class="password-input-wrapper">
+                                <div class="password-input-wrapper input-with-icon">
+                                    <i class="fa-solid fa-lock field-icon"></i>
                                     <input type="password" id="signup-password" placeholder="Create Password" required autocomplete="new-password">
                                     <button type="button" class="toggle-password-btn" id="toggle-signup-password" data-target="signup-password" aria-label="Show password" title="Show password">
                                         <i class="fa-regular fa-eye"></i>
@@ -102,7 +131,10 @@
                             </div>
                         </div>
                         <div class="input-buttons">
-                            <button type="submit" id="signup-submit-btn" class="login-btn">Sign Up</button>
+                            <button type="submit" id="signup-submit-btn" class="login-btn">
+                                <span>Sign Up</span>
+                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
+                            </button>
                             <div class="secondary-actions">
                                 <span>Already have an account?</span>
                                 <a href="#" class="switch-to-signin">Sign In</a>
@@ -114,14 +146,20 @@
                 <!-- Sign In Form (On Right Side: Shown by default, hidden on Sign Up) -->
                 <div class="login-form signin-form">
                     <form action="" class="form" id="signinForm" onsubmit="event.preventDefault();" novalidate>
-                        <div class="input-fields">
-                            <label for="user-id" class="label">Login</label>
-                            <div class="input-group">
-                                <input type="text" id="user-id" placeholder="Your ID or Email" required autocomplete="username">
+                        <label class="label" id="signinLabel">Login</label>
+                        <!-- Container for Remembered Account Notification -->
+                        <div id="rememberedAccountPrompt" class="remembered-account-prompt-wrap" style="display: none; width: 100%;"></div>
+                        <div class="input-fields" id="signinInputFields">
+                            <div class="input-group" id="userIdGroup">
+                                <div class="input-with-icon">
+                                    <i class="fa-regular fa-envelope field-icon"></i>
+                                    <input type="text" id="user-id" placeholder="Your ID or Email" required autocomplete="username">
+                                </div>
                                 <span class="field-error-msg" id="user-id-error"></span>
                             </div>
-                            <div class="input-group">
-                                <div class="password-input-wrapper">
+                            <div class="input-group" id="signinPasswordGroup">
+                                <div class="password-input-wrapper input-with-icon">
+                                    <i class="fa-solid fa-lock field-icon"></i>
                                     <input type="password" id="signin-password" placeholder="Password" required autocomplete="current-password">
                                     <button type="button" class="toggle-password-btn" id="toggle-signin-password" data-target="signin-password" aria-label="Show password" title="Show password">
                                         <i class="fa-regular fa-eye"></i>
@@ -131,7 +169,10 @@
                             </div>
                         </div>
                         <div class="input-buttons">
-                            <button type="submit" id="signin-submit-btn" class="login-btn">Login</button>
+                            <button type="submit" id="signin-submit-btn" class="login-btn">
+                                <span id="signinBtnText">Login</span>
+                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
+                            </button>
                             <div class="secondary-actions">
                                 <a href="#" class="forget-btn">Forgot Password?</a>
                                 <span class="divider-dot">•</span>

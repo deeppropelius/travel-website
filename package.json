@@ -1,14 +1,20 @@
 {
   "name": "jadoo-travel",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "cities.json": "^1.1.65",
+    "cors": "^2.8.6",
     "dotenv": "^18.0.8"
   }
 }

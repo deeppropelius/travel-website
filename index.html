@@ -51,7 +51,8 @@
       <div class="navbar">
         <div class="navlogo">
           <a href="./index.html" title="Jadoo - Home">
-            <img src="./assets/logo.png" alt="Jadoo Travel Logo">
+            <img src="./assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+            <img src="./assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
           </a>
         </div>
         <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
@@ -61,12 +62,46 @@
         </button>
         <div class="navitems" id="navitems">
           <ul>
-            <li><a href="#destinations" class="navlink">Destinations</a></li>
+            <li><a href="./index.html" class="navlink">Home</a></li>
+            <li><a href="./components/destination-page.html" class="navlink">Destinations</a></li>
             <li><a href="#services" class="navlink">Services</a></li>
-            <li><a href="#bookings" class="navlink">Bookings</a></li>
+            <li><a href="#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
             <li><a href="#testimonials" class="navlink">Testimonials</a></li>
-            <li><a href="./components/auth.html#signin" class="navlink">Login</a></li>
-            <li><button onclick="window.location.href='./components/auth.html#signup'" class="signup">Sign Up</button></li>
+            <li id="nav-login-li"><a href="./components/auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+            <li id="nav-signup-li"><button onclick="window.location.href='./components/auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+            <li id="nav-user-li" class="nav-user-item" style="display: none;">
+              <div class="user-profile-dropdown" id="userProfileDropdown">
+                <button type="button" class="user-profile-btn" id="userProfileBtn" aria-label="User Account Menu" aria-haspopup="true" aria-expanded="false">
+                  <span class="user-avatar-circle">
+                    <i class="fa-solid fa-user"></i>
+                  </span>
+                  <span class="user-first-name" id="userFirstNameDisplay">User</span>
+                  <i class="fa-solid fa-chevron-down user-chevron"></i>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                  <div class="dropdown-user-header">
+                    <div class="dropdown-avatar-circle">
+                      <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="dropdown-user-info">
+                      <span class="dropdown-user-name" id="dropdownUserName">User Name</span>
+                      <span class="dropdown-user-email" id="dropdownUserEmail">user@example.com</span>
+                    </div>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="dropdown-item" id="navMyBookingsBtn" role="menuitem">
+                    <i class="fa-solid fa-suitcase-rolling"></i>
+                    <span>My Bookings</span>
+                    <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" role="menuitem">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            </li>
             <li>
               <select name="Language" id="lang" aria-label="Select Language">
                 <option value="eng">En</option>
@@ -79,7 +114,7 @@
       </div>
     </nav>
   </header>
-  <section class="destinations" id="destinations">
+  <section class="destinations" id="home">
     <div class="dtexts" data-reveal="left">
       <h4>Best Destinations around the world</h4>
       <h1>Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="Underline highlight"
@@ -154,6 +189,10 @@
     <div class="sec" data-reveal="up">
       <p>Top Selling</p>
       <h3>Top Destinations</h3>
+      <a href="/components/destination-page.html" class="destination-page" title="Destinations">
+        <span>More</span>
+        <i class="fa-solid fa-arrow-right"></i>
+    </a>
     </div>
     <div class="carousel-wrapper" data-reveal="up">
       <div class="carousel" id="destCarousel">
@@ -167,130 +206,193 @@
         <!-- Cards Track -->
         <div class="tcards" id="carouselTrack">
           <!-- Card 1: Rome, Italy -->
-          <div class="tcard is-active" data-index="0">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.9</span></div>
-              <div class="tcard-badge">Bestseller</div>
+          <div class="tcard place-card is-active" data-index="0" data-destination="Rome, Italy">
+            <div class="place-card-img-wrap">
+              <img src="./assets/destination-rome.png" alt="Rome, Italy" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Bestseller</span>
             </div>
-            <div class="timg">
-              <img src="./assets/destination-rome.png" alt="Rome, Italy" loading="lazy" draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>Rome, Italy</h4>
-                <span class="price-tag">$5.42k</span>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                <span class="place-reviews">(2,840 reviews)</span>
+                <span class="place-duration">• 10 Days</span>
               </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 10 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              <h3 class="place-title">Rome, Italy</h3>
+              <p class="place-description">Colosseum, historic Vatican museums, and romantic ancient cobblestone piazzas.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$5.42k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for Rome, Italy">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book Rome, Italy">
+                    <span>Book</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
           <!-- Card 2: London, UK -->
-          <div class="tcard" data-index="1">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.8</span></div>
-              <div class="tcard-badge">Popular</div>
+          <div class="tcard place-card" data-index="1" data-destination="London, UK">
+            <div class="place-card-img-wrap">
+              <img src="./assets/destination-london.jpeg" alt="London, UK" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Popular</span>
             </div>
-            <div class="timg">
-              <img src="./assets/destination-london.jpeg" alt="London, UK" loading="lazy" draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>London, UK</h4>
-                <span class="price-tag">$4.2k</span>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.8</span>
+                <span class="place-reviews">(3,120 reviews)</span>
+                <span class="place-duration">• 12 Days</span>
               </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 12 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
-              </div>
-            </div>
-          </div>
-          <!-- Card 3: Full Europe Tour -->
-          <div class="tcard" data-index="2">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>5.0</span></div>
-              <div class="tcard-badge">Trending</div>
-            </div>
-            <div class="timg">
-              <img src="./assets/destination-europe.png" alt="Full Europe Grand Tour" loading="lazy" draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>Full Europe</h4>
-                <span class="price-tag">$15k</span>
-              </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 28 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              <h3 class="place-title">London, UK</h3>
+              <p class="place-description">Big Ben, river Thames royal cruises, historic palaces, and vibrant West End culture.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$4.2k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for London, UK">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book London, UK">
+                    <span>Book</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Card 3: Paris, France -->
+          <div class="tcard place-card" data-index="2" data-destination="Paris, France">
+            <div class="place-card-img-wrap">
+              <img src="./assets/destination-europe.png" alt="Paris, France" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Trending</span>
+            </div>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                <span class="place-reviews">(3,450 reviews)</span>
+                <span class="place-duration">• 8 Days</span>
+              </div>
+              <h3 class="place-title">Paris, France</h3>
+              <p class="place-description">Eiffel Tower, Louvre Museum masterpieces, and romantic Seine river cruises.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$5.8k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for Paris, France">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book Paris, France">
+                    <span>Book</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Card 4: Santorini, Greece -->
-          <div class="tcard" data-index="3">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.9</span></div>
-              <div class="tcard-badge">Hot Deal</div>
+          <div class="tcard place-card" data-index="3" data-destination="Santorini, Greece">
+            <div class="place-card-img-wrap">
+              <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Hot Deal</span>
             </div>
-            <div class="timg">
-              <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" loading="lazy"
-                draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>Santorini, Greece</h4>
-                <span class="price-tag">$6.8k</span>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                <span class="place-reviews">(2,410 reviews)</span>
+                <span class="place-duration">• 14 Days</span>
               </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 14 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              <h3 class="place-title">Santorini, Greece</h3>
+              <p class="place-description">Whitewashed cliffside villas, dazzling Aegean sunsets, and private luxury yacht charters.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$6.8k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for Santorini, Greece">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book Santorini, Greece">
+                    <span>Book</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
           <!-- Card 5: Venice & Tuscany, Italy -->
-          <div class="tcard" data-index="4">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.7</span></div>
-              <div class="tcard-badge">Romantic</div>
+          <div class="tcard place-card" data-index="4" data-destination="Venice & Tuscany">
+            <div class="place-card-img-wrap">
+              <img src="./assets/destination-rome.png" alt="Venice & Tuscany, Italy" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Romantic</span>
             </div>
-            <div class="timg">
-              <img src="./assets/destination-rome.png" alt="Venice & Tuscany, Italy" loading="lazy" draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>Venice & Tuscany</h4>
-                <span class="price-tag">$4.85k</span>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.7</span>
+                <span class="place-reviews">(1,680 reviews)</span>
+                <span class="place-duration">• 8 Days</span>
               </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 8 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              <h3 class="place-title">Venice & Tuscany</h3>
+              <p class="place-description">Iconic Grand Canal gondolas, historic vineyards, and gourmet Tuscan culinary tours.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$4.85k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for Venice & Tuscany">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book Venice & Tuscany">
+                    <span>Book</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <!-- Card 6: Great Britain & Scotland -->
-          <div class="tcard" data-index="5">
-            <div class="tcard-header-badges">
-              <div class="tcard-rating"><i class="fa-solid fa-star"></i> <span>4.8</span></div>
-              <div class="tcard-badge">Adventure</div>
+
+          <!-- Card 6: Tokyo, Japan -->
+          <div class="tcard place-card" data-index="5" data-destination="Tokyo, Japan">
+            <div class="place-card-img-wrap">
+              <img src="./assets/destination-london.jpeg" alt="Tokyo, Japan" class="place-img" loading="lazy" draggable="false">
+              <span class="place-badge">Adventure</span>
             </div>
-            <div class="timg">
-              <img src="./assets/destination-london.jpeg" alt="Great Britain & Scotland" loading="lazy"
-                draggable="false">
-            </div>
-            <div class="tcard-overlay"></div>
-            <div class="ttext">
-              <div class="np">
-                <h4>British Discovery</h4>
-                <span class="price-tag">$5.1k</span>
+            <div class="place-card-body">
+              <div class="place-rating-row">
+                <span class="place-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                <span class="place-reviews">(2,190 reviews)</span>
+                <span class="place-duration">• 11 Days</span>
               </div>
-              <div class="trip">
-                <h4><i class="fa-solid fa-paper-plane"></i> 15 Days Trip</h4>
-                <span class="tcard-cta">Explore <i class="fa-solid fa-arrow-right"></i></span>
+              <h3 class="place-title">Tokyo, Japan</h3>
+              <p class="place-description">Futuristic neon skyline views, ancient Asakusa shrines, and majestic Mount Fuji views.</p>
+              <div class="place-card-footer">
+                <div class="place-price-wrap">
+                  <span class="place-price-label">Ticket / Tour</span>
+                  <span class="place-price">$5.1k</span>
+                  <span class="place-price-unit">per person</span>
+                </div>
+                <div class="place-card-btns">
+                  <button class="place-view-btn" type="button" aria-label="View details for Tokyo, Japan">
+                    <span>Details</span>
+                  </button>
+                  <button class="place-book-btn" type="button" aria-label="Book Tokyo, Japan">
+                    <span>Book</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -379,7 +481,7 @@
     </div>
   </section>
   <!------------- fifth section ------------------------->
-  <section class="fifth" id="Testimonials">
+  <section class="fifth" id="testimonials">
     <div class="fitext" data-reveal="left">
       <div class="fit">
         <div class="fitp">Testimonials</div>
@@ -501,19 +603,43 @@
       </div>
     </div>
   </section>
-  <!-- -------------------Section sixth -------------------- -->
-  <section class="sponsors" id="sponsor">
-    <div class="spons" data-reveal="up">
-      <div class="spon" data-reveal="scale" data-delay="1"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo">
+  <!-- -------------------Section sixth (Continuous Sponsor Loop) -------------------- -->
+  <section class="sponsors" id="sponsor" aria-label="Our Trusted Travel Partners">
+    <div class="sponsors-marquee" data-reveal="fade">
+      <div class="spons-track">
+        <!-- Group 1 -->
+        <div class="spons-group">
+          <div class="spon"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-5.png" alt="Alitalia sponsor logo" loading="lazy"></div>
+        </div>
+        <!-- Group 2 (Duplicate for continuous loop) -->
+        <div class="spons-group" aria-hidden="true">
+          <div class="spon"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-5.png" alt="Alitalia sponsor logo" loading="lazy"></div>
+        </div>
+        <!-- Group 3 (Buffer for wide monitors) -->
+        <div class="spons-group" aria-hidden="true">
+          <div class="spon"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-5.png" alt="Alitalia sponsor logo" loading="lazy"></div>
+        </div>
+        <!-- Group 4 (Duplicate for seamless loop) -->
+        <div class="spons-group" aria-hidden="true">
+          <div class="spon"><img src="./assets/sponsor-1.png" alt="Axon sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo" loading="lazy"></div>
+          <div class="spon"><img src="./assets/sponsor-5.png" alt="Alitalia sponsor logo" loading="lazy"></div>
+        </div>
       </div>
-      <div class="spon" data-reveal="scale" data-delay="2"><img src="./assets/sponsor-2.png" alt="Jetstar sponsor logo">
-      </div>
-      <div class="spon" data-reveal="scale" data-delay="3"><img src="./assets/sponsor-3.png" alt="Expedia sponsor logo">
-      </div>
-      <div class="spon" data-reveal="scale" data-delay="4"><img src="./assets/sponsor-4.png" alt="Qantas sponsor logo">
-      </div>
-      <div class="spon" data-reveal="scale" data-delay="5"><img src="./assets/sponsor-5.png"
-          alt="Alitalia sponsor logo"></div>
     </div>
   </section>
   <!-- ---------- Seventh Section------------------->
@@ -588,6 +714,309 @@
     </div>
     <div class="lfp">All rights reserved @ jadoo.co</div>
   </footer>
+
+  <!-- Fullscreen Place Details Modal with Background Image & Foreground Content -->
+  <div id="place-modal-overlay" class="place-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="place-modal-backdrop"></div>
+    <div class="place-modal-card">
+      <!-- Background Image with Gradient Overlay -->
+      <div class="modal-bg-cover" id="modal-bg-cover"></div>
+      <div class="modal-gradient-overlay"></div>
+
+      <!-- Close Button -->
+      <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close details">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Foreground Content Layer -->
+      <div class="modal-front-content">
+        <div class="modal-top-meta">
+          <span class="modal-badge" id="modal-badge">Bestseller</span>
+          <div class="modal-rating-badge">
+            <span class="modal-star"><i class="fa-solid fa-star"></i></span>
+            <span id="modal-rating">4.9</span>
+            <span class="modal-reviews-count" id="modal-reviews">(2,840 reviews)</span>
+          </div>
+        </div>
+
+        <h2 class="modal-title" id="modal-title">Rome, Italy</h2>
+        <div class="modal-location-tag" id="modal-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span id="modal-destination-name">Rome, Italy</span>
+        </div>
+
+        <div class="modal-body-scroll">
+          <h4 class="modal-section-title">About this Landmark & Tour</h4>
+          <p class="modal-description" id="modal-description">
+            Colosseum, historic Vatican museums, and romantic ancient cobblestone piazzas.
+          </p>
+
+          <div class="modal-perks-grid">
+            <div class="perk-item">
+              <span class="perk-icon"><i class="fa-regular fa-clock"></i></span>
+              <div>
+                <span class="perk-label">Duration</span>
+                <strong id="modal-duration">10 Days</strong>
+              </div>
+            </div>
+            <div class="perk-item">
+              <span class="perk-icon"><i class="fa-solid fa-ticket"></i></span>
+              <div>
+                <span class="perk-label">Entry / Tour</span>
+                <strong>Instant Confirmation</strong>
+              </div>
+            </div>
+            <div class="perk-item">
+              <span class="perk-icon"><i class="fa-solid fa-earth-americas"></i></span>
+              <div>
+                <span class="perk-label">Language</span>
+                <strong>English / Multi-lingual</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-bottom-bar">
+          <div class="modal-price-box">
+            <span class="modal-price-label">Price per person</span>
+            <div class="modal-price-val">
+              <span class="modal-price" id="modal-price">$5.42k</span>
+              <span class="modal-unit">USD</span>
+            </div>
+          </div>
+
+          <div class="modal-actions-wrap">
+            <a id="modal-wiki-link" href="#" target="_blank" rel="noopener noreferrer" class="modal-wiki-btn">
+              <span>Read Article</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+            <button type="button" class="modal-book-cta" id="modal-book-cta">
+              <span>Book Tickets Now</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Booking Form Modal Overlay
+       ========================================== -->
+  <div class="booking-modal-overlay" id="bookingModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="booking-modal-backdrop" id="bookingModalBackdrop"></div>
+    <div class="booking-modal-card">
+      <button type="button" class="booking-modal-close" id="bookingModalClose" aria-label="Close booking form">&times;</button>
+      
+      <!-- Booking Form View -->
+      <div class="booking-form-content" id="bookingFormContent">
+        <div class="booking-modal-header">
+          <span class="booking-badge"><i class="fa-solid fa-plane-departure"></i> Reserve Your Experience</span>
+          <h2 class="booking-modal-title">Book Your Journey</h2>
+          <p class="booking-modal-subtitle">Fill in your details below to secure your tickets and travel reservation.</p>
+        </div>
+
+        <div class="booking-trip-preview" id="bookingTripPreview">
+          <div class="preview-img-wrap">
+            <img id="bookingPreviewImg" src="./assets/destination-rome.png" alt="Trip destination">
+          </div>
+          <div class="preview-details">
+            <span class="preview-destination" id="bookingPreviewDestination">Rome, Italy</span>
+            <h3 class="preview-title" id="bookingPreviewTitle">Colosseum & Historic Walking Tour</h3>
+            <div class="preview-price-tag">
+              <span class="preview-rate-label">Rate:</span>
+              <strong class="preview-rate-val" id="bookingPreviewRate">$55</strong>
+              <span class="preview-rate-unit">/ person</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="tripBookingForm" class="booking-form" novalidate>
+          <div class="booking-form-grid">
+            <div class="booking-field-group">
+              <label for="bookingFullName">Traveler Full Name <span class="required-star">*</span></label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" id="bookingFullName" name="fullName" placeholder="e.g. John Doe" required>
+              </div>
+              <span class="booking-field-error" id="bookingFullNameError">Please enter your full name.</span>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="bookingEmail">Email Address <span class="required-star">*</span></label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-envelope input-icon"></i>
+                <input type="email" id="bookingEmail" name="email" placeholder="e.g. john@example.com" required>
+              </div>
+              <span class="booking-field-error" id="bookingEmailError">Please enter a valid email.</span>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="bookingPhone">Phone Number</label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-phone input-icon"></i>
+                <input type="tel" id="bookingPhone" name="phone" placeholder="+1 (555) 000-0000">
+              </div>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="bookingDate">Travel Date <span class="required-star">*</span></label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-calendar-days input-icon"></i>
+                <input type="date" id="bookingDate" name="travelDate" required>
+              </div>
+              <span class="booking-field-error" id="bookingDateError">Please choose a travel date.</span>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="bookingGuests">Travelers / Guests <span class="required-star">*</span></label>
+              <div class="stepper-input-wrap">
+                <button type="button" class="stepper-btn" id="stepperMinusBtn" aria-label="Decrease guests">&minus;</button>
+                <input type="number" id="bookingGuests" name="guests" min="1" max="15" value="1" required readonly>
+                <button type="button" class="stepper-btn" id="stepperPlusBtn" aria-label="Increase guests">&plus;</button>
+              </div>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="bookingPackage">Package Tier</label>
+              <div class="booking-input-wrap select-wrap">
+                <i class="fa-solid fa-award input-icon"></i>
+                <select id="bookingPackage" name="packageTier">
+                  <option value="Standard" data-multiplier="1.0">Standard Explorer (Included)</option>
+                  <option value="Guided VIP" data-multiplier="1.25">Guided VIP Tour (+25%)</option>
+                  <option value="Luxury All-Inclusive" data-multiplier="1.5">Luxury All-Inclusive (+50%)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-field-group full-width">
+            <label for="bookingRequests">Special Requests / Preferences (Optional)</label>
+            <textarea id="bookingRequests" name="requests" rows="2" placeholder="e.g. Dietary preferences, wheelchair accessibility, preferred morning departure..."></textarea>
+          </div>
+
+          <!-- Price Calculation Breakdown Card -->
+          <div class="booking-price-summary">
+            <div class="price-row">
+              <span class="price-label">Tickets (<span id="summaryGuests">1</span> guest &times; <span id="summaryBasePrice">$55</span>):</span>
+              <span class="price-value" id="summarySubtotal">$55.00</span>
+            </div>
+            <div class="price-row" id="summaryTierRow" style="display: none;">
+              <span class="price-label" id="summaryTierLabel">VIP Tier Upgrade:</span>
+              <span class="price-value" id="summaryTierAmount">+$0.00</span>
+            </div>
+            <div class="price-row fee-row">
+              <span class="price-label">Service Fee & Taxes:</span>
+              <span class="price-value" style="color: #10B981; font-weight: 600;">FREE</span>
+            </div>
+            <div class="price-divider"></div>
+            <div class="price-row total-row">
+              <span class="total-label">Total Amount:</span>
+              <span class="total-value" id="bookingTotalAmount">$55.00</span>
+            </div>
+          </div>
+
+          <div class="booking-form-actions">
+            <button type="button" class="booking-btn-secondary" id="bookingCancelBtn">Cancel</button>
+            <button type="submit" class="booking-btn-primary" id="bookingSubmitBtn">
+              <span>Confirm & Book Trip</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Booking Confirmation Success View -->
+      <div class="booking-success-view" id="bookingSuccessView" style="display: none;">
+        <div class="success-icon-wrap">
+          <div class="success-checkmark-circle">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+        <h2 class="success-title">Trip Booked Successfully!</h2>
+        <p class="success-subtitle">Your reservation is confirmed. We have saved your booking to local storage.</p>
+        
+        <div class="booking-receipt-card">
+          <div class="receipt-header">
+            <span class="receipt-id-label">Booking Reference:</span>
+            <strong class="receipt-id-val" id="successBookingId">#BK-92841</strong>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-item">
+              <span class="item-label">Destination:</span>
+              <strong class="item-val" id="successDestination">Rome, Italy</strong>
+            </div>
+            <div class="receipt-item">
+              <span class="item-label">Attraction / Tour:</span>
+              <strong class="item-val" id="successTripTitle">Colosseum Tour</strong>
+            </div>
+            <div class="receipt-item">
+              <span class="item-label">Travel Date:</span>
+              <strong class="item-val" id="successDate">Nov 12, 2026</strong>
+            </div>
+            <div class="receipt-item">
+              <span class="item-label">Travelers:</span>
+              <strong class="item-val" id="successGuests">2 Guests</strong>
+            </div>
+            <div class="receipt-item">
+              <span class="item-label">Package:</span>
+              <strong class="item-val" id="successPackage">Guided VIP</strong>
+            </div>
+            <div class="receipt-item total-item">
+              <span class="item-label">Total Paid:</span>
+              <strong class="item-val total-price-color" id="successTotal">$110.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-actions">
+          <button type="button" class="btn-view-my-bookings" id="successViewBookingsBtn">
+            <i class="fa-solid fa-suitcase-rolling"></i>
+            <span>View in My Bookings</span>
+          </button>
+          <button type="button" class="btn-success-done" id="successDoneBtn">
+            <span>Done</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       My Bookings Modal Overlay
+       ========================================== -->
+  <div class="my-bookings-overlay" id="myBookingsModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="my-bookings-backdrop" id="myBookingsBackdrop"></div>
+    <div class="my-bookings-modal-card">
+      <div class="my-bookings-header">
+        <div class="header-left">
+          <div class="bookings-icon-circle">
+            <i class="fa-solid fa-suitcase-rolling"></i>
+          </div>
+          <div>
+            <h2 class="my-bookings-title">My Bookings</h2>
+            <p class="my-bookings-subtitle" id="myBookingsSubtitle">Manage your upcoming and past travel itineraries</p>
+          </div>
+        </div>
+        <button type="button" class="my-bookings-close" id="myBookingsClose" aria-label="Close my bookings">&times;</button>
+      </div>
+
+      <div class="my-bookings-body">
+        <div class="bookings-list" id="myBookingsList">
+          <!-- Dynamically populated or empty state -->
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Floating Dark Theme Toggle Button -->
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">

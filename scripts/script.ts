@@ -14,6 +14,42 @@ interface AuthResponse {
     user?: User;
 }
 
+interface Booking {
+    id: string;
+    userId?: string;
+    userEmail: string;
+    userName: string;
+    phone?: string;
+    destination: string;
+    placeName: string;
+    image?: string;
+    travelDate: string;
+    guests: number;
+    packageType: string;
+    pricePerPerson: number;
+    totalPrice: number;
+    specialRequests?: string;
+    status: 'Confirmed' | 'Completed' | 'Cancelled';
+    createdAt: string;
+}
+
+interface IJadooBooking {
+    getAllBookings(): Booking[];
+    getUserBookings(emailOrId?: string): Booking[];
+    createBooking(booking: Omit<Booking, 'id' | 'createdAt' | 'status'>): Booking;
+    cancelBooking(id: string): boolean;
+    count(emailOrId?: string): number;
+}
+
+interface IJadooUI {
+    openBookingModal(details: { placeName: string; destination: string; price: number | string; image?: string }): void;
+    closeBookingModal(): void;
+    openMyBookingsModal(): void;
+    closeMyBookingsModal(): void;
+    openPlaceModal?(place: any): void;
+    updateNavbar(): void;
+}
+
 interface IJadooStorage {
     get<T = unknown>(key: string, defaultValue?: T | null): T | null;
     set(key: string, value: unknown): boolean;
@@ -34,6 +70,8 @@ interface IJadooAuth {
 interface Window {
     JadooStorage?: IJadooStorage;
     JadooAuth?: IJadooAuth;
+    JadooBooking?: IJadooBooking;
+    JadooUI?: IJadooUI;
 }
 
 (function (): void {
@@ -85,9 +123,12 @@ interface Window {
     const STORAGE_KEYS = {
         USERS: 'jadoo_users',
         CURRENT_USER: 'jadoo_current_user',
+        LAST_ACCOUNT: 'jadoo_last_account',
+        BOOKINGS: 'jadoo_bookings',
         LANGUAGE: 'jadoo_selected_language',
         DRAFTS: 'jadoo_form_drafts',
-        THEME: 'jadoo_dark_theme'
+        THEME: 'jadoo_dark_theme',
+        DESTINATIONS: 'jadoo_destinations_cache'
     } as const;
 
     const Storage: IJadooStorage = {
@@ -142,6 +183,8 @@ interface Window {
                 localStorage.clear();
                 CookieStorage.remove(STORAGE_KEYS.USERS);
                 CookieStorage.remove(STORAGE_KEYS.CURRENT_USER);
+                CookieStorage.remove(STORAGE_KEYS.LAST_ACCOUNT);
+                CookieStorage.remove(STORAGE_KEYS.BOOKINGS);
                 CookieStorage.remove(STORAGE_KEYS.LANGUAGE);
                 CookieStorage.remove(STORAGE_KEYS.DRAFTS);
                 CookieStorage.remove(STORAGE_KEYS.THEME);
@@ -192,6 +235,13 @@ interface Window {
             users.push(newUser);
             Storage.set(STORAGE_KEYS.USERS, users);
 
+            // Remember account for next login
+            Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
+                id: newUser.id,
+                email: newUser.email,
+                fullName: newUser.fullName
+            });
+
             // Keep session active
             this.createSession(newUser);
 
@@ -214,6 +264,13 @@ interface Window {
                 return { success: false, message: 'Invalid credentials. Please verify your email/ID and password.' };
             }
 
+            // Remember account for future logins
+            Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName
+            });
+
             this.createSession(user);
             return { success: true, message: 'Logged in successfully!', user };
         },
@@ -230,12 +287,71 @@ interface Window {
         },
 
         logout(): void {
+            const current = this.getCurrentUser();
+            if (current) {
+                Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
+                    id: current.id,
+                    email: current.email,
+                    fullName: current.fullName
+                });
+            }
             Storage.remove(STORAGE_KEYS.CURRENT_USER);
+            updateNavbarAuthState();
+        }
+    };
+
+    const BookingService: IJadooBooking = {
+        getAllBookings(): Booking[] {
+            return Storage.get<Booking[]>(STORAGE_KEYS.BOOKINGS, []) ?? [];
+        },
+
+        getUserBookings(emailOrId?: string): Booking[] {
+            const all = this.getAllBookings();
+            if (!emailOrId) {
+                const user = AuthService.getCurrentUser();
+                if (user) {
+                    return all.filter(b => b.userEmail.toLowerCase() === user.email.toLowerCase() || b.userId === user.id);
+                }
+                return all;
+            }
+            const clean = emailOrId.toLowerCase().trim();
+            return all.filter(b => b.userEmail.toLowerCase() === clean || b.userId === clean);
+        },
+
+        createBooking(data: Omit<Booking, 'id' | 'createdAt' | 'status'>): Booking {
+            const bookings = this.getAllBookings();
+            const newBooking: Booking = {
+                ...data,
+                id: 'BK-' + Math.floor(100000 + Math.random() * 900000),
+                status: 'Confirmed',
+                createdAt: new Date().toISOString()
+            };
+            bookings.unshift(newBooking);
+            Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
+            updateNavbarAuthState();
+            return newBooking;
+        },
+
+        cancelBooking(id: string): boolean {
+            const bookings = this.getAllBookings();
+            const index = bookings.findIndex(b => b.id === id);
+            if (index !== -1) {
+                bookings.splice(index, 1);
+                Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
+                updateNavbarAuthState();
+                return true;
+            }
+            return false;
+        },
+
+        count(emailOrId?: string): number {
+            return this.getUserBookings(emailOrId).filter(b => b.status === 'Confirmed').length;
         }
     };
 
     window.JadooStorage = Storage;
     window.JadooAuth = AuthService;
+    window.JadooBooking = BookingService;
 
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -299,50 +415,937 @@ interface Window {
 
         // --- F. Scroll Reveal Engine ---
         initScrollReveal();
+
+        // --- G. Trip Booking System & Homepage Card Triggers ---
+        initBookingSystem();
+        initHomepageBookingTriggers();
     });
 
-    // Update navbar with user greeting & logout
-    function updateNavbarAuthState(): void {
-        const navList = document.querySelector<HTMLUListElement>('.navitems ul');
-        if (!navList) return;
+    let activeBookingDetails = {
+        placeName: 'Colosseum & Historic Walking Tour',
+        destination: 'Rome, Italy',
+        pricePerPerson: 55,
+        image: './assets/destination-rome.png'
+    };
 
-        const currentUser = AuthService.getCurrentUser();
-        if (!currentUser) return;
-
-        const firstName = currentUser.fullName ? currentUser.fullName.split(' ')[0] : 'User';
-
-        const loginLinkLi = Array.from(navList.children).find(li => {
-            const a = li.querySelector('a');
-            if (!a) return false;
-            const text = (a.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            return text === 'login' || a.href.includes('signin') || a.href.includes('auth.html');
-        }) as HTMLElement | undefined;
-
-        const signupLi = Array.from(navList.children).find(li => {
-            const btn = li.querySelector('.signup, button');
-            if (!btn) return false;
-            const text = (btn.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            const onclickAttr = btn.getAttribute('onclick') || '';
-            return btn.classList.contains('signup') || text.includes('sign up') || text.includes('signup') || onclickAttr.includes('signup');
-        }) as HTMLElement | undefined;
-
-        if (loginLinkLi) {
-            loginLinkLi.innerHTML = `<span class="nav-user-greeting" style="font-weight: 600; color: #df6951; cursor: default;">Hi, ${firstName}</span>`;
+    function parseNumericPrice(val: number | string | undefined | null): number {
+        if (typeof val === 'number') return isNaN(val) ? 55 : val;
+        if (!val) return 55;
+        const str = val.toString().trim();
+        if (str.toLowerCase().includes('k')) {
+            const clean = str.replace(/[^\d.]/g, '');
+            const parsed = parseFloat(clean);
+            return isNaN(parsed) ? 55 : Math.round(parsed * 1000);
         }
+        const clean = str.replace(/[^\d.]/g, '');
+        const parsed = parseFloat(clean);
+        return isNaN(parsed) ? 55 : parsed;
+    }
 
-        if (signupLi) {
-            signupLi.innerHTML = `<button class="signup logout-btn" id="logout-btn" style="cursor: pointer; background-color: #df6951; color: #fff; border: none; padding: 8px 18px; border-radius: 6px;">Logout</button>`;
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', (e: MouseEvent) => {
-                    e.preventDefault();
-                    AuthService.logout();
-                    alert('You have logged out successfully.');
-                    window.location.reload();
-                });
-            }
+    function formatDateDisplay(dateStr: string): string {
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch (_) {
+            return dateStr;
         }
     }
+
+    // Update navbar with user greeting, profile icon, and dropdown
+    function updateNavbarAuthState(): void {
+        const currentUser = AuthService.getCurrentUser();
+        const bookingCount = BookingService.count(currentUser ? currentUser.email : undefined);
+
+        // 1. Homepage Navbar (#navitems ul)
+        const loginLi = document.getElementById('nav-login-li');
+        const signupLi = document.getElementById('nav-signup-li');
+        const userLi = document.getElementById('nav-user-li');
+        const firstNameDisplay = document.getElementById('userFirstNameDisplay');
+        const dropdownUserName = document.getElementById('dropdownUserName');
+        const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+        const navBookingBadge = document.getElementById('navBookingBadge');
+
+        // 2. Destination Page Navbar (.nav-actions)
+        const destLoginBtn = document.getElementById('destinationNavLoginBtn');
+        const destUserDropdown = document.getElementById('destUserProfileDropdown');
+        const destFirstNameDisplay = document.getElementById('destUserFirstNameDisplay');
+        const destDropdownUserName = document.getElementById('destDropdownUserName');
+        const destDropdownUserEmail = document.getElementById('destDropdownUserEmail');
+        const destBookingBadge = document.getElementById('destNavBookingBadge');
+
+        if (currentUser) {
+            const firstName = currentUser.fullName ? currentUser.fullName.split(' ')[0] : 'User';
+
+            // Index Navbar
+            if (loginLi) loginLi.style.display = 'none';
+            if (signupLi) signupLi.style.display = 'none';
+            if (userLi) userLi.style.display = 'flex';
+            if (firstNameDisplay) firstNameDisplay.textContent = firstName;
+            if (dropdownUserName) dropdownUserName.textContent = currentUser.fullName;
+            if (dropdownUserEmail) dropdownUserEmail.textContent = currentUser.email;
+            if (navBookingBadge) {
+                navBookingBadge.textContent = bookingCount.toString();
+                navBookingBadge.style.display = bookingCount > 0 ? 'inline-block' : 'none';
+            }
+
+            // Destination Navbar
+            if (destLoginBtn) destLoginBtn.style.display = 'none';
+            if (destUserDropdown) destUserDropdown.style.display = 'inline-block';
+            if (destFirstNameDisplay) destFirstNameDisplay.textContent = firstName;
+            if (destDropdownUserName) destDropdownUserName.textContent = currentUser.fullName;
+            if (destDropdownUserEmail) destDropdownUserEmail.textContent = currentUser.email;
+            if (destBookingBadge) {
+                destBookingBadge.textContent = bookingCount.toString();
+                destBookingBadge.style.display = bookingCount > 0 ? 'inline-block' : 'none';
+            }
+        } else {
+            // Logged Out
+            if (loginLi) loginLi.style.display = '';
+            if (signupLi) signupLi.style.display = '';
+            if (userLi) {
+                userLi.style.display = 'none';
+                const dd = document.getElementById('userProfileDropdown');
+                if (dd) dd.classList.remove('open');
+            }
+
+            if (destLoginBtn) destLoginBtn.style.display = '';
+            if (destUserDropdown) {
+                destUserDropdown.style.display = 'none';
+                destUserDropdown.classList.remove('open');
+            }
+        }
+
+        bindNavbarEvents();
+    }
+
+    let navbarBound = false;
+    function bindNavbarEvents(): void {
+        if (navbarBound) return;
+        navbarBound = true;
+
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const userProfileDropdown = document.getElementById('userProfileDropdown');
+        const destUserProfileBtn = document.getElementById('destUserProfileBtn');
+        const destUserProfileDropdown = document.getElementById('destUserProfileDropdown');
+
+        userProfileBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = userProfileDropdown?.classList.toggle('open');
+            userProfileBtn.setAttribute('aria-expanded', !!isOpen ? 'true' : 'false');
+        });
+
+        destUserProfileBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = destUserProfileDropdown?.classList.toggle('open');
+            destUserProfileBtn.setAttribute('aria-expanded', !!isOpen ? 'true' : 'false');
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            const target = e.target as Node | null;
+            if (userProfileDropdown && !userProfileDropdown.contains(target)) {
+                userProfileDropdown.classList.remove('open');
+                userProfileBtn?.setAttribute('aria-expanded', 'false');
+            }
+            if (destUserProfileDropdown && !destUserProfileDropdown.contains(target)) {
+                destUserProfileDropdown.classList.remove('open');
+                destUserProfileBtn?.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // My Bookings click
+        const myBookingsBtn = document.getElementById('navMyBookingsBtn');
+        const destMyBookingsBtn = document.getElementById('destNavMyBookingsBtn');
+
+        const handleOpenMyBookings = (e: Event) => {
+            e.preventDefault();
+            userProfileDropdown?.classList.remove('open');
+            destUserProfileDropdown?.classList.remove('open');
+            openMyBookingsModal();
+        };
+
+        myBookingsBtn?.addEventListener('click', handleOpenMyBookings);
+        destMyBookingsBtn?.addEventListener('click', handleOpenMyBookings);
+
+        // Logout click
+        const logoutBtn = document.getElementById('navLogoutBtn');
+        const destLogoutBtn = document.getElementById('destNavLogoutBtn');
+
+        const handleLogout = (e: Event) => {
+            e.preventDefault();
+            userProfileDropdown?.classList.remove('open');
+            destUserProfileDropdown?.classList.remove('open');
+            AuthService.logout();
+            alert('You have logged out successfully.');
+        };
+
+        logoutBtn?.addEventListener('click', handleLogout);
+        destLogoutBtn?.addEventListener('click', handleLogout);
+
+        // Navbar Bookings trigger link
+        const navBookingsTrigger = document.getElementById('navBookingsTrigger');
+        navBookingsTrigger?.addEventListener('click', (e) => {
+            const isDestPage = window.location.pathname.toLowerCase().includes('destination-page');
+            const currentUser = AuthService.getCurrentUser();
+            if (isDestPage && currentUser) {
+                e.preventDefault();
+                openMyBookingsModal();
+            }
+        });
+    }
+
+    // Modal & Booking Functions
+    function openBookingModal(details: { placeName: string; destination: string; price: number | string; image?: string }): void {
+        const modal = document.getElementById('bookingModalOverlay');
+        if (!modal) return;
+
+        const isComponent = window.location.pathname.toLowerCase().includes('components');
+        const fallbackImg = isComponent ? '../assets/destination-rome.png' : './assets/destination-rome.png';
+
+        activeBookingDetails = {
+            placeName: details.placeName || 'Iconic Sightseeing Tour',
+            destination: details.destination || 'Top Destination',
+            pricePerPerson: parseNumericPrice(details.price),
+            image: details.image || fallbackImg
+        };
+
+        // Populate Preview
+        const previewImg = document.getElementById('bookingPreviewImg') as HTMLImageElement | null;
+        const previewDest = document.getElementById('bookingPreviewDestination');
+        const previewTitle = document.getElementById('bookingPreviewTitle');
+        const previewRate = document.getElementById('bookingPreviewRate');
+
+        if (previewImg) previewImg.src = activeBookingDetails.image;
+        if (previewDest) previewDest.textContent = activeBookingDetails.destination;
+        if (previewTitle) previewTitle.textContent = activeBookingDetails.placeName;
+        if (previewRate) previewRate.textContent = `$${activeBookingDetails.pricePerPerson.toFixed(0)}`;
+
+        // Populate Form Fields
+        const currentUser = AuthService.getCurrentUser();
+        const fullNameInput = document.getElementById('bookingFullName') as HTMLInputElement | null;
+        const emailInput = document.getElementById('bookingEmail') as HTMLInputElement | null;
+        const dateInput = document.getElementById('bookingDate') as HTMLInputElement | null;
+        const guestsInput = document.getElementById('bookingGuests') as HTMLInputElement | null;
+        const packageSelect = document.getElementById('bookingPackage') as HTMLSelectElement | null;
+        const requestsInput = document.getElementById('bookingRequests') as HTMLTextAreaElement | null;
+
+        if (fullNameInput && currentUser?.fullName) {
+            fullNameInput.value = currentUser.fullName;
+        }
+        if (emailInput && currentUser?.email) {
+            emailInput.value = currentUser.email;
+        }
+
+        // Set date constraints: min today, default tomorrow
+        if (dateInput) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            dateInput.min = today.toISOString().split('T')[0];
+            if (!dateInput.value) {
+                dateInput.value = tomorrow.toISOString().split('T')[0];
+            }
+        }
+
+        if (guestsInput) guestsInput.value = '1';
+        if (packageSelect) packageSelect.value = 'Standard';
+        if (requestsInput) requestsInput.value = '';
+
+        // Reset views
+        const formContent = document.getElementById('bookingFormContent');
+        const successView = document.getElementById('bookingSuccessView');
+        if (formContent) formContent.style.display = 'block';
+        if (successView) successView.style.display = 'none';
+
+        // Clear error messages
+        document.querySelectorAll('.booking-field-error').forEach(el => el.classList.remove('visible'));
+
+        updateBookingPriceCalculation();
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBookingModal(): void {
+        const modal = document.getElementById('bookingModalOverlay');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function updateBookingPriceCalculation(): number {
+        const guestsInput = document.getElementById('bookingGuests') as HTMLInputElement | null;
+        const packageSelect = document.getElementById('bookingPackage') as HTMLSelectElement | null;
+        const guests = Math.max(1, parseInt(guestsInput?.value || '1', 10));
+
+        let multiplier = 1.0;
+        let tierLabel = '';
+        if (packageSelect) {
+            const selectedOpt = packageSelect.options[packageSelect.selectedIndex];
+            multiplier = parseFloat(selectedOpt?.getAttribute('data-multiplier') || '1.0');
+            tierLabel = packageSelect.value;
+        }
+
+        const basePrice = activeBookingDetails.pricePerPerson;
+        const subtotal = basePrice * guests;
+        const total = subtotal * multiplier;
+        const tierDifference = total - subtotal;
+
+        const summaryGuests = document.getElementById('summaryGuests');
+        const summaryBasePrice = document.getElementById('summaryBasePrice');
+        const summarySubtotal = document.getElementById('summarySubtotal');
+        const summaryTierRow = document.getElementById('summaryTierRow');
+        const summaryTierLabel = document.getElementById('summaryTierLabel');
+        const summaryTierAmount = document.getElementById('summaryTierAmount');
+        const totalAmountEl = document.getElementById('bookingTotalAmount');
+
+        if (summaryGuests) summaryGuests.textContent = guests.toString();
+        if (summaryBasePrice) summaryBasePrice.textContent = `$${basePrice.toFixed(0)}`;
+        if (summarySubtotal) summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
+
+        if (summaryTierRow) {
+            if (multiplier > 1.0) {
+                summaryTierRow.style.display = 'flex';
+                if (summaryTierLabel) summaryTierLabel.textContent = `${tierLabel} Upgrade:`;
+                if (summaryTierAmount) summaryTierAmount.textContent = `+$${tierDifference.toFixed(2)}`;
+            } else {
+                summaryTierRow.style.display = 'none';
+            }
+        }
+
+        if (totalAmountEl) totalAmountEl.textContent = `$${total.toFixed(2)}`;
+        return total;
+    }
+
+    function openMyBookingsModal(): void {
+        const modal = document.getElementById('myBookingsModalOverlay');
+        const list = document.getElementById('myBookingsList');
+        if (!modal || !list) return;
+
+        const currentUser = AuthService.getCurrentUser();
+        const bookings = BookingService.getUserBookings(currentUser ? currentUser.email : undefined);
+
+        const isComponent = window.location.pathname.toLowerCase().includes('components');
+        const fallbackImg = isComponent ? '../assets/destination-rome.png' : './assets/destination-rome.png';
+        const exploreLink = isComponent ? 'destination-page.html' : 'components/destination-page.html';
+
+        if (bookings.length === 0) {
+            list.innerHTML = `
+                <div class="bookings-empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="fa-solid fa-plane-circle-exclamation"></i>
+                    </div>
+                    <h3>No Bookings Yet</h3>
+                    <p>You don't have any booked trips right now. Explore top worldwide destinations and plan your next journey!</p>
+                    <a href="${exploreLink}" class="btn-empty-explore" id="emptyExploreBtn">
+                        <i class="fa-solid fa-compass"></i>
+                        <span>Explore Destinations</span>
+                    </a>
+                </div>
+            `;
+            const exploreBtn = document.getElementById('emptyExploreBtn');
+            exploreBtn?.addEventListener('click', () => {
+                closeMyBookingsModal();
+            });
+        } else {
+            list.innerHTML = bookings.map(b => `
+                <div class="booking-item-card" data-id="${b.id}">
+                    <div class="booking-item-img">
+                        <img src="${b.image || fallbackImg}" alt="${b.placeName}" onerror="this.src='${fallbackImg}'">
+                        <span class="booking-status-tag"><i class="fa-solid fa-circle-check"></i> ${b.status}</span>
+                    </div>
+                    <div class="booking-item-info">
+                        <div class="booking-ref-row">
+                            <span class="booking-ref-badge">${b.id}</span>
+                            <span class="booking-package-badge">${b.packageType || 'Standard'}</span>
+                        </div>
+                        <h3 class="booking-place-title">${b.placeName}</h3>
+                        <p class="booking-destination-meta"><i class="fa-solid fa-location-dot"></i> ${b.destination}</p>
+                        <div class="booking-meta-row">
+                            <span><i class="fa-regular fa-calendar"></i> ${formatDateDisplay(b.travelDate)}</span>
+                            <span><i class="fa-solid fa-user-group"></i> ${b.guests} ${b.guests > 1 ? 'Guests' : 'Guest'}</span>
+                            <span class="booking-price-highlight">$${b.totalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="booking-item-actions">
+                        <button type="button" class="btn-cancel-trip" data-cancel-id="${b.id}" title="Cancel this booking">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <span>Cancel</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Attach cancel event handlers
+            list.querySelectorAll<HTMLButtonElement>('[data-cancel-id]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const bookingId = btn.getAttribute('data-cancel-id');
+                    if (!bookingId) return;
+                    const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?`);
+                    if (confirmCancel) {
+                        BookingService.cancelBooking(bookingId);
+                        openMyBookingsModal();
+                    }
+                });
+            });
+        }
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMyBookingsModal(): void {
+        const modal = document.getElementById('myBookingsModalOverlay');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    let bookingSystemInitialized = false;
+    function initBookingSystem(): void {
+        if (bookingSystemInitialized) return;
+        bookingSystemInitialized = true;
+
+        const bookingModal = document.getElementById('bookingModalOverlay');
+        const bookingClose = document.getElementById('bookingModalClose');
+        const bookingCancel = document.getElementById('bookingCancelBtn');
+        const bookingBackdrop = document.getElementById('bookingModalBackdrop');
+        const tripBookingForm = document.getElementById('tripBookingForm') as HTMLFormElement | null;
+
+        const myBookingsModal = document.getElementById('myBookingsModalOverlay');
+        const myBookingsClose = document.getElementById('myBookingsClose');
+        const myBookingsBackdrop = document.getElementById('myBookingsBackdrop');
+
+        // Close handlers for Booking Modal
+        bookingClose?.addEventListener('click', closeBookingModal);
+        bookingCancel?.addEventListener('click', closeBookingModal);
+        bookingBackdrop?.addEventListener('click', closeBookingModal);
+
+        // Close handlers for My Bookings Modal
+        myBookingsClose?.addEventListener('click', closeMyBookingsModal);
+        myBookingsBackdrop?.addEventListener('click', closeMyBookingsModal);
+
+        // Escape key closes modals
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (bookingModal?.classList.contains('active')) closeBookingModal();
+                if (myBookingsModal?.classList.contains('active')) closeMyBookingsModal();
+            }
+        });
+
+        // Stepper buttons for guests
+        const guestsInput = document.getElementById('bookingGuests') as HTMLInputElement | null;
+        const minusBtn = document.getElementById('stepperMinusBtn');
+        const plusBtn = document.getElementById('stepperPlusBtn');
+        const packageSelect = document.getElementById('bookingPackage') as HTMLSelectElement | null;
+
+        minusBtn?.addEventListener('click', () => {
+            if (!guestsInput) return;
+            const current = parseInt(guestsInput.value || '1', 10);
+            if (current > 1) {
+                guestsInput.value = (current - 1).toString();
+                updateBookingPriceCalculation();
+            }
+        });
+
+        plusBtn?.addEventListener('click', () => {
+            if (!guestsInput) return;
+            const current = parseInt(guestsInput.value || '1', 10);
+            if (current < 15) {
+                guestsInput.value = (current + 1).toString();
+                updateBookingPriceCalculation();
+            }
+        });
+
+        packageSelect?.addEventListener('change', () => {
+            updateBookingPriceCalculation();
+        });
+
+        // Booking Form Submission
+        tripBookingForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fullNameInput = document.getElementById('bookingFullName') as HTMLInputElement | null;
+            const emailInput = document.getElementById('bookingEmail') as HTMLInputElement | null;
+            const phoneInput = document.getElementById('bookingPhone') as HTMLInputElement | null;
+            const dateInput = document.getElementById('bookingDate') as HTMLInputElement | null;
+            const requestsInput = document.getElementById('bookingRequests') as HTMLTextAreaElement | null;
+
+            const nameVal = fullNameInput?.value.trim() || '';
+            const emailVal = emailInput?.value.trim() || '';
+            const dateVal = dateInput?.value || '';
+
+            let isValid = true;
+            const nameError = document.getElementById('bookingFullNameError');
+            const emailError = document.getElementById('bookingEmailError');
+            const dateError = document.getElementById('bookingDateError');
+
+            if (!nameVal) {
+                if (nameError) nameError.classList.add('visible');
+                isValid = false;
+            } else {
+                if (nameError) nameError.classList.remove('visible');
+            }
+
+            if (!emailVal || !emailVal.includes('@')) {
+                if (emailError) emailError.classList.add('visible');
+                isValid = false;
+            } else {
+                if (emailError) emailError.classList.remove('visible');
+            }
+
+            if (!dateVal) {
+                if (dateError) dateError.classList.add('visible');
+                isValid = false;
+            } else {
+                if (dateError) dateError.classList.remove('visible');
+            }
+
+            if (!isValid) return;
+
+            const guests = parseInt(guestsInput?.value || '1', 10);
+            const packageVal = packageSelect?.value || 'Standard';
+            const total = updateBookingPriceCalculation();
+            const currentUser = AuthService.getCurrentUser();
+
+            const newBooking = BookingService.createBooking({
+                userId: currentUser?.id,
+                userEmail: emailVal,
+                userName: nameVal,
+                phone: phoneInput?.value.trim() || '',
+                destination: activeBookingDetails.destination,
+                placeName: activeBookingDetails.placeName,
+                image: activeBookingDetails.image,
+                travelDate: dateVal,
+                guests: guests,
+                packageType: packageVal,
+                pricePerPerson: activeBookingDetails.pricePerPerson,
+                totalPrice: total,
+                specialRequests: requestsInput?.value.trim() || ''
+            });
+
+            // Display Success Receipt View
+            const formContent = document.getElementById('bookingFormContent');
+            const successView = document.getElementById('bookingSuccessView');
+            const successBookingId = document.getElementById('successBookingId');
+            const successDestination = document.getElementById('successDestination');
+            const successTripTitle = document.getElementById('successTripTitle');
+            const successDate = document.getElementById('successDate');
+            const successGuests = document.getElementById('successGuests');
+            const successPackage = document.getElementById('successPackage');
+            const successTotal = document.getElementById('successTotal');
+
+            if (successBookingId) successBookingId.textContent = `#${newBooking.id}`;
+            if (successDestination) successDestination.textContent = newBooking.destination;
+            if (successTripTitle) successTripTitle.textContent = newBooking.placeName;
+            if (successDate) successDate.textContent = formatDateDisplay(newBooking.travelDate);
+            if (successGuests) successGuests.textContent = `${newBooking.guests} ${newBooking.guests > 1 ? 'Guests' : 'Guest'}`;
+            if (successPackage) successPackage.textContent = newBooking.packageType;
+            if (successTotal) successTotal.textContent = `$${newBooking.totalPrice.toFixed(2)}`;
+
+            if (formContent) formContent.style.display = 'none';
+            if (successView) successView.style.display = 'block';
+
+            // Wire success view buttons
+            const viewBookingsBtn = document.getElementById('successViewBookingsBtn');
+            const doneBtn = document.getElementById('successDoneBtn');
+
+            viewBookingsBtn?.addEventListener('click', () => {
+                closeBookingModal();
+                openMyBookingsModal();
+            }, { once: true });
+
+            doneBtn?.addEventListener('click', () => {
+                closeBookingModal();
+            }, { once: true });
+        });
+    }
+
+    interface DestinationCardMeta {
+        cityKey: string;
+        placeName: string;
+        destination: string;
+        price: number;
+        priceFormatted: string;
+        image: string;
+        badge: string;
+        rating: number;
+        reviews: number;
+        duration: string;
+        description: string;
+        url?: string;
+    }
+
+    // Default cached destinations saved immediately from the start
+    const DEFAULT_CACHED_DESTINATIONS: DestinationCardMeta[] = [
+        {
+            cityKey: 'Rome',
+            placeName: 'Colosseum & Ancient Rome Walking Tour',
+            destination: 'Rome, Italy',
+            price: 54,
+            priceFormatted: '$5.42k',
+            image: './assets/destination-rome.png',
+            badge: 'Bestseller',
+            rating: 4.9,
+            reviews: 2840,
+            duration: '10 Days Trip',
+            description: 'Walk through history at the iconic Flavian Amphitheatre, explore the Roman Forum, and wander historic cobbled piazzas.',
+            url: 'https://en.wikipedia.org/wiki/Colosseum'
+        },
+        {
+            cityKey: 'London',
+            placeName: 'Big Ben & River Thames Royal Cruise',
+            destination: 'London, UK',
+            price: 42,
+            priceFormatted: '$4.2k',
+            image: './assets/destination-london.jpeg',
+            badge: 'Popular',
+            rating: 4.8,
+            reviews: 3120,
+            duration: '12 Days Trip',
+            description: 'Experience iconic Westminster, majestic royal palaces, scenic river cruises, and vibrant West End theatre culture.',
+            url: 'https://en.wikipedia.org/wiki/Big_Ben'
+        },
+        {
+            cityKey: 'Paris',
+            placeName: 'Eiffel Tower & Louvre Grand Tour',
+            destination: 'Paris, France',
+            price: 58,
+            priceFormatted: '$5.8k',
+            image: './assets/destination-europe.png',
+            badge: 'Trending',
+            rating: 4.9,
+            reviews: 3450,
+            duration: '8 Days Trip',
+            description: 'Grand tour of Paris spanning the Eiffel Tower, the Louvre Museum, and romantic Seine river cruises.',
+            url: 'https://en.wikipedia.org/wiki/Eiffel_Tower'
+        },
+        {
+            cityKey: 'Santorini',
+            placeName: 'Aegean Coastal Sunset & Caldera Tour',
+            destination: 'Santorini, Greece',
+            price: 68,
+            priceFormatted: '$6.8k',
+            image: './assets/easy-fast-trip-to-greece.jpeg',
+            badge: 'Hot Deal',
+            rating: 4.9,
+            reviews: 2410,
+            duration: '14 Days Trip',
+            description: 'Dazzling whitewashed cliffside villages, world-famous Oia sunsets, volcanic beaches, and private catamaran cruises.',
+            url: 'https://en.wikipedia.org/wiki/Santorini'
+        },
+        {
+            cityKey: 'Venice',
+            placeName: 'Venice Gondola & Grand Canal Tour',
+            destination: 'Venice, Italy',
+            price: 48,
+            priceFormatted: '$4.85k',
+            image: './assets/destination-rome.png',
+            badge: 'Romantic',
+            rating: 4.7,
+            reviews: 1680,
+            duration: '8 Days Trip',
+            description: 'Glide along historic canals in handcrafted gondolas, tour Renaissance art galleries, and historic Venetian bridges.',
+            url: 'https://en.wikipedia.org/wiki/Venice'
+        },
+        {
+            cityKey: 'Tokyo',
+            placeName: 'Tokyo Shinjuku & Historic Asakusa Tour',
+            destination: 'Tokyo, Japan',
+            price: 51,
+            priceFormatted: '$5.1k',
+            image: './assets/destination-london.jpeg',
+            badge: 'Adventure',
+            rating: 4.9,
+            reviews: 2190,
+            duration: '11 Days Trip',
+            description: 'Futuristic neon skyline views, ancient Asakusa shrines, vibrant Shibuya crossing, and majestic Mount Fuji views.',
+            url: 'https://en.wikipedia.org/wiki/Tokyo'
+        }
+    ];
+
+    function getOrInitSavedDestinations(): DestinationCardMeta[] {
+        let saved = Storage.get<DestinationCardMeta[]>(STORAGE_KEYS.DESTINATIONS, null);
+        if (!saved || !Array.isArray(saved) || saved.length === 0) {
+            saved = DEFAULT_CACHED_DESTINATIONS;
+            Storage.set(STORAGE_KEYS.DESTINATIONS, saved);
+        }
+        return saved;
+    }
+
+    let destinationCardsData: DestinationCardMeta[] = getOrInitSavedDestinations();
+    let currentActivePlaceModal: DestinationCardMeta | null = null;
+
+    function openPlaceModal(place: DestinationCardMeta): void {
+        const modalOverlay = document.getElementById("place-modal-overlay");
+        const modalBgCover = document.getElementById("modal-bg-cover");
+        const modalBadge = document.getElementById("modal-badge");
+        const modalRating = document.getElementById("modal-rating");
+        const modalReviews = document.getElementById("modal-reviews");
+        const modalTitle = document.getElementById("modal-title");
+        const modalDestName = document.getElementById("modal-destination-name");
+        const modalDescription = document.getElementById("modal-description");
+        const modalDuration = document.getElementById("modal-duration");
+        const modalPrice = document.getElementById("modal-price");
+        const modalWikiLink = document.getElementById("modal-wiki-link") as HTMLAnchorElement | null;
+
+        if (!modalOverlay) return;
+        currentActivePlaceModal = place;
+
+        if (modalBgCover) {
+            modalBgCover.style.backgroundImage = `url("${place.image}")`;
+        }
+        if (modalBadge) modalBadge.textContent = place.badge || "Featured Landmark";
+        if (modalRating) modalRating.textContent = place.rating.toFixed(1);
+        if (modalReviews) modalReviews.textContent = `(${place.reviews.toLocaleString()} reviews)`;
+        if (modalTitle) modalTitle.textContent = place.placeName;
+        if (modalDestName) modalDestName.textContent = place.destination;
+        if (modalDescription) modalDescription.textContent = place.description;
+        if (modalDuration) modalDuration.textContent = place.duration;
+        if (modalPrice) modalPrice.textContent = place.priceFormatted;
+
+        if (modalWikiLink) {
+            if (place.url) {
+                modalWikiLink.href = place.url;
+                modalWikiLink.style.display = "inline-flex";
+            } else {
+                modalWikiLink.style.display = "none";
+            }
+        }
+
+        modalOverlay.classList.add("active");
+        modalOverlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closePlaceModal(): void {
+        const modalOverlay = document.getElementById("place-modal-overlay");
+        if (!modalOverlay) return;
+        modalOverlay.classList.remove("active");
+        modalOverlay.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    function bindDestinationCardEvents(cards: DestinationCardMeta[]): void {
+        const carouselCards = document.querySelectorAll<HTMLElement>('#carouselTrack .tcard');
+
+        carouselCards.forEach((card, idx) => {
+            const meta = cards[idx] || destinationCardsData[idx];
+            if (!meta) return;
+
+            // Details button click -> open Place Details Modal
+            const viewBtn = card.querySelector<HTMLElement>('.place-view-btn');
+            if (viewBtn) {
+                const newViewBtn = viewBtn.cloneNode(true) as HTMLElement;
+                viewBtn.parentNode?.replaceChild(newViewBtn, viewBtn);
+                newViewBtn.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation();
+                    openPlaceModal(meta);
+                });
+            }
+
+            // Book button click -> open Booking Form Modal
+            const bookBtn = card.querySelector<HTMLElement>('.place-book-btn');
+            if (bookBtn) {
+                const newBookBtn = bookBtn.cloneNode(true) as HTMLElement;
+                bookBtn.parentNode?.replaceChild(newBookBtn, bookBtn);
+                newBookBtn.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation();
+                    openBookingModal({
+                        placeName: meta.placeName,
+                        destination: meta.destination,
+                        price: meta.price,
+                        image: meta.image
+                    });
+                });
+            }
+
+            // Clicking card opens Place Details Modal
+            card.onclick = (e: MouseEvent) => {
+                const carousel = document.getElementById('destCarousel');
+                if (carousel?.classList.contains('is-dragging')) return;
+                if ((e.target as HTMLElement).closest('.place-book-btn') || (e.target as HTMLElement).closest('.place-view-btn')) {
+                    return;
+                }
+                openPlaceModal(meta);
+            };
+        });
+    }
+
+    function renderDestinationCardsDOM(cards: DestinationCardMeta[]): void {
+        const carouselCards = document.querySelectorAll<HTMLElement>('#carouselTrack .tcard');
+        carouselCards.forEach((card, idx) => {
+            const meta = cards[idx];
+            if (!meta) return;
+
+            card.setAttribute('data-destination', meta.destination);
+
+            const img = card.querySelector<HTMLImageElement>('.place-img');
+            if (img && meta.image) {
+                img.src = meta.image;
+                img.alt = meta.placeName;
+                img.onerror = () => {
+                    img.onerror = null;
+                    img.src = DEFAULT_CACHED_DESTINATIONS[idx]?.image || './assets/destination-rome.png';
+                };
+            }
+
+            const badgeEl = card.querySelector<HTMLElement>('.place-badge');
+            if (badgeEl) badgeEl.textContent = meta.badge;
+
+            const ratingEl = card.querySelector<HTMLElement>('.place-rating');
+            if (ratingEl) ratingEl.innerHTML = `<i class="fa-solid fa-star"></i> ${meta.rating.toFixed(1)}`;
+
+            const reviewsEl = card.querySelector<HTMLElement>('.place-reviews');
+            if (reviewsEl) reviewsEl.textContent = `(${meta.reviews.toLocaleString()} reviews)`;
+
+            const durationEl = card.querySelector<HTMLElement>('.place-duration');
+            if (durationEl) durationEl.textContent = `• ${meta.duration}`;
+
+            const titleEl = card.querySelector<HTMLElement>('.place-title');
+            if (titleEl) titleEl.textContent = meta.destination;
+
+            const descEl = card.querySelector<HTMLElement>('.place-description');
+            if (descEl) descEl.textContent = meta.description;
+
+            const priceEl = card.querySelector<HTMLElement>('.place-price');
+            if (priceEl) priceEl.textContent = meta.priceFormatted;
+
+            const viewBtn = card.querySelector<HTMLElement>('.place-view-btn');
+            if (viewBtn) viewBtn.setAttribute('aria-label', `View details for ${meta.destination}`);
+
+            const bookBtn = card.querySelector<HTMLElement>('.place-book-btn');
+            if (bookBtn) bookBtn.setAttribute('aria-label', `Book ${meta.destination}`);
+        });
+
+        bindDestinationCardEvents(cards);
+    }
+
+    async function fetchAndSyncLiveDestinations(): Promise<void> {
+        const cities = ['Rome', 'London', 'Paris', 'Santorini', 'Venice', 'Tokyo'];
+        let hasUpdates = false;
+
+        for (let i = 0; i < cities.length; i++) {
+            const city = cities[i];
+            try {
+                const response = await fetch(`/api/destination?name=${encodeURIComponent(city)}`);
+                if (!response.ok) continue;
+                const data = await response.json();
+                if (data && Array.isArray(data.places) && data.places.length > 0) {
+                    const topPlace = data.places[0];
+                    const existing = destinationCardsData[i] || DEFAULT_CACHED_DESTINATIONS[i];
+
+                    const countryDisplay = data.country && data.country !== data.destination
+                        ? (data.country === 'IT' ? 'Italy' : data.country === 'GB' ? 'UK' : data.country === 'FR' ? 'France' : data.country === 'JP' ? 'Japan' : data.country)
+                        : (existing.destination.split(',')[1]?.trim() || city);
+
+                    const priceNum = typeof topPlace.amount === 'number' && topPlace.amount > 0
+                        ? topPlace.amount
+                        : existing.price;
+
+                    const priceStr = topPlace.price
+                        ? topPlace.price
+                        : (topPlace.amount ? `$${topPlace.amount}` : existing.priceFormatted);
+
+                    const cleanDesc = topPlace.description
+                        ? (topPlace.description.length > 130 ? topPlace.description.slice(0, 127) + '...' : topPlace.description)
+                        : existing.description;
+
+                    destinationCardsData[i] = {
+                        cityKey: city,
+                        placeName: topPlace.name || existing.placeName,
+                        destination: `${city}, ${countryDisplay}`,
+                        price: priceNum,
+                        priceFormatted: priceStr,
+                        image: topPlace.image || existing.image,
+                        badge: topPlace.badge || existing.badge,
+                        rating: topPlace.rating || existing.rating,
+                        reviews: topPlace.reviews || existing.reviews,
+                        duration: topPlace.duration || existing.duration,
+                        description: cleanDesc,
+                        url: topPlace.url || existing.url
+                    };
+                    hasUpdates = true;
+                }
+            } catch (err) {
+                console.warn(`Could not sync live API data for ${city}:`, err);
+            }
+        }
+
+        if (hasUpdates) {
+            Storage.set(STORAGE_KEYS.DESTINATIONS, destinationCardsData);
+            renderDestinationCardsDOM(destinationCardsData);
+        }
+    }
+
+    function initHomepageBookingTriggers(): void {
+        const modalOverlay = document.getElementById("place-modal-overlay");
+        const modalCloseBtn = document.getElementById("modal-close-btn");
+        const modalBookCta = document.getElementById("modal-book-cta");
+
+        modalCloseBtn?.addEventListener("click", closePlaceModal);
+        modalOverlay?.addEventListener("click", (e: MouseEvent) => {
+            if (e.target === modalOverlay || (e.target as HTMLElement).classList.contains("place-modal-backdrop")) {
+                closePlaceModal();
+            }
+        });
+
+        window.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key === "Escape" && modalOverlay?.classList.contains("active")) {
+                closePlaceModal();
+            }
+        });
+
+        modalBookCta?.addEventListener("click", () => {
+            if (currentActivePlaceModal) {
+                const place = currentActivePlaceModal;
+                closePlaceModal();
+                openBookingModal({
+                    placeName: place.placeName,
+                    destination: place.destination,
+                    price: place.price,
+                    image: place.image
+                });
+            }
+        });
+
+        // 1. Load saved data from start and render immediately
+        destinationCardsData = getOrInitSavedDestinations();
+        renderDestinationCardsDOM(destinationCardsData);
+
+        // 2. Fetch fresh live data from API key endpoint asynchronously and update cache
+        fetchAndSyncLiveDestinations();
+
+        // Greece Booking Card in 4th section
+        const greeceCard = document.querySelector<HTMLElement>('.fcard');
+        if (greeceCard) {
+            greeceCard.style.cursor = 'pointer';
+            greeceCard.title = 'Click to book Trip to Greece';
+            greeceCard.addEventListener('click', () => {
+                openBookingModal({
+                    placeName: 'Aegean Islands & Historic Ruins',
+                    destination: 'Trip to Greece',
+                    price: 85,
+                    image: './assets/easy-fast-trip-to-greece.jpeg'
+                });
+            });
+        }
+    }
+
+    window.JadooUI = {
+        openBookingModal,
+        closeBookingModal,
+        openMyBookingsModal,
+        closeMyBookingsModal,
+        openPlaceModal,
+        updateNavbar: updateNavbarAuthState
+    };
 
     // Persist & Restore Input Form Values across Restarts
     function restoreFormDrafts(): void {
@@ -397,6 +1400,9 @@ interface Window {
             }
         }
 
+        // Initialize Remembered Account on Sign In form
+        initRememberedAccount();
+
         // 1. Sign Up
         const signupForm = (document.getElementById('signupForm') || document.querySelector('.signup-form form')) as HTMLFormElement | null;
         if (signupForm) {
@@ -449,6 +1455,124 @@ interface Window {
         }
     }
 
+    function initRememberedAccount(): void {
+        const promptContainer = document.getElementById('rememberedAccountPrompt');
+        const userIdGroup = document.getElementById('userIdGroup');
+        const userIdInput = document.getElementById('user-id') as HTMLInputElement | null;
+        const passwordInput = document.getElementById('signin-password') as HTMLInputElement | null;
+        const signinForm = document.getElementById('signinForm');
+        const signinLabel = document.getElementById('signinLabel');
+        const submitBtn = document.getElementById('signin-submit-btn');
+
+        if (!promptContainer || !userIdInput || !signinForm) return;
+
+        const currentUser = AuthService.getCurrentUser();
+        if (currentUser) {
+            promptContainer.style.display = 'none';
+            if (userIdGroup) userIdGroup.style.display = '';
+            return;
+        }
+
+        const lastAccount = Storage.get<{ id: string; email: string; fullName: string }>(STORAGE_KEYS.LAST_ACCOUNT);
+        if (!lastAccount || !lastAccount.email) {
+            promptContainer.style.display = 'none';
+            if (userIdGroup) userIdGroup.style.display = '';
+            return;
+        }
+
+        const activeAccount = {
+            id: lastAccount.id,
+            email: lastAccount.email,
+            fullName: lastAccount.fullName || 'User'
+        };
+        const firstName = activeAccount.fullName.split(' ')[0] || 'User';
+
+        function renderRememberedMode(): void {
+            if (!promptContainer) return;
+            promptContainer.style.display = 'block';
+            promptContainer.innerHTML = `
+                <div class="remembered-account-card" id="rememberedAccountCard">
+                    <div class="remembered-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="remembered-details">
+                        <span class="remembered-name">${activeAccount.fullName}</span>
+                        <span class="remembered-email">${activeAccount.email}</span>
+                    </div>
+                    <button type="button" class="btn-switch-account-link" id="switchRememberedBtn" title="Switch account">
+                        Switch
+                    </button>
+                </div>
+            `;
+
+            // Auto-populate hidden ID field
+            if (userIdInput) {
+                userIdInput.value = activeAccount.email;
+                if ((window as any).AuthValidation?.clearError) {
+                    (window as any).AuthValidation.clearError(userIdInput);
+                }
+            }
+            if (userIdGroup) {
+                userIdGroup.style.display = 'none';
+            }
+            if (signinLabel) {
+                signinLabel.textContent = `Welcome Back`;
+            }
+            if (passwordInput) {
+                passwordInput.placeholder = `Password for ${firstName}`;
+                passwordInput.focus();
+            }
+            if (submitBtn) {
+                submitBtn.textContent = `Log In as ${firstName}`;
+            }
+
+            // Listener for switching
+            const switchBtn = document.getElementById('switchRememberedBtn');
+            switchBtn?.addEventListener('click', (e: Event) => {
+                e.preventDefault();
+                renderManualMode();
+            });
+        }
+
+        function renderManualMode(): void {
+            if (!promptContainer) return;
+            promptContainer.style.display = 'block';
+            promptContainer.innerHTML = `
+                <div class="remembered-switch-banner">
+                    <span>Not <strong>${firstName}</strong>?</span>
+                    <button type="button" class="btn-restore-account" id="restoreAccountBtn">
+                        Sign in as ${firstName}
+                    </button>
+                </div>
+            `;
+
+            if (userIdGroup) {
+                userIdGroup.style.display = 'flex';
+            }
+            if (userIdInput) {
+                userIdInput.value = '';
+                userIdInput.focus();
+            }
+            if (signinLabel) {
+                signinLabel.textContent = 'Login';
+            }
+            if (passwordInput) {
+                passwordInput.placeholder = 'Password';
+            }
+            if (submitBtn) {
+                submitBtn.textContent = 'Login';
+            }
+
+            const restoreBtn = document.getElementById('restoreAccountBtn');
+            restoreBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                renderRememberedMode();
+            });
+        }
+
+        renderRememberedMode();
+    }
+
     function initNewsletter(): void {
         const form = document.getElementById('subscribeForm') as HTMLFormElement | null;
         const emailInput = document.getElementById('subscribeEmail') as HTMLInputElement | null;
@@ -475,7 +1599,7 @@ interface Window {
         if (!demoBtn) return;
 
         demoBtn.addEventListener('click', () => {
-            alert('✨ Jadoo Experience Demo: Explore top destinations, book curated flights & hotels, and manage your travel itineraries in one click!');
+            alert('Jadoo Experience Demo: Explore top destinations, book curated flights & hotels, and manage your travel itineraries in one click!');
         });
     }
 
