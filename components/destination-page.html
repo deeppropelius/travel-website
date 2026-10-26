@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="../styles/tablet.css">
     <link rel="stylesheet" href="../styles/mobile.css">
     <link rel="stylesheet" href="../styles/dark-theme.css">
+    <link rel="stylesheet" href="../styles/features.css">
+    <!-- Leaflet CSS for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <!-- Early dark theme execution to prevent light-theme flash -->
     <script>
         (function () {
@@ -33,9 +36,19 @@
                 } else {
                     document.documentElement.removeAttribute('data-theme');
                 }
+
+                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                if (!loggedOut) {
+                    document.documentElement.classList.add('user-logged-in');
+                }
             } catch (e) { }
         })();
     </script>
+
+    <!-- Real QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Direct Client-Side PDF Generation Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -57,18 +70,17 @@
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
                         <li><a href="./destination-page.html" class="navlink active-page">Destinations</a></li>
-                        <li><a href="../index.html#services" class="navlink">Services</a></li>
-                        <li><a href="../index.html#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
-                        <li><a href="../index.html#testimonials" class="navlink">Testimonials</a></li>
+                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
-                        <li id="nav-user-li" class="nav-user-item" style="display: none;">
+                        <li id="nav-user-li" class="nav-user-item">
                             <div class="user-profile-dropdown" id="userProfileDropdown">
-                                <button type="button" class="user-profile-btn" id="userProfileBtn" aria-label="User Account Menu" aria-haspopup="true" aria-expanded="false">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
                                     <span class="user-avatar-circle">
-                                        <i class="fa-solid fa-user"></i>
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                     </span>
-                                    <span class="user-first-name" id="userFirstNameDisplay">User</span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
                                     <i class="fa-solid fa-chevron-down user-chevron"></i>
                                 </button>
                                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
@@ -77,20 +89,28 @@
                                             <i class="fa-solid fa-user"></i>
                                         </div>
                                         <div class="dropdown-user-info">
-                                            <span class="dropdown-user-name" id="dropdownUserName">User Name</span>
-                                            <span class="dropdown-user-email" id="dropdownUserEmail">user@example.com</span>
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
                                         </div>
                                     </div>
                                     <div class="dropdown-divider"></div>
-                                    <button type="button" class="dropdown-item" id="navMyBookingsBtn" role="menuitem">
-                                        <i class="fa-solid fa-suitcase-rolling"></i>
-                                        <span>My Bookings</span>
+                                    <a href="./profile.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>My Profile</span>
+                                    </a>
+                                    <a href="./ticket.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-ticket"></i>
+                                        <span>My E-Tickets</span>
                                         <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
-                                    </button>
+                                    </a>
+                                    <a href="./destination-page.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-compass"></i>
+                                        <span>Explore Destinations</span>
+                                    </a>
                                     <div class="dropdown-divider"></div>
-                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" role="menuitem">
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
                                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                                        <span>Logout</span>
+                                        <span>Log Out</span>
                                     </button>
                                 </div>
                             </div>
@@ -142,7 +162,254 @@
         </div>
     </section>
 
-    <section class="destination-results-container">
+    <!-- Popular Locations & Cities Cards Section -->
+    <section class="popular-locations-section" id="popularLocationsSection">
+        <div class="locations-header">
+            <span class="locations-badge">Featured Locations</span>
+            <h2 class="locations-title">Explore by Popular Location</h2>
+            <p class="locations-subtitle">Discover world-famous travel hubs with hand-picked landmarks, real traveler reviews, and verified reservation passes</p>
+        </div>
+
+        <div class="locations-grid">
+            <!-- Rome Card -->
+            <div class="location-card" data-city="Rome" tabindex="0" role="button" aria-label="Explore Rome attractions">
+                <div class="location-card-img-wrap">
+                    <img src="../assets/destination-rome.png" alt="Rome, Italy" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">Top Destination</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Rome</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> Italy</span>
+                    <p class="location-card-landmarks">Colosseum, Trevi Fountain, Pantheon & Vatican Museums</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$38 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- London Card -->
+            <div class="location-card" data-city="London" tabindex="0" role="button" aria-label="Explore London attractions">
+                <div class="location-card-img-wrap">
+                    <img src="../assets/destination-london.jpeg" alt="London, United Kingdom" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">Royal Heritage</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.8</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">London</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> United Kingdom</span>
+                    <p class="location-card-landmarks">Tower of London, Big Ben, Westminster Abbey & London Eye</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$42 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paris Card -->
+            <div class="location-card" data-city="Paris" tabindex="0" role="button" aria-label="Explore Paris attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80" alt="Paris, France" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">City of Lights</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Paris</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> France</span>
+                    <p class="location-card-landmarks">Eiffel Tower, Louvre Museum, Arc de Triomphe & Montmartre</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$45 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tokyo Card -->
+            <div class="location-card" data-city="Tokyo" tabindex="0" role="button" aria-label="Explore Tokyo attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80" alt="Tokyo, Japan" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">Tradition & Neon</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Tokyo</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> Japan</span>
+                    <p class="location-card-landmarks">Senso-ji Temple, Tokyo Skytree, Shibuya Sky & Meiji Shrine</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$55 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New York Card -->
+            <div class="location-card" data-city="New York" tabindex="0" role="button" aria-label="Explore New York attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80" alt="New York, USA" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">The Big Apple</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.8</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">New York</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> United States</span>
+                    <p class="location-card-landmarks">Empire State Building, Statue of Liberty, Central Park & Edge</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$48 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dubai Card -->
+            <div class="location-card" data-city="Dubai" tabindex="0" role="button" aria-label="Explore Dubai attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80" alt="Dubai, UAE" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">Luxury & Wonder</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Dubai</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> United Arab Emirates</span>
+                    <p class="location-card-landmarks">Burj Khalifa, Dubai Frame, Museum of the Future & Miracle Garden</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$60 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sydney Card -->
+            <div class="location-card" data-city="Sydney" tabindex="0" role="button" aria-label="Explore Sydney attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80" alt="Sydney, Australia" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">Harbour Haven</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.8</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Sydney</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> Australia</span>
+                    <p class="location-card-landmarks">Sydney Opera House, Harbour Bridge, Bondi Beach & Taronga Zoo</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$52 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agra Card -->
+            <div class="location-card" data-city="Agra" tabindex="0" role="button" aria-label="Explore Agra attractions">
+                <div class="location-card-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80" alt="Agra, India" class="location-card-img" loading="lazy">
+                    <span class="location-card-badge">World Wonder</span>
+                    <span class="location-card-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                </div>
+                <div class="location-card-body">
+                    <div class="location-card-header">
+                        <h3 class="location-card-title">Agra</h3>
+                    </div>
+                    <span class="location-card-country"><i class="fa-solid fa-location-dot"></i> India</span>
+                    <p class="location-card-landmarks">Taj Mahal, Agra Fort, Mehtab Bagh & Fatehpur Sikri</p>
+                    <div class="location-card-footer">
+                        <div class="location-card-price-col">
+                            <span class="location-card-price-label">Starting From</span>
+                            <span class="location-card-price-val">$30 / person</span>
+                        </div>
+                        <button type="button" class="location-card-btn">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="destination-results-container" id="destinationResultsContainer" style="display: none;">
+        <!-- Back Navigation Bar -->
+        <div class="results-back-bar" id="resultsBackBar">
+            <button type="button" class="btn-back-locations" id="btnBackToLocations">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Popular Locations</span>
+            </button>
+        </div>
+
+        <!-- Interactive Category Toolbar & View Mode Switcher -->
+        <div class="map-view-toggle-bar" id="mapViewToggleBar">
+            <div class="category-filter-chips" id="categoryFilterChips">
+                <button type="button" class="cat-chip is-active" data-category="All"><i class="fa-solid fa-shapes"></i> All</button>
+                <button type="button" class="cat-chip" data-category="Historical Landmark"><i class="fa-solid fa-monument"></i> Landmarks</button>
+                <button type="button" class="cat-chip" data-category="Museum & Art"><i class="fa-solid fa-palette"></i> Museums</button>
+                <button type="button" class="cat-chip" data-category="Architecture"><i class="fa-solid fa-building-columns"></i> Architecture</button>
+                <button type="button" class="cat-chip" data-category="Nature & Scenery"><i class="fa-solid fa-mountain-sun"></i> Nature</button>
+                <button type="button" class="cat-chip" data-category="Entertainment & Leisure"><i class="fa-solid fa-film"></i> Entertainment</button>
+            </div>
+            <div class="view-mode-switch" id="viewModeSwitch">
+                <button type="button" class="view-switch-btn is-active" data-view="grid"><i class="fa-solid fa-border-all"></i> Grid</button>
+                <button type="button" class="view-switch-btn" data-view="map"><i class="fa-solid fa-map-location-dot"></i> Map</button>
+                <button type="button" class="view-switch-btn" data-view="split"><i class="fa-solid fa-table-columns"></i> Split</button>
+            </div>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div class="interactive-map-container" id="destination-map" style="display: none;"></div>
+
         <!-- Controls bar with sorting and filter info -->
         <div class="results-toolbar" id="results-toolbar" style="display: none;">
             <div class="toolbar-info">
@@ -183,6 +450,65 @@
             </button>
         </nav>
     </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="foot">
+            <div class="col lab">
+                <div class="fh"><a href="../index.html">Jadoo.</a></div>
+                <div class="fp">Book your trip in minutes, get full control for much longer.</div>
+            </div>
+            <div class="ccol">
+                <div class="col">
+                    <div class="fch">Company</div>
+                    <div class="fcp"><a href="../index.html#home">About</a></div>
+                    <div class="fcp"><a href="../index.html#services">Services</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Destinations</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">Explore & Care</div>
+                    <div class="fcp"><a href="./contact.html">Help & FAQ</a></div>
+                    <div class="fcp"><a href="./ticket.html">E-Ticket View</a></div>
+                    <div class="fcp"><a href="./profile.html">Traveler Profile</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">More</div>
+                    <div class="fcp"><a href="../index.html#services">Airline fees</a></div>
+                    <div class="fcp"><a href="../index.html#services">Airlines</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Low fare tips</a></div>
+                </div>
+            </div>
+            <div class="col fico">
+                <div class="footi">
+                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                </div>
+                <div class="fih">Discover our app</div>
+                <div class="store">
+                    <div class="fps">
+                        <div class="pas">
+                            <img src="../assets/google-play.png" alt="Google Play store badge">
+                        </div>
+                        <div class="fit">
+                            <div class="play1">Get it on</div>
+                            <div class="play2">Google Play</div>
+                        </div>
+                    </div>
+                    <div class="fps">
+                        <div class="pas pas1">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="fit">
+                            <div class="play1 play3">Available on the</div>
+                            <div class="play2 play4">Apple Store</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="end">All rights reserved@jadoo.co</div>
+    </footer>
 
     <!-- Fullscreen Place Details Modal with Background Image & Foreground Content -->
     <div id="place-modal-overlay" class="place-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
@@ -480,6 +806,30 @@
             </div>
 
             <div class="my-bookings-body">
+                <!-- Status Filter Tabs -->
+                <div class="bookings-filter-bar" id="myBookingsFilterTabs">
+                    <button type="button" class="status-tab-btn is-active" data-status="all">
+                        <i class="fa-solid fa-border-all"></i>
+                        <span>All</span>
+                        <span class="tab-badge" id="countTabAll">0</span>
+                    </button>
+                    <button type="button" class="status-tab-btn" data-status="confirmed">
+                        <i class="fa-solid fa-circle-check" style="color: #10B981;"></i>
+                        <span>Confirmed</span>
+                        <span class="tab-badge" id="countTabConfirmed">0</span>
+                    </button>
+                    <button type="button" class="status-tab-btn" data-status="pending">
+                        <i class="fa-solid fa-clock" style="color: #F59E0B;"></i>
+                        <span>Pending</span>
+                        <span class="tab-badge" id="countTabPending">0</span>
+                    </button>
+                    <button type="button" class="status-tab-btn" data-status="cancelled">
+                        <i class="fa-solid fa-ban" style="color: #EF4444;"></i>
+                        <span>Cancelled</span>
+                        <span class="tab-badge" id="countTabCancelled">0</span>
+                    </button>
+                </div>
+
                 <div class="bookings-list" id="myBookingsList">
                     <!-- Dynamically populated or empty state -->
                 </div>
@@ -492,7 +842,173 @@
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <!-- ==========================================
+         Boarding Pass & Printable Itinerary Modal
+         ========================================== -->
+    <div class="features-modal-overlay" id="ticketModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="ticketModalBackdrop"></div>
+        <div class="features-modal-card" style="max-width: 640px;">
+            <div class="features-modal-header">
+                <div>
+                    <span class="modal-header-badge"><i class="fa-solid fa-ticket"></i> Boarding Pass</span>
+                    <h3 class="features-modal-title">Official Travel Itinerary</h3>
+                </div>
+                <button type="button" class="features-modal-close" id="ticketModalClose" aria-label="Close ticket">&times;</button>
+            </div>
+            <div class="features-modal-body">
+                <div class="boarding-pass-wrap" id="printableBoardingPass">
+                    <div class="boarding-pass-header">
+                        <div class="pass-brand">
+                            <i class="fa-solid fa-plane-departure" style="color: #DF6951;"></i>
+                            <span>Jadoo Voyages</span>
+                        </div>
+                        <span class="pass-category-pill" id="ticketStatusBadge">CONFIRMED</span>
+                    </div>
+                    <div class="boarding-pass-body">
+                        <div class="boarding-pass-main">
+                            <div class="pass-destination-route">
+                                <div class="route-point">
+                                    <span class="city-code">HOME</span>
+                                    <span class="city-name">Departure</span>
+                                </div>
+                                <div class="route-plane-icon">
+                                    <i class="fa-solid fa-plane"></i>
+                                </div>
+                                <div class="route-point">
+                                    <span class="city-code" id="ticketDestCode">ROM</span>
+                                    <span class="city-name" id="ticketDestCity">Rome</span>
+                                </div>
+                            </div>
+
+                            <div class="pass-meta-grid">
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Passenger Name</span>
+                                    <span class="meta-val" id="ticketTravelerName">Traveler</span>
+                                </div>
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Attraction / Tour</span>
+                                    <span class="meta-val" id="ticketAttractionName">Tour</span>
+                                </div>
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Travel Date</span>
+                                    <span class="meta-val" id="ticketTravelDate">2026-11-15</span>
+                                </div>
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Party Size</span>
+                                    <span class="meta-val" id="ticketGuestsCount">1 Traveler</span>
+                                </div>
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Package Tier</span>
+                                    <span class="meta-val" id="ticketPackageType">STANDARD</span>
+                                </div>
+                                <div class="pass-meta-item">
+                                    <span class="meta-label">Total Amount</span>
+                                    <span class="meta-val" id="ticketTotalPrice" style="color: #10B981;">$55.00 USD</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="boarding-pass-stub">
+                            <div class="stub-qr-code">
+                                <i class="fa-solid fa-qrcode" style="font-size: 3rem; color: #FFF;"></i>
+                            </div>
+                            <span class="meta-label">Booking Ref</span>
+                            <strong style="color: #181E4B; font-size: 0.9rem;" id="ticketRefId">#BK-92841</strong>
+                            <div class="stub-barcode" id="ticketStubRef">||| | |||| | |||||</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-submit-row">
+                    <a id="ticketFullPageLink" href="./ticket.html" class="btn-secondary-flat" style="text-decoration: none;">
+                        <i class="fa-solid fa-up-right-from-square"></i>
+                        <span>Full Ticket Page</span>
+                    </a>
+                    <button type="button" class="btn-secondary-flat" onclick="document.getElementById('ticketModalOverlay').classList.remove('is-open'); document.body.style.overflow='';">Close</button>
+                    <button type="button" class="btn-primary-glow" id="btnPrintTicketAction">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Boarding Pass</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         Traveler Profile & Stats Dashboard Modal
+         ========================================== -->
+    <div class="features-modal-overlay" id="profileModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="profileModalBackdrop"></div>
+        <div class="features-modal-card">
+            <div class="features-modal-header">
+                <div>
+                    <span class="modal-header-badge"><i class="fa-solid fa-user-astronaut"></i> Traveler Account</span>
+                    <h3 class="features-modal-title">My Travel Dashboard</h3>
+                </div>
+                <button type="button" class="features-modal-close" id="profileModalClose" aria-label="Close profile">&times;</button>
+            </div>
+            <div class="features-modal-body">
+                <div class="profile-card-header">
+                    <div class="profile-avatar-wrap">
+                        <img src="../assets/testimonials-avatar-1.png" alt="Traveler Avatar" id="profileDisplayAvatar">
+                    </div>
+                    <div class="profile-user-details">
+                        <h3 id="profileDisplayName">Traveler</h3>
+                        <span class="profile-user-email" id="profileDisplayEmail">traveler@example.com</span>
+                        <span class="profile-member-tag"><i class="fa-solid fa-medal"></i> Premium Explorer</span>
+                    </div>
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-box">
+                        <span class="stat-number" id="profileTotalTrips">0</span>
+                        <span class="stat-label">Total Trips</span>
+                    </div>
+                    <div class="profile-stat-box">
+                        <span class="stat-number" id="profileActiveTrips" style="color: #10B981;">0</span>
+                        <span class="stat-label">Confirmed</span>
+                    </div>
+                    <div class="profile-stat-box">
+                        <span class="stat-number" id="profileTotalSpent" style="color: #DF6951;">$0</span>
+                        <span class="stat-label">Total Spent</span>
+                    </div>
+                </div>
+
+                <form id="profileEditForm">
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="profileInputName">Full Name</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="profileInputName" required>
+                            </div>
+                        </div>
+                        <div class="booking-field-group">
+                            <label for="profileInputPhone">Phone Number</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <input type="tel" id="profileInputPhone" placeholder="+1 (555) 000-0000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="button" class="btn-secondary-flat" onclick="document.getElementById('profileModalOverlay').classList.remove('is-open'); document.body.style.overflow='';">Close</button>
+                        <button type="submit" class="btn-primary-glow">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS for Interactive Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="../scripts/script.js"></script>
-    <script src="/scripts/destination.js" type="module"></script>
+    <script type="module" src="../scripts/db.js"></script>
+    <script type="module" src="../scripts/features.js"></script>
+    <script type="module" src="../scripts/destination.js"></script>
 </body>
-</html>
+</html>

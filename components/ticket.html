@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Ticket & Tour Voucher - Jadoo Travel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/tablet.css">
+    <link rel="stylesheet" href="../styles/mobile.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <link rel="stylesheet" href="../styles/features.css">
+    <link rel="stylesheet" href="../styles/pages.css">
+
+    <!-- Early dark theme execution -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+
+                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                if (!loggedOut) {
+                    document.documentElement.classList.add('user-logged-in');
+                }
+            } catch (e) { }
+        })();
+    </script>
+
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Client-Side PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <div class="navbar">
+                <div class="navlogo">
+                    <a href="../index.html" title="Jadoo - Home">
+                        <img src="../assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+                        <img src="../assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
+                    </a>
+                </div>
+                <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="navitems" id="navitems">
+                    <ul>
+                        <li><a href="../index.html" class="navlink">Home</a></li>
+                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
+                        <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-user-li" class="nav-user-item">
+                            <div class="user-profile-dropdown" id="userProfileDropdown">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
+                                    <span class="user-avatar-circle">
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
+                                    </span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
+                                    <i class="fa-solid fa-chevron-down user-chevron"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                                    <div class="dropdown-user-header">
+                                        <div class="dropdown-avatar-circle">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <div class="dropdown-user-info">
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="./profile.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>My Profile</span>
+                                    </a>
+                                    <a href="./ticket.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-ticket"></i>
+                                        <span>My E-Tickets</span>
+                                        <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                                    </a>
+                                    <a href="./destination-page.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-compass"></i>
+                                        <span>Explore Destinations</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                        <span>Log Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <!-- Breadcrumbs -->
+        <div class="page-breadcrumb">
+            <a href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-chevron-right"></i>
+            <a href="./profile.html">My Account</a>
+            <i class="fa-solid fa-chevron-right"></i>
+            <span class="current-crumb">E-Ticket & Tour Voucher</span>
+        </div>
+
+        <div class="ticket-page-wrap">
+            <!-- Top Toolbar -->
+            <div class="ticket-top-toolbar">
+                <div class="ticket-toolbar-left">
+                    <a href="./profile.html" class="ticket-back-btn" title="Back to Traveler Profile">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Back to Profile</span>
+                    </a>
+                    <span class="ticket-status-pill pill-confirmed" id="ticketStatusPill">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span id="ticketStatusText">CONFIRMED VOYAGE</span>
+                    </span>
+                </div>
+
+                <div class="ticket-toolbar-right">
+                    <div class="ticket-switch-wrap">
+                        <i class="fa-solid fa-ticket-simple select-icon"></i>
+                        <select id="switchBookingSelect" class="ticket-switch-dropdown" aria-label="Switch Ticket">
+                            <option value="">Switch to Another Ticket...</option>
+                        </select>
+                    </div>
+                    <button type="button" class="ticket-tool-btn btn-pdf" id="downloadPdfBtn" title="Download PDF Voucher">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>Download PDF</span>
+                    </button>
+                    <button type="button" class="ticket-tool-btn btn-print" id="printTicketBtn" title="Print Tour Voucher">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Ticket</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- E-Ticket Card -->
+            <div class="ticket-voucher-card" id="ticketVoucherCard">
+                <!-- Voucher Header -->
+                <div class="ticket-voucher-header">
+                    <div class="ticket-brand-badge">
+                        <div class="ticket-brand-logo">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </div>
+                        <div class="ticket-brand-info">
+                            <h3>JADOO TRAVEL</h3>
+                            <span>Official E-Ticket & Tour Voucher</span>
+                        </div>
+                    </div>
+                    <div class="ticket-header-meta">
+                        <div class="ticket-ref-box">
+                            <strong>Reference:</strong> <span id="ticketRefNumber">#BK-92841</span>
+                        </div>
+                        <div class="ticket-ref-box" style="display: none;" id="ticketIssueDateWrap">
+                            <strong>Issued:</strong> <span id="ticketIssueDate">Nov 15, 2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher Body -->
+                <div class="ticket-voucher-main">
+                    <!-- Left: Tour and Traveler Details -->
+                    <div class="ticket-details-col">
+                        <!-- Tour Showcase -->
+                        <div class="ticket-tour-hero">
+                            <img src="../assets/destination-rome.png" alt="Tour Destination" class="ticket-tour-thumb" id="ticketTourImg" onerror="this.src='../assets/destination-rome.png'">
+                            <div class="ticket-tour-heading">
+                                <h2 id="ticketTourTitle">Colosseum & Historic Walking Tour</h2>
+                                <span class="ticket-tour-location" id="ticketTourLocation">
+                                    <i class="fa-solid fa-location-dot"></i> Rome, Italy
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 2x4 Details Grid -->
+                        <div class="ticket-info-grid">
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Lead Traveler</span>
+                                <span class="ticket-info-value" id="ticketPassengerName">Alex Johnson</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Travel Date</span>
+                                <span class="ticket-info-value" id="ticketTravelDate">Nov 15, 2026</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Party Size</span>
+                                <span class="ticket-info-value" id="ticketGuestsCount">2 Travelers</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Package Tier</span>
+                                <span class="ticket-info-value val-highlight" id="ticketPackageTier">VIP Tour Package</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Contact Email</span>
+                                <span class="ticket-info-value" id="ticketEmail">alex.traveler@example.com</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Contact Phone</span>
+                                <span class="ticket-info-value" id="ticketPhone">+1 (555) 234-5678</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Meeting Point</span>
+                                <span class="ticket-info-value" id="ticketMeetingPoint">Main Visitor Center</span>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span class="ticket-info-label">Payment Status</span>
+                                <span class="ticket-info-value" style="color: #10B981;" id="ticketTotalPaid">$110.00 USD (Paid in Full)</span>
+                            </div>
+                        </div>
+
+                        <!-- Tour Inclusions & Traveler Instructions -->
+                        <div class="ticket-inclusions-box">
+                            <div class="ticket-inclusions-title">
+                                <i class="fa-solid fa-circle-info" style="color: #DF6951;"></i>
+                                Important Traveler Information & Inclusions
+                            </div>
+                            <p class="ticket-inclusions-text">
+                                • <strong>Check-in Notice:</strong> Please present this digital E-ticket or a printed voucher at the meeting point 15 minutes before the tour departure time. Valid photo identification is required for each traveler.<br>
+                                • <strong>Included Services:</strong> Certified English-speaking tour guide, fast-track skip-the-line entrance tickets, personal headset, and 100% full refund cancellation guarantee.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Perforated Tear-off Check-in Stub -->
+                    <div class="ticket-stub-col">
+                        <div class="ticket-notch-top"></div>
+                        <div class="ticket-notch-bottom"></div>
+
+                        <span class="stub-header-lbl">CHECK-IN STUB</span>
+
+                        <div class="stub-qr-box" id="stubQrBox" title="Scannable Tour Check-in Code">
+                            <div id="stubQrCanvas"></div>
+                        </div>
+
+                        <span class="stub-scan-hint"><i class="fa-solid fa-qrcode"></i> Scan at Tour Entrance</span>
+
+                        <div class="stub-meta-info" id="stubTicketId">BK-92841</div>
+                        <div style="font-size: 0.8rem; color: #64748B; margin-top: 0.25rem;" id="stubTraveler">Alex Johnson</div>
+                        <div style="font-size: 0.75rem; color: #10B981; font-weight: 700; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-shield-halved"></i> VERIFIED VOUCHER
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Action Toolbar -->
+            <div class="ticket-actions-bar">
+                <button type="button" class="btn-primary-glow" id="bottomPrintBtn">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Print Ticket</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="bottomPdfBtn">
+                    <i class="fa-solid fa-file-pdf" style="color: #DF6951;"></i>
+                    <span>Download PDF</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="cancelReservationBtn" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.3);">
+                    <i class="fa-solid fa-ban"></i>
+                    <span>Cancel Reservation</span>
+                </button>
+                <a href="./destination-page.html" class="btn-secondary-flat" style="text-decoration: none;">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>Explore More Trips</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="foot">
+            <div class="col lab">
+                <div class="fh"><a href="../index.html">Jadoo.</a></div>
+                <div class="fp">Book your trip in minutes, get full control for much longer.</div>
+            </div>
+            <div class="ccol">
+                <div class="col">
+                    <div class="fch">Company</div>
+                    <div class="fcp"><a href="../index.html">About</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Destinations</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">Explore & Care</div>
+                    <div class="fcp"><a href="./contact.html">Help & FAQ</a></div>
+                    <div class="fcp"><a href="./ticket.html">E-Ticket View</a></div>
+                    <div class="fcp"><a href="./profile.html">Traveler Profile</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">More</div>
+                    <div class="fcp"><a href="../index.html">Airline fees</a></div>
+                    <div class="fcp"><a href="../index.html">Airlines</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Low fare tips</a></div>
+                </div>
+            </div>
+            <div class="col fico">
+                <div class="footi">
+                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                </div>
+                <div class="fih">Discover our app</div>
+                <div class="store">
+                    <div class="fps">
+                        <div class="pas">
+                            <img src="../assets/google-play.png" alt="Google Play store badge">
+                        </div>
+                        <div class="fit">
+                            <div class="play1">Get it on</div>
+                            <div class="play2">Google Play</div>
+                        </div>
+                    </div>
+                    <div class="fps">
+                        <div class="pas pas1">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="fit">
+                            <div class="play1 play3">Available on the</div>
+                            <div class="play2 play4">Apple Store</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lfp">All rights reserved @ jadoo.co</div>
+    </footer>
+
+    <!-- Floating Dark Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <script type="module">
+        import { JadooDB } from '../scripts/db.js';
+        import { JadooTheme, JadooToast, JadooNavAuth } from '../scripts/features.js';
+
+        let activeBooking = null;
+        let allBookings = [];
+
+        function formatDate(dateStr) {
+            try {
+                if (!dateStr) return 'Nov 15, 2026';
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch (_) {
+                return dateStr;
+            }
+        }
+
+        function initTicketPage() {
+            // 1. Initialize theme and navbar
+            JadooTheme.init();
+            JadooNavAuth.init();
+
+
+            // 2. Load Bookings
+            try {
+                allBookings = JadooDB.getBookings() || [];
+            } catch (_) {
+                allBookings = [];
+            }
+
+            // Default seed booking if database is empty
+            if (allBookings.length === 0) {
+                const seedBooking = {
+                    id: 'BK-92841',
+                    destination_name: 'Rome',
+                    attraction_name: 'Colosseum & Historic Walking Tour',
+                    user_name: 'Alex Johnson',
+                    user_email: 'alex.traveler@example.com',
+                    phone_number: '+1 (555) 234-5678',
+                    travel_date: '2026-11-15',
+                    guests_count: 2,
+                    package_type: 'VIP',
+                    price_per_person: 55,
+                    total_price: 110,
+                    special_request: 'Morning priority entrance',
+                    status: 'confirmed',
+                    created_at: '2026-10-15T10:00:00.000Z',
+                    image_url: '../assets/destination-rome.png'
+                };
+                allBookings = [seedBooking];
+                try {
+                    localStorage.setItem('jadoo_schema_bookings', JSON.stringify(allBookings));
+                } catch (_) {}
+            }
+
+            // 3. Find Requested Booking
+            const params = new URLSearchParams(window.location.search);
+            const requestedId = params.get('id');
+
+            if (requestedId) {
+                activeBooking = allBookings.find(b => b.id.toLowerCase() === requestedId.toLowerCase());
+            }
+
+            if (!activeBooking) {
+                activeBooking = allBookings[0];
+            }
+
+            // 4. Render Ticket Data
+            renderTicket(activeBooking);
+
+            // 5. Populate Switcher Dropdown
+            const switchSelect = document.getElementById('switchBookingSelect');
+            if (switchSelect && allBookings.length > 0) {
+                switchSelect.innerHTML = allBookings.map(b => `
+                    <option value="${b.id}" ${b.id === activeBooking.id ? 'selected' : ''}>
+                        ${b.id} - ${b.attraction_name || b.destination_name} (${b.destination_name})
+                    </option>
+                `).join('');
+
+                switchSelect.addEventListener('change', (e) => {
+                    const newId = e.target.value;
+                    if (newId) {
+                        window.location.search = `?id=${encodeURIComponent(newId)}`;
+                    }
+                });
+            }
+
+            // 6. Action Listeners
+            const printActions = [document.getElementById('printTicketBtn'), document.getElementById('bottomPrintBtn')];
+            printActions.forEach(btn => {
+                btn?.addEventListener('click', () => window.print());
+            });
+
+            const pdfActions = [document.getElementById('downloadPdfBtn'), document.getElementById('bottomPdfBtn')];
+            pdfActions.forEach(btn => {
+                btn?.addEventListener('click', () => downloadPdf(activeBooking));
+            });
+
+            const cancelBtn = document.getElementById('cancelReservationBtn');
+            cancelBtn?.addEventListener('click', () => cancelBooking(activeBooking));
+        }
+
+        function renderTicket(b) {
+            if (!b) return;
+
+            const setTxt = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+
+            // Status Pill
+            const statusPill = document.getElementById('ticketStatusPill');
+            const statusTxt = document.getElementById('ticketStatusText');
+            if (statusPill && statusTxt) {
+                statusPill.className = 'ticket-status-pill';
+                if (b.status === 'cancelled') {
+                    statusPill.classList.add('pill-cancelled');
+                    statusTxt.textContent = 'CANCELLED RESERVATION';
+                } else if (b.status === 'pending') {
+                    statusPill.classList.add('pill-pending');
+                    statusTxt.textContent = 'PENDING PAYMENT';
+                } else {
+                    statusPill.classList.add('pill-confirmed');
+                    statusTxt.textContent = 'CONFIRMED VOYAGE';
+                }
+            }
+
+            // Header Meta
+            setTxt('ticketRefNumber', `#${b.id}`);
+            setTxt('stubTicketId', b.id);
+            setTxt('ticketIssueDate', formatDate(b.created_at || new Date().toISOString()));
+
+            // Tour Showcase
+            setTxt('ticketTourTitle', b.attraction_name || `${b.destination_name} City Tour`);
+            setTxt('ticketTourLocation', b.destination_name ? `${b.destination_name}` : 'Europe');
+            
+            const tourImg = document.getElementById('ticketTourImg');
+            if (tourImg) {
+                let imgUrl = b.image_url || '../assets/destination-rome.png';
+                if (imgUrl.startsWith('./assets/')) imgUrl = '.' + imgUrl;
+                tourImg.src = imgUrl;
+            }
+
+            // Traveler & Tour details
+            setTxt('ticketPassengerName', b.user_name || 'Alex Johnson');
+            setTxt('stubTraveler', b.user_name || 'Alex Johnson');
+            setTxt('ticketTravelDate', formatDate(b.travel_date));
+            setTxt('ticketGuestsCount', `${b.guests_count || 1} Traveler${(b.guests_count || 1) > 1 ? 's' : ''}`);
+            setTxt('ticketPackageTier', `${(b.package_type || 'Standard').toUpperCase()} Tour Package`);
+            setTxt('ticketEmail', b.user_email || 'alex.traveler@example.com');
+            setTxt('ticketPhone', b.phone_number || '+1 (555) 234-5678');
+            setTxt('ticketMeetingPoint', `Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`);
+            setTxt('ticketTotalPaid', `$${(b.total_price || 110).toFixed(2)} USD (Paid in Full)`);
+
+            // Generate clean QR code
+            const qrCanvas = document.getElementById('stubQrCanvas');
+            if (qrCanvas) {
+                qrCanvas.innerHTML = '';
+                const qrUrl = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(b.id)}`;
+                try {
+                    new QRCode(qrCanvas, {
+                        text: qrUrl,
+                        width: 114,
+                        height: 114,
+                        colorDark: '#181E4B',
+                        colorLight: '#FFFFFF',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (e) {
+                    console.warn('QR Code generation error:', e);
+                }
+            }
+        }
+
+        async function downloadPdf(b) {
+            const element = document.getElementById('ticketVoucherCard');
+            if (!element) return;
+
+            const btn = document.getElementById('downloadPdfBtn') || document.getElementById('bottomPdfBtn');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Preparing PDF...</span>';
+                btn.disabled = true;
+            }
+
+            try {
+                // 1. Clone the card so user's current DOM display is untouched
+                const clone = element.cloneNode(true);
+                clone.style.width = '1050px';
+                clone.style.maxWidth = '1050px';
+                clone.style.margin = '0 auto';
+                clone.style.background = '#FFFFFF';
+                clone.style.color = '#181E4B';
+
+                // Ensure light theme for print clarity even if dark mode is active
+                clone.removeAttribute('data-theme');
+                const darkEls = clone.querySelectorAll('[data-theme="dark"]');
+                darkEls.forEach(el => el.removeAttribute('data-theme'));
+
+                // 2. html2canvas drops HTML5 <canvas> bitmaps when cloning.
+                // Replace any canvas in the clone with an <img> containing the real rendered bitmap.
+                const origCanvases = element.querySelectorAll('canvas');
+                const cloneCanvases = clone.querySelectorAll('canvas');
+                origCanvases.forEach((origCanvas, idx) => {
+                    if (cloneCanvases[idx]) {
+                        try {
+                            const dataUrl = origCanvas.toDataURL('image/png');
+                            const img = document.createElement('img');
+                            img.src = dataUrl;
+                            img.style.width = '114px';
+                            img.style.height = '114px';
+                            img.style.display = 'block';
+                            img.style.margin = '0 auto';
+                            cloneCanvases[idx].parentNode.replaceChild(img, cloneCanvases[idx]);
+                        } catch (e) {
+                            console.warn('Canvas conversion to image failed:', e);
+                        }
+                    }
+                });
+
+                // Offscreen wrapper container for rendering
+                const offscreenContainer = document.createElement('div');
+                offscreenContainer.style.position = 'fixed';
+                offscreenContainer.style.left = '-9999px';
+                offscreenContainer.style.top = '0';
+                offscreenContainer.style.width = '1100px';
+                offscreenContainer.style.background = '#FFFFFF';
+                offscreenContainer.style.padding = '20px';
+                offscreenContainer.style.zIndex = '-999';
+                offscreenContainer.appendChild(clone);
+                document.body.appendChild(offscreenContainer);
+
+                // Wait 150ms for images to settle in cloned tree
+                await new Promise(r => setTimeout(r, 150));
+
+                const opt = {
+                    margin: [8, 8, 8, 8],
+                    filename: `Jadoo-Ticket-${b.id || 'voucher'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        backgroundColor: '#FFFFFF',
+                        scrollX: 0,
+                        scrollY: 0
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf().set(opt).from(clone).save();
+                } else {
+                    window.print();
+                }
+
+                // Cleanup offscreen element
+                if (offscreenContainer.parentNode) {
+                    offscreenContainer.parentNode.removeChild(offscreenContainer);
+                }
+            } catch (err) {
+                console.error('PDF generation error, fallback to print:', err);
+                window.print();
+            } finally {
+                if (btn) {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        function cancelBooking(b) {
+            if (b.status === 'cancelled') {
+                alert('This reservation is already marked as cancelled.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to cancel booking #${b.id} for ${b.attraction_name || b.destination_name}?`)) {
+                try {
+                    JadooDB.cancelBooking(b.id);
+                } catch (_) {
+                    b.status = 'cancelled';
+                    localStorage.setItem('jadoo_schema_bookings', JSON.stringify(allBookings));
+                }
+                b.status = 'cancelled';
+                renderTicket(b);
+                alert(`Booking #${b.id} has been cancelled successfully.`);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTicketPage);
+        } else {
+            initTicketPage();
+        }
+    </script>
+</body>
+</html>

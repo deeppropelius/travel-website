@@ -1,4 +1,4 @@
-@media (max-width:768px) {
+@media (max-width: 880px) {
     section {
         margin: 1%;
     }
@@ -59,6 +59,9 @@
 
     .hamburger {
         display: flex;
+        cursor: pointer;
+        z-index: 1002;
+        touch-action: manipulation;
     }
 
     .navitems {
@@ -79,6 +82,8 @@
         transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
         border-bottom-left-radius: 20px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .navitems.active {

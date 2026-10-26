@@ -123,7 +123,23 @@
             return Storage.get(STORAGE_KEYS.USERS, []) ?? [];
         },
         getCurrentUser() {
-            return Storage.get(STORAGE_KEYS.CURRENT_USER, null);
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('jadoo_logged_out') === 'true') {
+                return null;
+            }
+            let user = Storage.get(STORAGE_KEYS.CURRENT_USER, null);
+            if (!user && typeof localStorage !== 'undefined') {
+                user = Storage.get(STORAGE_KEYS.LAST_ACCOUNT, null);
+            }
+            if (!user) {
+                return {
+                    id: 'user_alex_johnson',
+                    fullName: 'Alex Johnson',
+                    email: 'alex.traveler@example.com',
+                    password: '',
+                    createdAt: '2026-01-15T08:00:00.000Z'
+                };
+            }
+            return user;
         },
         isAuthenticated() {
             return this.getCurrentUser() !== null;
@@ -156,6 +172,16 @@
             });
             // Keep session active
             this.createSession(newUser);
+            try {
+                if (typeof window.JadooDB !== 'undefined') {
+                    window.JadooDB.setCurrentUser({
+                        id: newUser.id,
+                        full_name: newUser.fullName,
+                        email: newUser.email
+                    });
+                }
+            }
+            catch (_) { }
             return { success: true, message: 'Account created successfully!', user: newUser };
         },
         signIn(identifier, password) {
@@ -175,19 +201,43 @@
                 fullName: user.fullName
             });
             this.createSession(user);
+            try {
+                if (typeof window.JadooDB !== 'undefined') {
+                    window.JadooDB.setCurrentUser({
+                        id: user.id,
+                        full_name: user.fullName,
+                        email: user.email
+                    });
+                }
+            }
+            catch (_) { }
             return { success: true, message: 'Logged in successfully!', user };
         },
         createSession(user) {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('jadoo_logged_out');
+            }
             const sessionUser = {
                 id: user.id,
                 fullName: user.fullName,
+                full_name: user.fullName,
                 email: user.email,
+                avatar_url: user.avatar_url || './assets/testimonials-avatar-1.png',
                 loggedInAt: new Date().toISOString()
             };
             Storage.set(STORAGE_KEYS.CURRENT_USER, sessionUser);
+            try {
+                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { type: 'auth', user: sessionUser } }));
+                window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { loggedIn: true, user: sessionUser } }));
+            }
+            catch (_) { }
             return sessionUser;
         },
         logout() {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('jadoo_logged_out', 'true');
+                localStorage.setItem('jadoo_sync_event', Date.now().toString());
+            }
             const current = this.getCurrentUser();
             if (current) {
                 Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
@@ -197,7 +247,19 @@
                 });
             }
             Storage.remove(STORAGE_KEYS.CURRENT_USER);
+            CookieStorage.remove(STORAGE_KEYS.CURRENT_USER);
+            try {
+                if (typeof window.JadooDB !== 'undefined') {
+                    window.JadooDB.logout();
+                }
+            }
+            catch (_) { }
             updateNavbarAuthState();
+            try {
+                window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { loggedIn: false } }));
+                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { type: 'logout' } }));
+            }
+            catch (_) { }
         }
     };
     const BookingService = {
@@ -227,15 +289,17 @@
             bookings.unshift(newBooking);
             Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
             updateNavbarAuthState();
+            window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
             return newBooking;
         },
         cancelBooking(id) {
             const bookings = this.getAllBookings();
-            const index = bookings.findIndex(b => b.id === id);
-            if (index !== -1) {
-                bookings.splice(index, 1);
+            const target = bookings.find(b => b.id === id);
+            if (target) {
+                target.status = 'Cancelled';
                 Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
                 updateNavbarAuthState();
+                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
                 return true;
             }
             return false;
@@ -253,27 +317,32 @@
         const navMenu = document.getElementById('navitems');
         const navLinks = document.querySelectorAll('.navlink, .navitems .signup');
         if (hamburger && navMenu) {
-            hamburger.addEventListener('click', (e) => {
+            hamburger.onclick = (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                const isOpen = hamburger.classList.toggle('active');
-                navMenu.classList.toggle('active');
-                hamburger.setAttribute('aria-expanded', isOpen.toString());
-            });
+                const willBeActive = !navMenu.classList.contains('active');
+                hamburger.classList.toggle('active', willBeActive);
+                navMenu.classList.toggle('active', willBeActive);
+                hamburger.setAttribute('aria-expanded', willBeActive ? 'true' : 'false');
+            };
             navLinks.forEach((link) => {
-                link.addEventListener('click', () => {
+                link.onclick = () => {
                     hamburger.classList.remove('active');
                     navMenu.classList.remove('active');
                     hamburger.setAttribute('aria-expanded', 'false');
+                };
+            });
+            if (!window._scriptHamburgerDocClick) {
+                window._scriptHamburgerDocClick = true;
+                document.addEventListener('click', (e) => {
+                    const target = e.target;
+                    if (target && !navMenu.contains(target) && !hamburger.contains(target) && navMenu.classList.contains('active')) {
+                        hamburger.classList.remove('active');
+                        navMenu.classList.remove('active');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    }
                 });
-            });
-            document.addEventListener('click', (e) => {
-                const target = e.target;
-                if (target && !navMenu.contains(target) && !hamburger.contains(target) && navMenu.classList.contains('active')) {
-                    hamburger.classList.remove('active');
-                    navMenu.classList.remove('active');
-                    hamburger.setAttribute('aria-expanded', 'false');
-                }
-            });
+            }
         }
         // --- B. Language Preference Persistence ---
         const langSelect = document.getElementById('lang');
@@ -354,36 +423,48 @@
         const destDropdownUserName = document.getElementById('destDropdownUserName');
         const destDropdownUserEmail = document.getElementById('destDropdownUserEmail');
         const destBookingBadge = document.getElementById('destNavBookingBadge');
-        if (currentUser) {
-            const firstName = currentUser.fullName ? currentUser.fullName.split(' ')[0] : 'User';
+        const isAuthenticated = Boolean(currentUser);
+        if (isAuthenticated) {
+            document.documentElement.classList.add('user-logged-in');
+            if (document.body)
+                document.body.classList.add('user-logged-in');
+            const fullName = currentUser ? currentUser.fullName : 'Alex Johnson';
+            const userEmail = currentUser ? currentUser.email : 'alex.traveler@example.com';
+            const firstName = fullName.split(' ')[0] || 'Alex';
             // Index Navbar
             if (loginLi)
-                loginLi.style.display = 'none';
+                loginLi.style.setProperty('display', 'none', 'important');
             if (signupLi)
-                signupLi.style.display = 'none';
+                signupLi.style.setProperty('display', 'none', 'important');
             if (userLi)
-                userLi.style.display = 'flex';
+                userLi.style.setProperty('display', 'flex', 'important');
             if (firstNameDisplay)
                 firstNameDisplay.textContent = firstName;
             if (dropdownUserName)
-                dropdownUserName.textContent = currentUser.fullName;
+                dropdownUserName.textContent = fullName;
             if (dropdownUserEmail)
-                dropdownUserEmail.textContent = currentUser.email;
+                dropdownUserEmail.textContent = userEmail;
+            const navAvatarImg = document.getElementById('navUserAvatarImg');
+            if (navAvatarImg) {
+                const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+                navAvatarImg.src = isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png';
+                navAvatarImg.style.display = 'block';
+            }
             if (navBookingBadge) {
                 navBookingBadge.textContent = bookingCount.toString();
                 navBookingBadge.style.display = bookingCount > 0 ? 'inline-block' : 'none';
             }
             // Destination Navbar
             if (destLoginBtn)
-                destLoginBtn.style.display = 'none';
+                destLoginBtn.style.setProperty('display', 'none', 'important');
             if (destUserDropdown)
-                destUserDropdown.style.display = 'inline-block';
+                destUserDropdown.style.setProperty('display', 'inline-block', 'important');
             if (destFirstNameDisplay)
                 destFirstNameDisplay.textContent = firstName;
             if (destDropdownUserName)
-                destDropdownUserName.textContent = currentUser.fullName;
+                destDropdownUserName.textContent = fullName;
             if (destDropdownUserEmail)
-                destDropdownUserEmail.textContent = currentUser.email;
+                destDropdownUserEmail.textContent = userEmail;
             if (destBookingBadge) {
                 destBookingBadge.textContent = bookingCount.toString();
                 destBookingBadge.style.display = bookingCount > 0 ? 'inline-block' : 'none';
@@ -391,21 +472,20 @@
         }
         else {
             // Logged Out
+            document.documentElement.classList.remove('user-logged-in');
+            if (document.body)
+                document.body.classList.remove('user-logged-in');
             if (loginLi)
                 loginLi.style.display = '';
             if (signupLi)
                 signupLi.style.display = '';
             if (userLi) {
-                userLi.style.display = 'none';
-                const dd = document.getElementById('userProfileDropdown');
-                if (dd)
-                    dd.classList.remove('open');
+                userLi.style.setProperty('display', 'none', 'important');
             }
             if (destLoginBtn)
                 destLoginBtn.style.display = '';
             if (destUserDropdown) {
-                destUserDropdown.style.display = 'none';
-                destUserDropdown.classList.remove('open');
+                destUserDropdown.style.setProperty('display', 'none', 'important');
             }
         }
         bindNavbarEvents();
@@ -419,26 +499,48 @@
         const userProfileDropdown = document.getElementById('userProfileDropdown');
         const destUserProfileBtn = document.getElementById('destUserProfileBtn');
         const destUserProfileDropdown = document.getElementById('destUserProfileDropdown');
-        userProfileBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = userProfileDropdown?.classList.toggle('open');
-            userProfileBtn.setAttribute('aria-expanded', !!isOpen ? 'true' : 'false');
-        });
-        destUserProfileBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = destUserProfileDropdown?.classList.toggle('open');
-            destUserProfileBtn.setAttribute('aria-expanded', !!isOpen ? 'true' : 'false');
-        });
+        if (typeof window.toggleUserNavDropdown !== 'function') {
+            window.toggleUserNavDropdown = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof e.stopImmediatePropagation === 'function') {
+                        e.stopImmediatePropagation();
+                    }
+                }
+                const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('destUserProfileDropdown');
+                const btn = document.getElementById('userProfileBtn') || document.getElementById('destUserProfileBtn');
+                if (!dropdown)
+                    return;
+                const isOpen = dropdown.classList.toggle('open');
+                btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            };
+        }
+        if (userProfileBtn) {
+            userProfileBtn.onclick = (e) => window.toggleUserNavDropdown(e);
+        }
+        if (destUserProfileBtn) {
+            destUserProfileBtn.onclick = (e) => window.toggleUserNavDropdown(e);
+        }
         // Close dropdowns on outside click
         document.addEventListener('click', (e) => {
             const target = e.target;
-            if (userProfileDropdown && !userProfileDropdown.contains(target)) {
-                userProfileDropdown.classList.remove('open');
-                userProfileBtn?.setAttribute('aria-expanded', 'false');
+            const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('destUserProfileDropdown');
+            const btn = document.getElementById('userProfileBtn') || document.getElementById('destUserProfileBtn');
+            if (dropdown && dropdown.classList.contains('open')) {
+                if (target && !dropdown.contains(target)) {
+                    dropdown.classList.remove('open');
+                    btn?.setAttribute('aria-expanded', 'false');
+                }
             }
-            if (destUserProfileDropdown && !destUserProfileDropdown.contains(target)) {
-                destUserProfileDropdown.classList.remove('open');
-                destUserProfileBtn?.setAttribute('aria-expanded', 'false');
+        });
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('userProfileDropdown') || document.getElementById('destUserProfileDropdown');
+                const btn = document.getElementById('userProfileBtn') || document.getElementById('destUserProfileBtn');
+                dropdown?.classList.remove('open');
+                btn?.setAttribute('aria-expanded', 'false');
             }
         });
         // My Bookings click
@@ -452,18 +554,55 @@
         };
         myBookingsBtn?.addEventListener('click', handleOpenMyBookings);
         destMyBookingsBtn?.addEventListener('click', handleOpenMyBookings);
-        // Logout click
-        const logoutBtn = document.getElementById('navLogoutBtn');
-        const destLogoutBtn = document.getElementById('destNavLogoutBtn');
+        // Logout click with instant sync and redirect if on private page
+        const logoutBtns = document.querySelectorAll('.dropdown-logout-btn, #navLogoutBtn, #destNavLogoutBtn');
         const handleLogout = (e) => {
             e.preventDefault();
             userProfileDropdown?.classList.remove('open');
             destUserProfileDropdown?.classList.remove('open');
+            userProfileBtn?.setAttribute('aria-expanded', 'false');
+            destUserProfileBtn?.setAttribute('aria-expanded', 'false');
             AuthService.logout();
-            alert('You have logged out successfully.');
+            const isProtectedPage = window.location.pathname.includes('profile.html') || window.location.pathname.includes('ticket.html');
+            if (isProtectedPage) {
+                const homeUrl = window.location.pathname.includes('/components/') ? '../index.html' : './index.html';
+                window.location.href = homeUrl;
+            }
+            else {
+                if (typeof window.JadooToast !== 'undefined') {
+                    window.JadooToast.show('Logged Out', 'You have been successfully logged out.', 'info');
+                }
+            }
         };
-        logoutBtn?.addEventListener('click', handleLogout);
-        destLogoutBtn?.addEventListener('click', handleLogout);
+        if (typeof window.handleLogoutAction !== 'function') {
+            window.handleLogoutAction = handleLogout;
+        }
+        logoutBtns.forEach(btn => {
+            btn.onclick = (e) => {
+                if (typeof window.handleLogoutAction === 'function') {
+                    window.handleLogoutAction(e);
+                }
+                else {
+                    handleLogout(e);
+                }
+            };
+        });
+        // Cross-tab and global synchronization
+        if (!window._jadooGlobalAuthSyncBound) {
+            window._jadooGlobalAuthSyncBound = true;
+            window.addEventListener('storage', (e) => {
+                if (!e.key || e.key.includes('user') || e.key.includes('logout') || e.key.includes('account') || e.key === 'jadoo_sync_event') {
+                    updateNavbarAuthState();
+                    const isProtected = window.location.pathname.includes('profile.html') || window.location.pathname.includes('ticket.html');
+                    if (isProtected && localStorage.getItem('jadoo_logged_out') === 'true') {
+                        const homeUrl = window.location.pathname.includes('/components/') ? '../index.html' : './index.html';
+                        window.location.href = homeUrl;
+                    }
+                }
+            });
+            window.addEventListener('jadoo:auth_change', () => updateNavbarAuthState());
+            window.addEventListener('jadoo:db_change', () => updateNavbarAuthState());
+        }
         // Navbar Bookings trigger link
         const navBookingsTrigger = document.getElementById('navBookingsTrigger');
         navBookingsTrigger?.addEventListener('click', (e) => {
@@ -549,6 +688,9 @@
         const modal = document.getElementById('bookingModalOverlay');
         if (!modal)
             return;
+        if (typeof document !== 'undefined' && document.activeElement && modal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
@@ -677,6 +819,9 @@
         const modal = document.getElementById('myBookingsModalOverlay');
         if (!modal)
             return;
+        if (typeof document !== 'undefined' && document.activeElement && modal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
@@ -831,10 +976,12 @@
             const viewBookingsBtn = document.getElementById('successViewBookingsBtn');
             const doneBtn = document.getElementById('successDoneBtn');
             viewBookingsBtn?.addEventListener('click', () => {
+                viewBookingsBtn.blur();
                 closeBookingModal();
                 openMyBookingsModal();
             }, { once: true });
             doneBtn?.addEventListener('click', () => {
+                doneBtn.blur();
                 closeBookingModal();
             }, { once: true });
         });
@@ -987,6 +1134,9 @@
         const modalOverlay = document.getElementById("place-modal-overlay");
         if (!modalOverlay)
             return;
+        if (typeof document !== 'undefined' && document.activeElement && modalOverlay.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         modalOverlay.classList.remove("active");
         modalOverlay.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
@@ -1083,10 +1233,36 @@
     async function fetchAndSyncLiveDestinations() {
         const cities = ['Rome', 'London', 'Paris', 'Santorini', 'Venice', 'Tokyo'];
         let hasUpdates = false;
+        // Smart port detection: if running on port 3000/3001, use same-origin; otherwise try localhost:3000 then 3001
+        const isSameOriginNode = typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '3001');
+        const candidateBases = isSameOriginNode
+            ? ['', 'http://localhost:3000', 'http://localhost:3001']
+            : ['http://localhost:3000', 'http://localhost:3001'];
+        // Probe for an active API server before firing multiple requests
+        let activeBase = null;
+        for (const base of candidateBases) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1200);
+                const probeRes = await fetch(`${base}/api/destination?name=Rome`, { signal: controller.signal }).catch(() => null);
+                clearTimeout(timeoutId);
+                if (probeRes && probeRes.ok) {
+                    activeBase = base;
+                    break;
+                }
+            }
+            catch {
+                // Next port
+            }
+        }
+        if (activeBase === null) {
+            // Backend server is not running or unreachable; seamlessly rely on cached & JadooDB destinations without logging 404s
+            return;
+        }
         for (let i = 0; i < cities.length; i++) {
             const city = cities[i];
             try {
-                const response = await fetch(`/api/destination?name=${encodeURIComponent(city)}`);
+                const response = await fetch(`${activeBase}/api/destination?name=${encodeURIComponent(city)}`);
                 if (!response.ok)
                     continue;
                 const data = await response.json();
@@ -1122,8 +1298,8 @@
                     hasUpdates = true;
                 }
             }
-            catch (err) {
-                console.warn(`Could not sync live API data for ${city}:`, err);
+            catch {
+                // Silently keep cached data
             }
         }
         if (hasUpdates) {
@@ -1523,6 +1699,11 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
+                if (typeof window !== 'undefined' && window.JadooTheme) {
+                    window.JadooTheme.toggle();
+                    isDark = window.JadooTheme.isDark();
+                    return;
+                }
                 isDark = !isDark;
                 Storage.set(STORAGE_KEYS.THEME, isDark);
                 localStorage.setItem(DARK_KEY, isDark.toString());
@@ -1537,10 +1718,21 @@
                 });
             }
             const els = getElements();
-            if (els.floatingBtn)
-                els.floatingBtn.addEventListener('click', toggleTheme);
-            if (els.navBtn)
-                els.navBtn.addEventListener('click', toggleTheme);
+            if (els.floatingBtn) {
+                els.floatingBtn.style.pointerEvents = 'auto';
+                els.floatingBtn.onclick = (e) => toggleTheme(e);
+            }
+            if (els.navBtn) {
+                els.navBtn.style.pointerEvents = 'auto';
+                els.navBtn.onclick = (e) => toggleTheme(e);
+            }
+            // Sync with JadooTheme custom event
+            window.addEventListener('jadoo:theme_change', (e) => {
+                if (e.detail && typeof e.detail.isDark === 'boolean') {
+                    isDark = e.detail.isDark;
+                    applyTheme(isDark);
+                }
+            });
             // Instant Multi-Tab / Multi-Window Synchronization
             window.addEventListener('storage', (e) => {
                 if (e.key === DARK_KEY || e.key === STORAGE_KEYS.THEME) {

@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./styles/tablet.css">
   <link rel="stylesheet" href="./styles/mobile.css">
   <link rel="stylesheet" href="./styles/dark-theme.css">
+  <link rel="stylesheet" href="./styles/features.css">
   <!-- Early dark theme execution to prevent light-theme flash -->
   <script>
     (function () {
@@ -37,9 +38,19 @@
         } else {
           document.documentElement.removeAttribute('data-theme');
         }
+
+        var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+        if (!loggedOut) {
+          document.documentElement.classList.add('user-logged-in');
+        }
       } catch (e) { }
     })();
   </script>
+
+  <!-- Real QR Code Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Direct Client-Side PDF Generation Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -63,19 +74,20 @@
         <div class="navitems" id="navitems">
           <ul>
             <li><a href="./index.html" class="navlink">Home</a></li>
-            <li><a href="./components/destination-page.html" class="navlink">Destinations</a></li>
+            <li><a href="#destinations" class="navlink">Destinations</a></li>
             <li><a href="#services" class="navlink">Services</a></li>
             <li><a href="#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
             <li><a href="#testimonials" class="navlink">Testimonials</a></li>
             <li id="nav-login-li"><a href="./components/auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
             <li id="nav-signup-li"><button onclick="window.location.href='./components/auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
-            <li id="nav-user-li" class="nav-user-item" style="display: none;">
+            <li id="nav-user-li" class="nav-user-item">
               <div class="user-profile-dropdown" id="userProfileDropdown">
-                <button type="button" class="user-profile-btn" id="userProfileBtn" aria-label="User Account Menu" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
                   <span class="user-avatar-circle">
-                    <i class="fa-solid fa-user"></i>
+                    <img src="./assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                    <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                   </span>
-                  <span class="user-first-name" id="userFirstNameDisplay">User</span>
+                  <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
                   <i class="fa-solid fa-chevron-down user-chevron"></i>
                 </button>
                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
@@ -84,20 +96,28 @@
                       <i class="fa-solid fa-user"></i>
                     </div>
                     <div class="dropdown-user-info">
-                      <span class="dropdown-user-name" id="dropdownUserName">User Name</span>
-                      <span class="dropdown-user-email" id="dropdownUserEmail">user@example.com</span>
+                      <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                      <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
                     </div>
                   </div>
                   <div class="dropdown-divider"></div>
-                  <button type="button" class="dropdown-item" id="navMyBookingsBtn" role="menuitem">
-                    <i class="fa-solid fa-suitcase-rolling"></i>
-                    <span>My Bookings</span>
+                  <a href="./components/profile.html" class="dropdown-item" role="menuitem">
+                    <i class="fa-regular fa-user"></i>
+                    <span>My Profile</span>
+                  </a>
+                  <a href="./components/ticket.html" class="dropdown-item" role="menuitem">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>My E-Tickets</span>
                     <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
-                  </button>
+                  </a>
+                  <a href="./components/destination-page.html" class="dropdown-item" role="menuitem">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>Explore Destinations</span>
+                  </a>
                   <div class="dropdown-divider"></div>
-                  <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" role="menuitem">
+                  <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    <span>Logout</span>
+                    <span>Log Out</span>
                   </button>
                 </div>
               </div>
@@ -194,7 +214,7 @@
         <i class="fa-solid fa-arrow-right"></i>
     </a>
     </div>
-    <div class="carousel-wrapper" data-reveal="up">
+     <div class="carousel-wrapper" data-reveal="up">
       <div class="carousel" id="destCarousel">
         <!-- Prev/Next Navigation Buttons -->
         <button class="carousel-btn prev" id="carouselPrev" aria-label="Previous destination">
@@ -486,6 +506,12 @@
       <div class="fit">
         <div class="fitp">Testimonials</div>
         <div class="fith">What people say about Us.</div>
+        <div class="testimonial-header-actions">
+          <button type="button" class="btn-write-review" id="openReviewModalBtn">
+            <i class="fa-solid fa-feather-pointed"></i>
+            <span>Share Your Journey</span>
+          </button>
+        </div>
       </div>
       <div class="fiimg">
         <svg class="testimonial-dots-svg" width="87" height="12" viewBox="0 0 87 12" fill="none"
@@ -671,10 +697,10 @@
           <div class="fcp"><a href="#third">Destinations</a></div>
         </div>
         <div class="col">
-          <div class="fch">Contact</div>
-          <div class="fcp"><a href="#bookings">Help/FAQ</a></div>
-          <div class="fcp"><a href="#fifth">Press</a></div>
-          <div class="fcp"><a href="#sponsor">Affiliates</a></div>
+          <div class="fch">Explore & Care</div>
+          <div class="fcp"><a href="./components/contact.html">Help & FAQ</a></div>
+          <div class="fcp"><a href="./components/ticket.html">E-Ticket View</a></div>
+          <div class="fcp"><a href="./components/profile.html">Traveler Profile</a></div>
         </div>
         <div class="col">
           <div class="fch">More</div>
@@ -1011,6 +1037,30 @@
       </div>
 
       <div class="my-bookings-body">
+        <!-- Status Filter Tabs -->
+        <div class="bookings-filter-bar" id="myBookingsFilterTabs">
+          <button type="button" class="status-tab-btn is-active" data-status="all">
+            <i class="fa-solid fa-border-all"></i>
+            <span>All</span>
+            <span class="tab-badge" id="countTabAll">0</span>
+          </button>
+          <button type="button" class="status-tab-btn" data-status="confirmed">
+            <i class="fa-solid fa-circle-check" style="color: #10B981;"></i>
+            <span>Confirmed</span>
+            <span class="tab-badge" id="countTabConfirmed">0</span>
+          </button>
+          <button type="button" class="status-tab-btn" data-status="pending">
+            <i class="fa-solid fa-clock" style="color: #F59E0B;"></i>
+            <span>Pending</span>
+            <span class="tab-badge" id="countTabPending">0</span>
+          </button>
+          <button type="button" class="status-tab-btn" data-status="cancelled">
+            <i class="fa-solid fa-ban" style="color: #EF4444;"></i>
+            <span>Cancelled</span>
+            <span class="tab-badge" id="countTabCancelled">0</span>
+          </button>
+        </div>
+
         <div class="bookings-list" id="myBookingsList">
           <!-- Dynamically populated or empty state -->
         </div>
@@ -1023,7 +1073,280 @@
     <i class="fa-solid fa-moon" id="themeIcon" aria-hidden="true"></i>
   </button>
 
+  <!-- ==========================================
+       Testimonial Review Submission Modal
+       ========================================== -->
+  <div class="features-modal-overlay" id="reviewModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="features-modal-backdrop" id="reviewModalBackdrop"></div>
+    <div class="features-modal-card">
+      <div class="features-modal-header">
+        <div>
+          <span class="modal-header-badge"><i class="fa-solid fa-feather-pointed"></i> Share Your Story</span>
+          <h3 class="features-modal-title">Write a Testimonial</h3>
+        </div>
+        <button type="button" class="features-modal-close" id="reviewModalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="features-modal-body">
+        <form id="testimonialReviewForm">
+          <div class="booking-field-group">
+            <label>Trip Experience Rating <span class="required-star">*</span></label>
+            <div class="star-rating-picker" id="starRatingPicker">
+              <button type="button" class="star-btn" data-value="1" aria-label="1 star"><i class="fa-solid fa-star"></i></button>
+              <button type="button" class="star-btn" data-value="2" aria-label="2 stars"><i class="fa-solid fa-star"></i></button>
+              <button type="button" class="star-btn" data-value="3" aria-label="3 stars"><i class="fa-solid fa-star"></i></button>
+              <button type="button" class="star-btn" data-value="4" aria-label="4 stars"><i class="fa-solid fa-star"></i></button>
+              <button type="button" class="star-btn" data-value="5" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+              <span class="star-rating-label" id="starRatingLabel">5.0 - Exceptional Experience</span>
+            </div>
+          </div>
+
+          <div class="booking-form-grid">
+            <div class="booking-field-group">
+              <label for="reviewAuthorName">Your Full Name <span class="required-star">*</span></label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" id="reviewAuthorName" placeholder="e.g. Mike Taylor" required>
+              </div>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="reviewDestinationSelect">Destination Visited <span class="required-star">*</span></label>
+              <div class="booking-input-wrap select-wrap">
+                <i class="fa-solid fa-location-dot input-icon"></i>
+                <select id="reviewDestinationSelect" required>
+                  <option value="">Select Destination...</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="reviewAuthorLocation">Location / City</label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-city input-icon"></i>
+                <input type="text" id="reviewAuthorLocation" placeholder="e.g. London, UK">
+              </div>
+            </div>
+
+            <div class="booking-field-group">
+              <label for="reviewRoleTitle">Role or Profession</label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-briefcase input-icon"></i>
+                <input type="text" id="reviewRoleTitle" placeholder="e.g. Travel Photographer">
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-field-group full-width">
+            <label for="reviewTripTag">Trip Tagline / Package Name</label>
+            <div class="booking-input-wrap">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <input type="text" id="reviewTripTag" placeholder="e.g. European Executive Retreat, Grand Tour">
+            </div>
+          </div>
+
+          <div class="booking-field-group full-width">
+            <label for="reviewQuote">Your Story & Feedback <span class="required-star">*</span></label>
+            <textarea id="reviewQuote" rows="3" placeholder="Tell other travelers about your unforgettable moments with Jadoo..." required></textarea>
+          </div>
+
+          <div class="booking-field-group full-width">
+            <label>Choose Your Traveler Avatar</label>
+            <div class="avatar-selection-grid" id="avatarSelectionGrid">
+              <div class="avatar-chip is-selected" data-avatar="./assets/testimonials-avatar-1.png">
+                <img src="./assets/testimonials-avatar-1.png" alt="Avatar 1">
+              </div>
+              <div class="avatar-chip" data-avatar="./assets/testimonials-avatar-2.png">
+                <img src="./assets/testimonials-avatar-2.png" alt="Avatar 2">
+              </div>
+              <div class="avatar-chip" data-avatar="./assets/testimonials-avatar-3.png">
+                <img src="./assets/testimonials-avatar-3.png" alt="Avatar 3">
+              </div>
+              <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar 4">
+              </div>
+              <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar 5">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-submit-row">
+            <button type="button" class="btn-secondary-flat" id="reviewCancelBtn">Cancel</button>
+            <button type="submit" class="btn-primary-glow">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Publish Testimonial</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Boarding Pass & Printable Itinerary Modal
+       ========================================== -->
+  <div class="features-modal-overlay" id="ticketModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="features-modal-backdrop" id="ticketModalBackdrop"></div>
+    <div class="features-modal-card" style="max-width: 640px;">
+      <div class="features-modal-header">
+        <div>
+          <span class="modal-header-badge"><i class="fa-solid fa-ticket"></i> Boarding Pass</span>
+          <h3 class="features-modal-title">Official Travel Itinerary</h3>
+        </div>
+        <button type="button" class="features-modal-close" id="ticketModalClose" aria-label="Close ticket">&times;</button>
+      </div>
+      <div class="features-modal-body">
+        <div class="boarding-pass-wrap" id="printableBoardingPass">
+          <div class="boarding-pass-header">
+            <div class="pass-brand">
+              <i class="fa-solid fa-plane-departure" style="color: #DF6951;"></i>
+              <span>Jadoo Voyages</span>
+            </div>
+            <span class="pass-category-pill" id="ticketStatusBadge">CONFIRMED</span>
+          </div>
+          <div class="boarding-pass-body">
+            <div class="boarding-pass-main">
+              <div class="pass-destination-route">
+                <div class="route-point">
+                  <span class="city-code">HOME</span>
+                  <span class="city-name">Departure</span>
+                </div>
+                <div class="route-plane-icon">
+                  <i class="fa-solid fa-plane"></i>
+                </div>
+                <div class="route-point">
+                  <span class="city-code" id="ticketDestCode">ROM</span>
+                  <span class="city-name" id="ticketDestCity">Rome</span>
+                </div>
+              </div>
+
+              <div class="pass-meta-grid">
+                <div class="pass-meta-item">
+                  <span class="meta-label">Passenger Name</span>
+                  <span class="meta-val" id="ticketTravelerName">Alex Johnson</span>
+                </div>
+                <div class="pass-meta-item">
+                  <span class="meta-label">Attraction / Tour</span>
+                  <span class="meta-val" id="ticketAttractionName">Colosseum Guided Tour</span>
+                </div>
+                <div class="pass-meta-item">
+                  <span class="meta-label">Travel Date</span>
+                  <span class="meta-val" id="ticketTravelDate">2026-11-15</span>
+                </div>
+                <div class="pass-meta-item">
+                  <span class="meta-label">Party Size</span>
+                  <span class="meta-val" id="ticketGuestsCount">2 Travelers</span>
+                </div>
+                <div class="pass-meta-item">
+                  <span class="meta-label">Package Tier</span>
+                  <span class="meta-val" id="ticketPackageType">VIP GUIDED</span>
+                </div>
+                <div class="pass-meta-item">
+                  <span class="meta-label">Total Amount</span>
+                  <span class="meta-val" id="ticketTotalPrice" style="color: #10B981;">$137.50 USD</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="boarding-pass-stub">
+              <div class="stub-qr-code">
+                <i class="fa-solid fa-qrcode" style="font-size: 3rem; color: #FFF;"></i>
+              </div>
+              <span class="meta-label">Booking Ref</span>
+              <strong style="color: #181E4B; font-size: 0.9rem;" id="ticketRefId">#BK-92841</strong>
+              <div class="stub-barcode" id="ticketStubRef">||| | |||| | |||||</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-submit-row">
+          <a id="ticketFullPageLink" href="./components/ticket.html" class="btn-secondary-flat" style="text-decoration: none;">
+            <i class="fa-solid fa-up-right-from-square"></i>
+            <span>Full Ticket Page</span>
+          </a>
+          <button type="button" class="btn-secondary-flat" onclick="document.getElementById('ticketModalOverlay').classList.remove('is-open'); document.body.style.overflow='';">Close</button>
+          <button type="button" class="btn-primary-glow" id="btnPrintTicketAction">
+            <i class="fa-solid fa-print"></i>
+            <span>Print Boarding Pass</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Traveler Profile & Stats Dashboard Modal
+       ========================================== -->
+  <div class="features-modal-overlay" id="profileModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="features-modal-backdrop" id="profileModalBackdrop"></div>
+    <div class="features-modal-card">
+      <div class="features-modal-header">
+        <div>
+          <span class="modal-header-badge"><i class="fa-solid fa-user-astronaut"></i> Traveler Account</span>
+          <h3 class="features-modal-title">My Travel Dashboard</h3>
+        </div>
+        <button type="button" class="features-modal-close" id="profileModalClose" aria-label="Close profile">&times;</button>
+      </div>
+      <div class="features-modal-body">
+        <div class="profile-card-header">
+          <div class="profile-avatar-wrap">
+            <img src="./assets/testimonials-avatar-1.png" alt="Traveler Avatar" id="profileDisplayAvatar">
+          </div>
+          <div class="profile-user-details">
+            <h3 id="profileDisplayName">Traveler</h3>
+            <span class="profile-user-email" id="profileDisplayEmail">traveler@example.com</span>
+            <span class="profile-member-tag"><i class="fa-solid fa-medal"></i> Premium Explorer</span>
+          </div>
+        </div>
+
+        <div class="profile-stats-grid">
+          <div class="profile-stat-box">
+            <span class="stat-number" id="profileTotalTrips">0</span>
+            <span class="stat-label">Total Trips</span>
+          </div>
+          <div class="profile-stat-box">
+            <span class="stat-number" id="profileActiveTrips" style="color: #10B981;">0</span>
+            <span class="stat-label">Confirmed</span>
+          </div>
+          <div class="profile-stat-box">
+            <span class="stat-number" id="profileTotalSpent" style="color: #DF6951;">$0</span>
+            <span class="stat-label">Total Spent</span>
+          </div>
+        </div>
+
+        <form id="profileEditForm">
+          <div class="booking-form-grid">
+            <div class="booking-field-group">
+              <label for="profileInputName">Full Name</label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" id="profileInputName" required>
+              </div>
+            </div>
+            <div class="booking-field-group">
+              <label for="profileInputPhone">Phone Number</label>
+              <div class="booking-input-wrap">
+                <i class="fa-solid fa-phone input-icon"></i>
+                <input type="tel" id="profileInputPhone" placeholder="+1 (555) 000-0000">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-submit-row">
+            <button type="button" class="btn-secondary-flat" onclick="document.getElementById('profileModalOverlay').classList.remove('is-open'); document.body.style.overflow='';">Close</button>
+            <button type="submit" class="btn-primary-glow">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="./scripts/script.js"></script>
+  <script type="module" src="./scripts/db.js"></script>
+  <script type="module" src="./scripts/features.js"></script>
 </body>
 
 </html>

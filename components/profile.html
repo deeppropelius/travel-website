@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveler Profile & Account Dashboard - Jadoo Travel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/tablet.css">
+    <link rel="stylesheet" href="../styles/mobile.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <link rel="stylesheet" href="../styles/features.css">
+    <link rel="stylesheet" href="../styles/pages.css">
+
+    <!-- Early dark theme & Auth execution -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+
+                // Navbar Auth: Immediately apply user-logged-in on profile page if not logged out
+                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                if (!loggedOut) {
+                    document.documentElement.classList.add('user-logged-in');
+                }
+            } catch (e) { }
+        })();
+    </script>
+
+    <!-- Real QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Direct Client-Side PDF Generation Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body class="profile-body">
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <div class="navbar">
+                <div class="navlogo">
+                    <a href="../index.html" title="Jadoo - Home">
+                        <img src="../assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+                        <img src="../assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
+                    </a>
+                </div>
+                <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="navitems" id="navitems">
+                    <ul>
+                        <li><a href="../index.html" class="navlink">Home</a></li>
+                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./profile.html" class="navlink active-page">My Profile</a></li>
+                        <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-user-li" class="nav-user-item">
+                            <div class="user-profile-dropdown" id="userProfileDropdown">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
+                                    <span class="user-avatar-circle">
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
+                                    </span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
+                                    <i class="fa-solid fa-chevron-down user-chevron"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                                    <div class="dropdown-user-header">
+                                        <div class="dropdown-avatar-circle">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <div class="dropdown-user-info">
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="./profile.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>My Profile</span>
+                                    </a>
+                                    <a href="./ticket.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-ticket"></i>
+                                        <span>My E-Tickets</span>
+                                        <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                                    </a>
+                                    <a href="./destination-page.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-compass"></i>
+                                        <span>Explore Destinations</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                        <span>Log Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <!-- Breadcrumb -->
+        <div class="page-breadcrumb">
+            <a href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-chevron-right"></i>
+            <span class="current-crumb">Traveler Account Dashboard</span>
+        </div>
+
+        <!-- Cover Photo Banner -->
+        <div class="profile-cover-banner">
+            <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80" alt="Travel scenery cover" class="cover-bg-image">
+        </div>
+
+        <!-- Profile Identity Card -->
+        <div class="profile-card-top">
+            <div class="profile-identity">
+                <div class="profile-avatar-large">
+                    <img src="../assets/testimonials-avatar-1.png" alt="Profile avatar" id="profilePageAvatar" onerror="this.onerror=null; this.src='../assets/testimonials-avatar-1.png';">
+                    <div class="avatar-edit-badge" title="Change Avatar" id="btnChangeAvatar">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                </div>
+                <div class="profile-names">
+                    <h1 id="profilePageName">Alex Johnson</h1>
+                    <span class="profile-email-tag">
+                        <i class="fa-regular fa-envelope"></i>
+                        <span id="profilePageEmail">alex.traveler@example.com</span>
+                    </span>
+                    <span class="tier-badge-pill">
+                        <i class="fa-solid fa-crown"></i>
+                        <span>Gold Wanderer • Level 4</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-top-actions">
+                <a href="./destination-page.html" class="btn-secondary-flat" style="text-decoration: none;">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>Explore Places</span>
+                </a>
+                <button type="button" class="btn-primary-glow" id="profileWriteReviewBtn">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span>Share Travel Story</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Metric Grid (4 Cards) -->
+        <div class="profile-stats-row">
+            <div class="stat-metric-card">
+                <div class="stat-metric-icon icon-coral">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+                <div class="stat-metric-info">
+                    <span class="stat-val" id="statTotalTrips">0</span>
+                    <span class="stat-lbl">Total Trips Booked</span>
+                </div>
+            </div>
+
+            <div class="stat-metric-card">
+                <div class="stat-metric-icon icon-emerald">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="stat-metric-info">
+                    <span class="stat-val" id="statConfirmedTrips">0</span>
+                    <span class="stat-lbl">Confirmed Itineraries</span>
+                </div>
+            </div>
+
+            <div class="stat-metric-card">
+                <div class="stat-metric-icon icon-gold">
+                    <i class="fa-solid fa-earth-americas"></i>
+                </div>
+                <div class="stat-metric-info">
+                    <span class="stat-val" id="statDestinationsVisited">8</span>
+                    <span class="stat-lbl">Global Destinations</span>
+                </div>
+            </div>
+
+            <div class="stat-metric-card">
+                <div class="stat-metric-icon icon-purple">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="stat-metric-info">
+                    <span class="stat-val" id="statTotalExpended">$0</span>
+                    <span class="stat-lbl">Total Travel Value</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Tabs Header -->
+        <div class="profile-tabs-header" id="profileTabsNav">
+            <button type="button" class="profile-tab-button is-active" data-tab="bookings">
+                <i class="fa-solid fa-suitcase-rolling"></i>
+                <span>My Bookings</span>
+                <span class="tab-counter" id="badgeBookingsCount">0</span>
+            </button>
+            <button type="button" class="profile-tab-button" data-tab="wishlist">
+                <i class="fa-solid fa-heart"></i>
+                <span>Saved Wishlist</span>
+                <span class="tab-counter">6</span>
+            </button>
+            <button type="button" class="profile-tab-button" data-tab="reviews">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span>My Reviews</span>
+                <span class="tab-counter" id="badgeReviewsCount">1</span>
+            </button>
+            <button type="button" class="profile-tab-button" data-tab="tickets" id="profileTabTicketsBtn">
+                <i class="fa-solid fa-ticket" style="color: #DF6951;"></i>
+                <span>E-Tickets</span>
+                <span class="tab-counter" id="badgeTicketsCount" style="background: rgba(223, 105, 81, 0.15); color: #DF6951;">0</span>
+            </button>
+            <button type="button" class="profile-tab-button" data-tab="settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Account Settings</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Bookings & Itineraries -->
+        <div class="profile-tab-pane is-active" id="tabPaneBookings">
+            <!-- Filter Bar -->
+            <div class="bookings-filter-bar" id="profileBookingFilters">
+                <button type="button" class="status-tab-btn is-active" data-status="all">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span>All Trips</span>
+                </button>
+                <button type="button" class="status-tab-btn" data-status="confirmed">
+                    <i class="fa-solid fa-circle-check" style="color: #10B981;"></i>
+                    <span>Confirmed</span>
+                </button>
+                <button type="button" class="status-tab-btn" data-status="pending">
+                    <i class="fa-solid fa-clock" style="color: #F59E0B;"></i>
+                    <span>Pending</span>
+                </button>
+                <button type="button" class="status-tab-btn" data-status="cancelled">
+                    <i class="fa-solid fa-ban" style="color: #EF4444;"></i>
+                    <span>Cancelled</span>
+                </button>
+            </div>
+
+            <div class="bookings-list" id="profileBookingsList">
+                <!-- Dynamically populated from JadooDB -->
+            </div>
+        </div>
+
+        <!-- Tab 2: Saved Wishlist -->
+        <div class="profile-tab-pane" id="tabPaneWishlist">
+            <div class="wishlist-cards-grid">
+                <!-- Rome -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="../assets/destination-rome.png" alt="Rome, Italy">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,840)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>Rome, Italy</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Colosseum, ancient Roman Forum, and historic Vatican museums.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$55 / person</span>
+                            <button type="button" class="btn-primary-glow" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./ticket.html?id=BK-92841'">
+                                <span>View Ticket</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- London -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="../assets/destination-london.jpeg" alt="London, UK">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.8 (3,120)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>London, United Kingdom</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Tower of London, Thames riverfront, Big Ben, and royal palaces.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$42 / person</span>
+                            <button type="button" class="btn-primary-glow" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./ticket.html?id=BK-58203'">
+                                <span>View Ticket</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paris -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80" alt="Paris, France">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (4,210)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>Paris, France</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Eiffel Tower summit, Louvre masterpieces, and Seine river cruises.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$49 / person</span>
+                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
+                                <span>Explore</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tokyo -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80" alt="Tokyo, Japan">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,750)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>Tokyo, Japan</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Shibuya crossing, Asakusa Senso-ji temple, and futuristic skyline decks.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$35 / person</span>
+                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
+                                <span>Explore</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dubai -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=80" alt="Dubai, UAE">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (3,950)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>Dubai, United Arab Emirates</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Burj Khalifa observation decks, desert safaris, and luxury marina walks.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$62 / person</span>
+                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
+                                <span>Explore</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Santorini -->
+                <div class="wishlist-item-card">
+                    <div class="wishlist-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80" alt="Santorini, Greece">
+                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,310)</span>
+                    </div>
+                    <div class="wishlist-body">
+                        <h3>Santorini, Greece</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Oia caldera sunset cliffside walks, Aegean wine tastings, and blue domes.</p>
+                        <div class="wishlist-meta-row">
+                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$65 / person</span>
+                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
+                                <span>Explore</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: My Reviews -->
+        <div class="profile-tab-pane" id="tabPaneReviews">
+            <div id="profileReviewsContainer">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Tab: E-Tickets & Boarding Passes -->
+        <div class="profile-tab-pane" id="tabPaneTickets">
+            <div class="profile-tickets-section">
+                <div class="tickets-hero-header">
+                    <div>
+                        <span class="tickets-hero-badge"><i class="fa-solid fa-plane-shield"></i> Official Boarding Passes</span>
+                        <h3 class="tickets-hero-title">Your E-Tickets & Gate Passes</h3>
+                        <p class="tickets-hero-subtitle">Access live scannable boarding passes, assigned suite seats, departure gates, and cryptographic IATA security tokens.</p>
+                    </div>
+                    <div class="tickets-header-actions">
+                        <button type="button" class="btn-refresh-passes" id="profileRefreshTicketsBtn">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Sync Passes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-tickets-list" id="profileTicketsList">
+                    <!-- Dynamically populated via renderTickets(user) -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Account Settings -->
+        <div class="profile-tab-pane" id="tabPaneSettings">
+            <div class="contact-form-card" style="max-width: 820px; margin: 0 auto;">
+                <h3><i class="fa-solid fa-user-pen" style="color: #DF6951; margin-right: 0.5rem;"></i> Personal Information & Travel Preferences</h3>
+                <p>Manage your public traveler profile, emergency contacts, and personalized travel tier options.</p>
+
+                <form id="profileFullSettingsForm">
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="settingsFullName">Full Name</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="settingsFullName" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="settingsEmail">Email Address</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-envelope input-icon"></i>
+                                <input type="email" id="settingsEmail" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="settingsPhone">Phone Number</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <input type="tel" id="settingsPhone" placeholder="+1 (555) 234-5678">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="settingsNationality">Passport Nationality</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-passport input-icon"></i>
+                                <input type="text" id="settingsNationality" placeholder="e.g. United States, United Kingdom, Canada">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="settingsDiet">Dietary Preferences</label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-utensils input-icon"></i>
+                                <select id="settingsDiet">
+                                    <option value="none">No Restrictions (Standard)</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                    <option value="halal">Halal</option>
+                                    <option value="kosher">Kosher</option>
+                                    <option value="gluten-free">Gluten-Free</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="settingsEmergency">Emergency Contact</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-heart-pulse input-icon"></i>
+                                <input type="text" id="settingsEmergency" placeholder="Name & Phone Number">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="settingsBio">Traveler Bio</label>
+                        <textarea id="settingsBio" rows="3" placeholder="Tell fellow wanderers what drives your passion for discovering the world..."></textarea>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="submit" class="btn-primary-glow">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Save Profile Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        <!-- Tab 5: Dedicated E-Tickets & Boarding Passes -->
+        <div class="profile-tab-pane" id="tabPaneTickets">
+            <div class="profile-tickets-section">
+                <div class="tickets-hero-header">
+                    <div>
+                        <span class="modal-header-badge"><i class="fa-solid fa-plane-circle-check"></i> Verified Gate Access Passes</span>
+                        <h3 class="profile-section-title">Official E-Tickets & Boarding Passes</h3>
+                        <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem; margin-top: 0.25rem;">
+                            Access your active flight passes, scannable QR tokens, and airport check-in itineraries with 1-click download and wallet synchronization.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary-flat" id="profileRefreshTicketsBtn" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #FFF;">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span>Refresh Passes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-tickets-list" id="profileTicketsList">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="foot">
+            <div class="col lab">
+                <div class="fh"><a href="../index.html">Jadoo.</a></div>
+                <div class="fp">Book your trip in minutes, get full control for much longer.</div>
+            </div>
+            <div class="ccol">
+                <div class="col">
+                    <div class="fch">Company</div>
+                    <div class="fcp"><a href="../index.html#home">About</a></div>
+                    <div class="fcp"><a href="../index.html#services">Services</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Destinations</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">Explore & Care</div>
+                    <div class="fcp"><a href="./contact.html">Help & FAQ</a></div>
+                    <div class="fcp"><a href="./ticket.html">E-Ticket View</a></div>
+                    <div class="fcp"><a href="./profile.html">Traveler Profile</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">More</div>
+                    <div class="fcp"><a href="../index.html#services">Airline fees</a></div>
+                    <div class="fcp"><a href="../index.html#services">Airlines</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Low fare tips</a></div>
+                </div>
+            </div>
+            <div class="col fico">
+                <div class="footi">
+                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                </div>
+                <div class="fih">Discover our app</div>
+                <div class="store">
+                    <div class="fps">
+                        <div class="pas">
+                            <img src="../assets/google-play.png" alt="Google Play store badge">
+                        </div>
+                        <div class="fit">
+                            <div class="play1">Get it on</div>
+                            <div class="play2">Google Play</div>
+                        </div>
+                    </div>
+                    <div class="fps">
+                        <div class="pas pas1">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="fit">
+                            <div class="play1 play3">Available on the</div>
+                            <div class="play2 play4">Apple Store</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="end">All rights reserved@jadoo.co</div>
+    </footer>
+
+    <!-- Floating Dark Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <script type="module">
+        import { JadooDB } from '../scripts/db.js';
+        import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
+
+        let currentFilter = 'all';
+
+        function initProfilePage() {
+            JadooTheme.init();
+            JadooNavAuth.init();
+            const user = JadooDB.getCurrentUser();
+            renderProfileHeader(user);
+            renderStats(user);
+            renderBookings(user);
+            renderTickets(user);
+            renderReviews(user);
+
+            // Tab Switching
+            const tabButtons = document.querySelectorAll('#profileTabsNav .profile-tab-button');
+            const tabPanes = document.querySelectorAll('.profile-tab-pane');
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    tabButtons.forEach(b => b.classList.remove('is-active'));
+                    tabPanes.forEach(p => p.classList.remove('is-active'));
+
+                    btn.classList.add('is-active');
+                    const pane = document.getElementById(`tabPane${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`);
+                    if (pane) pane.classList.add('is-active');
+                });
+            });
+
+            // Automatically open Tickets tab if #tickets is in URL hash
+            if (window.location.hash === '#tickets') {
+                const ticketsBtn = document.getElementById('profileTabTicketsBtn');
+                if (ticketsBtn) ticketsBtn.click();
+            }
+
+            // Refresh passes button
+            document.getElementById('profileRefreshTicketsBtn')?.addEventListener('click', () => {
+                const latestUser = JadooDB.getCurrentUser();
+                renderStats(latestUser);
+                renderTickets(latestUser);
+                JadooToast.show('Passes Updated', 'All boarding passes and gate tokens are up to date.', 'info');
+            });
+
+            // Filter Buttons in Bookings Tab
+            const filterBtns = document.querySelectorAll('#profileBookingFilters .status-tab-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('is-active'));
+                    btn.classList.add('is-active');
+                    currentFilter = btn.getAttribute('data-status') || 'all';
+                    renderBookings(user);
+                });
+            });
+
+            // Settings Form Save
+            const settingsForm = document.getElementById('profileFullSettingsForm');
+            settingsForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('settingsFullName').value.trim();
+                const phone = document.getElementById('settingsPhone').value.trim();
+                if (name) {
+                    JadooDB.updateProfile({ full_name: name, phone });
+                    renderProfileHeader(JadooDB.getCurrentUser());
+                    JadooNavAuth.updateNavbar();
+                    JadooToast.show('Account Updated', 'Your profile details and travel preferences have been saved.', 'success');
+                }
+            });
+
+            // Avatar Change Trigger
+            document.getElementById('btnChangeAvatar')?.addEventListener('click', () => {
+                const newAvatar = prompt('Enter image URL or pick standard avatar (1-3):', '1');
+                if (newAvatar) {
+                    let avatarUrl = newAvatar;
+                    if (newAvatar === '1') avatarUrl = '../assets/testimonials-avatar-1.png';
+                    if (newAvatar === '2') avatarUrl = '../assets/testimonials-avatar-2.png';
+                    if (newAvatar === '3') avatarUrl = '../assets/testimonials-avatar-3.png';
+                    JadooDB.updateProfile({ avatar_url: avatarUrl });
+                    const avEl = document.getElementById('profilePageAvatar');
+                    if (avEl) avEl.src = avatarUrl;
+                    JadooToast.show('Avatar Updated', 'Your traveler profile picture has been updated.', 'success');
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initProfilePage);
+        } else {
+            initProfilePage();
+        }
+
+        function renderProfileHeader(user) {
+            const nameEl = document.getElementById('profilePageName');
+            const emailEl = document.getElementById('profilePageEmail');
+            const avatarEl = document.getElementById('profilePageAvatar');
+            const nameInput = document.getElementById('settingsFullName');
+            const emailInput = document.getElementById('settingsEmail');
+            const phoneInput = document.getElementById('settingsPhone');
+
+            const defaultAvatar = '../assets/testimonials-avatar-1.png';
+            if (nameEl) nameEl.textContent = user?.full_name || 'Alex Johnson';
+            if (emailEl) emailEl.textContent = user?.email || 'alex.traveler@example.com';
+            if (avatarEl) {
+                let av = user?.avatar_url;
+                if (!av || av.startsWith('./assets/')) {
+                    av = defaultAvatar;
+                }
+                avatarEl.src = av;
+                avatarEl.onerror = function() {
+                    this.onerror = null;
+                    this.src = defaultAvatar;
+                };
+            }
+
+            if (nameInput) nameInput.value = user?.full_name || 'Alex Johnson';
+            if (emailInput) emailInput.value = user?.email || 'alex.traveler@example.com';
+            if (phoneInput) phoneInput.value = user?.phone || '+1 (555) 234-5678';
+        }
+
+        function renderStats(user) {
+            const bookings = JadooDB.getUserBookings(user?.email);
+            const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
+            const totalSpent = bookings.reduce((sum, b) => b.status !== 'cancelled' ? sum + b.total_price : sum, 0);
+
+            document.getElementById('statTotalTrips').textContent = `${bookings.length}`;
+            document.getElementById('statConfirmedTrips').textContent = `${confirmedCount}`;
+            document.getElementById('statTotalExpended').textContent = `$${totalSpent.toFixed(0)}`;
+            document.getElementById('badgeBookingsCount').textContent = `${bookings.length}`;
+            const badgeTickets = document.getElementById('badgeTicketsCount');
+            if (badgeTickets) badgeTickets.textContent = `${confirmedCount}`;
+        }
+
+        function renderTickets(user) {
+            const listEl = document.getElementById('profileTicketsList');
+            if (!listEl) return;
+
+            const bookings = JadooDB.getUserBookings(user?.email);
+
+            if (bookings.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bookings-empty-state">
+                        <div class="empty-icon-wrap"><i class="fa-solid fa-ticket"></i></div>
+                        <h3>No E-Tickets Issued Yet</h3>
+                        <p>When you reserve any destination or adventure on Jadoo, your official digital boarding pass and gate-entry QR token will appear right here.</p>
+                        <a href="./destination-page.html" class="btn-empty-explore">
+                            <i class="fa-solid fa-earth-americas"></i>
+                            <span>Explore Destinations</span>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = bookings.map(b => {
+                const destCode = b.destination_name.substring(0, 3).toUpperCase();
+                const currentSeat = localStorage.getItem(`jadoo_seat_${b.id}`) || 'Suite 02A';
+                const gateNum = ((parseInt(b.id.replace(/\D/g, '') || '24', 10) % 30) + 1);
+                const gate = `Gate B${gateNum < 10 ? '0' + gateNum : gateNum}`;
+                const isBoarded = localStorage.getItem(`jadoo_boarded_${b.id}`) === 'true';
+
+                return `
+                    <div class="profile-ticket-card" data-id="${b.id}">
+                        <div class="card-notch card-notch-top"></div>
+                        <div class="card-notch card-notch-bottom"></div>
+
+                        <!-- Left Airline & Flight Route Stub -->
+                        <div class="ticket-card-route">
+                            <div class="ticket-carrier-tag">
+                                <i class="fa-solid fa-plane-departure"></i>
+                                <span>JADOO AIRWAYS</span>
+                            </div>
+                            <div class="ticket-route-code">DEP ➔ ${destCode}</div>
+                            <span class="ticket-route-dest"><i class="fa-solid fa-location-dot"></i> ${b.destination_name}</span>
+                            <div class="ticket-sub-flight">
+                                <span>FLIGHT JA-708</span>
+                                <span>•</span>
+                                <span class="ticket-booking-ref">#${b.id}</span>
+                            </div>
+                        </div>
+
+                        <!-- Center Passenger & Travel Manifest -->
+                        <div class="ticket-card-meta">
+                            <div class="ticket-meta-block">
+                                <span>Attraction Tour</span>
+                                <strong title="${b.attraction_name}">${b.attraction_name}</strong>
+                            </div>
+                            <div class="ticket-meta-block">
+                                <span>Departure Date</span>
+                                <strong><i class="fa-regular fa-calendar" style="color: #64748B;"></i> ${b.travel_date}</strong>
+                            </div>
+                            <div class="ticket-meta-block highlight-seat-box">
+                                <span>Suite Cabin Seat</span>
+                                <strong style="color: #F1A501;"><i class="fa-solid fa-chair"></i> ${currentSeat}</strong>
+                            </div>
+                            <div class="ticket-meta-block highlight-gate-box">
+                                <span>Boarding Gate</span>
+                                <strong style="color: #DF6951;"><i class="fa-solid fa-door-open"></i> ${gate}</strong>
+                            </div>
+                            <div class="ticket-meta-block">
+                                <span>Gate Clearance</span>
+                                <span class="badge-status status-${isBoarded ? 'confirmed' : b.status}">
+                                    <i class="fa-solid ${isBoarded ? 'fa-circle-check' : 'fa-shield-halved'}"></i>
+                                    ${isBoarded ? 'BOARDED' : b.status.toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right Gate Pass Actions & Barcode Stub -->
+                        <div class="ticket-card-actions">
+                            <div class="mini-barcode-simulation" title="IATA Digital Boarding Token"></div>
+                            <a href="./ticket.html?id=${b.id}" class="btn-open-boarding-pass">
+                                <i class="fa-solid fa-ticket"></i>
+                                <span>Open Boarding Pass</span>
+                            </a>
+                            <a href="./ticket.html?id=${b.id}&view=ticket_only" target="_blank" class="btn-secondary-flat btn-direct-pass" title="Open Clean E-Ticket for Gate Scanning">
+                                <i class="fa-solid fa-qrcode"></i>
+                                <span>Direct Gate Pass</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderBookings(user) {
+            const listEl = document.getElementById('profileBookingsList');
+            if (!listEl) return;
+
+            const bookings = JadooDB.getUserBookings(user?.email, currentFilter);
+
+            if (bookings.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bookings-empty-state">
+                        <div class="empty-icon-wrap"><i class="fa-solid fa-compass"></i></div>
+                        <h3>No ${currentFilter === 'all' ? '' : currentFilter} trips found</h3>
+                        <p>Discover historical landmarks, luxury flights, and bespoke tours across the globe.</p>
+                        <a href="./destination-page.html" class="btn-empty-explore">
+                            <i class="fa-solid fa-earth-americas"></i>
+                            <span>Explore Destinations</span>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            function getBookingImgUrl(raw) {
+                if (!raw) return '../assets/destination-rome.png';
+                if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+                    return raw;
+                }
+                if (raw.startsWith('./assets/')) {
+                    return '.' + raw; // converts ./assets/ to ../assets/
+                }
+                if (raw.startsWith('assets/')) {
+                    return '../' + raw; // converts assets/ to ../assets/
+                }
+                if (!raw.startsWith('../assets/')) {
+                    return '../assets/' + raw.replace(/^\.?\/?(assets\/)?/, '');
+                }
+                return raw;
+            }
+
+            listEl.innerHTML = bookings.map(b => `
+                <div class="booking-item-card" data-id="${b.id}">
+                    <img src="${getBookingImgUrl(b.image_url)}" alt="${b.attraction_name}" class="booking-item-img" onerror="this.onerror=null; this.src='../assets/destination-rome.png';">
+                    <div class="booking-item-info">
+                        <div class="booking-item-header">
+                            <h4 class="booking-item-title">${b.attraction_name}</h4>
+                            <span class="badge-status status-${b.status}">${b.status}</span>
+                        </div>
+                        <div class="booking-item-meta">
+                            <span><i class="fa-solid fa-location-dot"></i> ${b.destination_name}</span>
+                            <span><i class="fa-solid fa-calendar-days"></i> ${b.travel_date}</span>
+                            <span><i class="fa-solid fa-user-group"></i> ${b.guests_count} guest${b.guests_count > 1 ? 's' : ''}</span>
+                            <span><i class="fa-solid fa-award"></i> ${(b.package_type || 'Standard').toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="booking-item-actions-col">
+                        <div class="booking-price-highlight">$${Number(b.total_price || 0).toFixed(2)}</div>
+                        <div class="booking-item-actions">
+                            <a href="./ticket.html?id=${b.id}" class="btn-print-ticket" style="text-decoration: none;">
+                                <i class="fa-solid fa-ticket"></i>
+                                <span>View Ticket</span>
+                            </a>
+                            ${b.status !== 'cancelled' ? `
+                                <button type="button" class="btn-cancel-trip" onclick="cancelTripAction('${b.id}')">
+                                    <i class="fa-solid fa-ban"></i>
+                                    <span>Cancel</span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderReviews(user) {
+            const container = document.getElementById('profileReviewsContainer');
+            if (!container) return;
+
+            const testimonials = JadooDB.getTestimonials();
+            container.innerHTML = testimonials.map(t => `
+                <div class="channel-card" style="margin-bottom: 1rem;">
+                    <div class="channel-icon" style="background: rgba(241, 165, 1, 0.12); color: #F1A501;">
+                        <i class="fa-solid fa-quote-left"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h4>${t.trip_tag || t.destination_name}</h4>
+                            <span style="color: #F1A501; font-weight: 700;"><i class="fa-solid fa-star"></i> ${t.rating.toFixed(1)}</span>
+                        </div>
+                        <p style="font-style: italic; margin: 0.4rem 0;">&ldquo;${t.quote}&rdquo;</p>
+                        <span style="font-size: 0.8rem; color: #94A3B8;">Destination: ${t.destination_name} • Author: ${t.author_name}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.cancelTripAction = function (id) {
+            if (confirm(`Are you sure you want to cancel booking #${id}?`)) {
+                JadooDB.cancelBooking(id);
+                JadooToast.show('Reservation Cancelled', `Booking #${id} has been marked as cancelled.`, 'info');
+                const user = JadooDB.getCurrentUser();
+                renderStats(user);
+                renderBookings(user);
+            }
+        };
+    </script>
+</body>
+
+</html>

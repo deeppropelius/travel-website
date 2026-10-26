@@ -103,7 +103,7 @@ footer,
 }
 
 /* Mobile nav drawer */
-@media (max-width: 768px) {
+@media (max-width: 880px) {
   [data-theme="dark"] .navitems {
     background: rgba(15, 22, 38, 0.98);
     backdrop-filter: blur(20px);
@@ -633,11 +633,12 @@ footer,
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 9;
-  width: clamp(5rem,52px, 5vw);
+  z-index: 99999 !important;
+  width: 52px;
+  height: 52px;
   aspect-ratio: 1/1;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -651,6 +652,7 @@ footer,
               background 0.4s ease,
               border-color 0.4s ease;
   outline: none;
+  pointer-events: auto !important;
 }
 
 .theme-toggle:hover {
