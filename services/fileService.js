@@ -14,24 +14,65 @@ export const MIME_TYPES = {
     ".webp": "image/webp",
     ".ico": "image/x-icon",
 };
+const ROUTE_ALIASES = {
+    "/ticket": "/components/ticket.html",
+    "/ticket.html": "/components/ticket.html",
+    "/e-ticket": "/components/ticket.html",
+    "/profile": "/components/profile.html",
+    "/profile.html": "/components/profile.html",
+    "/destination": "/components/destination-page.html",
+    "/destinations": "/components/destination-page.html",
+    "/destination-page": "/components/destination-page.html",
+    "/destination-page.html": "/components/destination-page.html",
+    "/contact": "/components/contact.html",
+    "/contact.html": "/components/contact.html",
+    "/help": "/components/contact.html",
+    "/auth": "/components/auth.html",
+    "/auth.html": "/components/auth.html",
+    "/login": "/components/auth.html",
+    "/signin": "/components/auth.html",
+    "/signup": "/components/auth.html",
+};
 /**
  * Resolves requested path against the root directory and protects against directory traversal.
  * Returns absolute path if valid and exists as a file, or null otherwise.
  */
 export function resolveSafeFilePath(reqPath, rootDir = process.cwd()) {
     try {
-        let relativePath = decodeURIComponent(reqPath);
+        let relativePath = decodeURIComponent(reqPath.split("?")[0].split("#")[0]);
         if (relativePath === "/" || relativePath === "") {
             relativePath = "/index.html";
         }
-        const safePath = path.normalize(path.join(rootDir, relativePath));
-        // Ensure path remains inside target directory to prevent directory traversal
-        if (!safePath.startsWith(rootDir)) {
+        // Check direct aliases
+        const lower = relativePath.toLowerCase();
+        if (ROUTE_ALIASES[lower]) {
+            relativePath = ROUTE_ALIASES[lower];
+        }
+        const checkCandidate = (rel) => {
+            const safe = path.normalize(path.join(rootDir, rel));
+            if (safe.startsWith(rootDir) && fs.existsSync(safe) && fs.statSync(safe).isFile()) {
+                return safe;
+            }
             return null;
+        };
+        // 1. Direct match
+        let match = checkCandidate(relativePath);
+        if (match)
+            return match;
+        // 2. Append .html if not present
+        if (!path.extname(relativePath)) {
+            match = checkCandidate(relativePath + ".html");
+            if (match)
+                return match;
+            // 3. Check inside components/
+            match = checkCandidate(path.join("components", relativePath + ".html"));
+            if (match)
+                return match;
         }
-        if (fs.existsSync(safePath) && fs.statSync(safePath).isFile()) {
-            return safePath;
-        }
+        // 4. Check inside components directly
+        match = checkCandidate(path.join("components", relativePath));
+        if (match)
+            return match;
     }
     catch (err) {
         console.error("[fileService] Error resolving path:", err);

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Contact Center - Jadoo Travel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/tablet.css">
+    <link rel="stylesheet" href="../styles/mobile.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <link rel="stylesheet" href="../styles/features.css">
+    <link rel="stylesheet" href="../styles/pages.css">
+
+    <!-- Early dark theme execution -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+
+                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                if (!loggedOut) {
+                    document.documentElement.classList.add('user-logged-in');
+                }
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <div class="navbar">
+                <div class="navlogo">
+                    <a href="../index.html" title="Jadoo - Home">
+                        <img src="../assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+                        <img src="../assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
+                    </a>
+                </div>
+                <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="navitems" id="navitems">
+                    <ul>
+                        <li><a href="../index.html" class="navlink">Home</a></li>
+                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
+                        <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-user-li" class="nav-user-item">
+                            <div class="user-profile-dropdown" id="userProfileDropdown">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
+                                    <span class="user-avatar-circle">
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
+                                    </span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
+                                    <i class="fa-solid fa-chevron-down user-chevron"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                                    <div class="dropdown-user-header">
+                                        <div class="dropdown-avatar-circle">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <div class="dropdown-user-info">
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="./profile.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>My Profile</span>
+                                    </a>
+                                    <a href="./ticket.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-ticket"></i>
+                                        <span>My E-Tickets</span>
+                                        <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                                    </a>
+                                    <a href="./destination-page.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-compass"></i>
+                                        <span>Explore Destinations</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                        <span>Log Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <!-- Breadcrumb -->
+        <div class="page-breadcrumb">
+            <a href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-chevron-right"></i>
+            <span class="current-crumb">Help & 24/7 Concierge Support</span>
+        </div>
+
+        <!-- Contact Hero -->
+        <div class="contact-hero-banner">
+            <span class="modal-header-badge" style="display: inline-flex;"><i class="fa-solid fa-headset"></i> 24/7 Travel Assistance</span>
+            <h1>We're Here to Support Your Journey</h1>
+            <p>Have questions about your itinerary, e-ticket, customized private tours, or travel advisories? Connect with our dedicated global concierge team.</p>
+        </div>
+
+        <!-- Split Grid: Channels & Form -->
+        <div class="contact-split-grid">
+            <!-- Support Channels Column -->
+            <div class="support-channels-col">
+                <div class="channel-card">
+                    <div class="channel-icon">
+                        <i class="fa-solid fa-phone-volume"></i>
+                    </div>
+                    <div>
+                        <h4>24/7 Concierge Hotline</h4>
+                        <p>Instant phone support for urgent boarding, transfers, and schedule changes.</p>
+                        <strong>+1 (800) 523-6688</strong>
+                    </div>
+                </div>
+
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h4>WhatsApp Travel Chat</h4>
+                        <p>Direct live chat with our localized guides in Rome, London, Paris, and Tokyo.</p>
+                        <strong style="color: #10B981;">+44 7911 123456</strong>
+                    </div>
+                </div>
+
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: rgba(138, 121, 223, 0.12); color: #8A79DF;">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <h4>Email Concierge</h4>
+                        <p>Inquiries answered in under 2 hours with detailed tour documentation.</p>
+                        <strong style="color: #8A79DF;">concierge@jadoo.com</strong>
+                    </div>
+                </div>
+
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: rgba(241, 165, 1, 0.12); color: #F1A501;">
+                        <i class="fa-solid fa-building-flag"></i>
+                    </div>
+                    <div>
+                        <h4>Global Hubs</h4>
+                        <p>Offices in London (Fleet St), Rome (Via Veneto), and New York (5th Ave).</p>
+                        <strong style="color: #F1A501;">London • Rome • Tokyo • NYC</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Inquiry Form -->
+            <div class="contact-form-card">
+                <h3><i class="fa-solid fa-paper-plane" style="color: #DF6951; margin-right: 0.5rem;"></i> Send an Inquiry</h3>
+                <p>Fill out the form below and our itinerary specialist will respond within 2 hours.</p>
+
+                <form id="contactInquiryForm">
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="contactFullName">Your Name <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="contactFullName" placeholder="e.g. Alex Johnson" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="contactEmail">Email Address <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-envelope input-icon"></i>
+                                <input type="email" id="contactEmail" placeholder="alex@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="contactBookingRef">Booking Reference (Optional)</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-ticket input-icon"></i>
+                                <input type="text" id="contactBookingRef" placeholder="e.g. BK-92841">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="contactSubject">Inquiry Topic <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-list-check input-icon"></i>
+                                <select id="contactSubject" required>
+                                    <option value="General Inquiry">General Question</option>
+                                    <option value="Booking Modification">Change Travel Date / Guests</option>
+                                    <option value="Cancellation Request">Cancellation & Refund</option>
+                                    <option value="VIP Custom Tour">Private Custom Itinerary</option>
+                                    <option value="Feedback">Traveler Feedback / Testimonial</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="contactMessage">How can we assist you? <span class="required-star">*</span></label>
+                        <textarea id="contactMessage" rows="4" placeholder="Detail your travel requirements, requested dates, or flight questions..." required></textarea>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="submit" class="btn-primary-glow">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Send Message</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section-wrapper">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-accordion-group">
+                <div class="faq-accordion-item is-open">
+                    <button type="button" class="faq-question-btn">
+                        <span>How do I access and print my official Boarding Pass / E-Ticket?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer-body">
+                        You can view your full boarding pass anytime from your <a href="./profile.html" style="color: #DF6951; font-weight: 600;">Traveler Profile</a> or the <a href="./ticket.html" style="color: #DF6951; font-weight: 600;">Ticket View</a> page. Click "Print Ticket / Save PDF" to produce a clean, high-resolution physical ticket formatted for airport and gate check-in.
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn">
+                        <span>What is the cancellation and itinerary modification policy?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer-body">
+                        All reservations can be cancelled directly through your Traveler Profile under "My Bookings". Cancellations made at least 48 hours prior to your scheduled departure date qualify for a 100% full refund with zero administrative penalty.
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn">
+                        <span>Are airport pickups and priority admissions included?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer-body">
+                        Yes! Both our Guided VIP and Luxury All-Inclusive tiers include complimentary private chauffeur airport pickup, luggage handling, and skip-the-line VIP fast-track admission tickets for all listed landmark attractions.
+                    </div>
+                </div>
+
+                <div class="faq-accordion-item">
+                    <button type="button" class="faq-question-btn">
+                        <span>How does Jadoo store and protect my travel information?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer-body">
+                        Your bookings, account preferences, and tickets are stored securely with client-side synchronization and verified encryption, ensuring your travel credentials are accessible anywhere in the world, even offline.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="foot">
+            <div class="col lab">
+                <div class="fh"><a href="../index.html">Jadoo.</a></div>
+                <div class="fp">Book your trip in minutes, get full control for much longer.</div>
+            </div>
+            <div class="ccol">
+                <div class="col">
+                    <div class="fch">Company</div>
+                    <div class="fcp"><a href="../index.html#home">About</a></div>
+                    <div class="fcp"><a href="../index.html#services">Services</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Destinations</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">Explore & Care</div>
+                    <div class="fcp"><a href="./contact.html">Help & FAQ</a></div>
+                    <div class="fcp"><a href="./ticket.html">E-Ticket View</a></div>
+                    <div class="fcp"><a href="./profile.html">Traveler Profile</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">More</div>
+                    <div class="fcp"><a href="../index.html#services">Airline fees</a></div>
+                    <div class="fcp"><a href="../index.html#services">Airlines</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Low fare tips</a></div>
+                </div>
+            </div>
+            <div class="col fico">
+                <div class="footi">
+                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                </div>
+                <div class="fih">Discover our app</div>
+                <div class="store">
+                    <div class="fps">
+                        <div class="pas">
+                            <img src="../assets/google-play.png" alt="Google Play store badge">
+                        </div>
+                        <div class="fit">
+                            <div class="play1">Get it on</div>
+                            <div class="play2">Google Play</div>
+                        </div>
+                    </div>
+                    <div class="fps">
+                        <div class="pas pas1">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="fit">
+                            <div class="play1 play3">Available on the</div>
+                            <div class="play2 play4">Apple Store</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="end">All rights reserved@jadoo.co</div>
+    </footer>
+
+    <!-- Floating Dark Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <script type="module">
+        import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
+
+        function initContactPage() {
+            JadooTheme.init();
+            JadooNavAuth.init();
+            // FAQ Accordion toggles
+            const faqItems = document.querySelectorAll('.faq-accordion-item');
+            faqItems.forEach(item => {
+                const btn = item.querySelector('.faq-question-btn');
+                btn?.addEventListener('click', () => {
+                    const isOpen = item.classList.contains('is-open');
+                    faqItems.forEach(i => i.classList.remove('is-open'));
+                    if (!isOpen) {
+                        item.classList.add('is-open');
+                    }
+                });
+            });
+
+            // Contact Form
+            const form = document.getElementById('contactInquiryForm');
+            form?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('contactFullName').value.trim();
+                form.reset();
+                JadooToast.show('Inquiry Submitted', `Thank you, ${name}! Our concierge team will reach out via email within 2 hours.`, 'success');
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initContactPage);
+        } else {
+            initContactPage();
+        }
+    </script>
+</body>
+
+</html>
