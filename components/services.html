@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadoo Services - Premium Travel Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/tablet.css">
+    <link rel="stylesheet" href="../styles/mobile.css">
+    <link rel="stylesheet" href="../styles/dark-theme.css">
+    <link rel="stylesheet" href="../styles/features.css">
+    <link rel="stylesheet" href="../styles/pages.css">
+
+    <!-- Early dark theme execution to prevent light-theme flash -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('jadoo_dark_theme');
+                if (saved === null) {
+                    var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
+                    if (match) {
+                        try { saved = JSON.parse(decodeURIComponent(match[1])); } catch (e) { saved = match[1]; }
+                    }
+                }
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = saved !== null ? (saved === 'true' || saved === true) : prefersDark;
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+
+                // Global instant theme toggle handler
+                window.toggleThemeGlobal = function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+                        return window.JadooTheme.toggle();
+                    }
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme') === 'dark';
+                    var next = !current;
+                    if (next) {
+                        html.setAttribute('data-theme', 'dark');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'true');
+                            localStorage.setItem('jadoo_theme', 'true');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    } else {
+                        html.removeAttribute('data-theme');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'false');
+                            localStorage.setItem('jadoo_theme', 'false');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    }
+                    var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+                    icons.forEach(function (ic) {
+                        ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    });
+                    var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+                    btns.forEach(function (btn) {
+                        btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.style.transform = 'scale(1.2) rotate(25deg)';
+                        setTimeout(function () { btn.style.transform = ''; }, 320);
+                    });
+                    return next;
+                };
+
+                var userRaw = localStorage.getItem('jadoo_current_user');
+                if (userRaw && localStorage.getItem('jadoo_logged_out') !== 'true') {
+                    try {
+                        var u = JSON.parse(userRaw);
+                        if (u && (u.email || u.id)) {
+                            document.documentElement.classList.add('user-logged-in');
+                        }
+                    } catch(e) {}
+                }
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="navbar">
+                <div class="navlogo">
+                    <a href="../index.html" title="Jadoo - Home">
+                        <img src="../assets/logo.png" alt="Jadoo Travel Logo" class="jadoo-logo light-logo">
+                        <img src="../assets/logo-dark.png" alt="Jadoo Travel Logo" class="jadoo-logo dark-logo">
+                    </a>
+                </div>
+                <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                <div class="navitems" id="navitems">
+                    <ul>
+                        <li><a href="../index.html" class="navlink">Home</a></li>
+                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./services.html" class="navlink active-page">Services</a></li>
+                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
+                        <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
+                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-user-li" class="nav-user-item">
+                            <div class="user-profile-dropdown" id="userProfileDropdown">
+                                <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
+                                    <span class="user-avatar-circle">
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="user-nav-avatar" id="navUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                        <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
+                                    </span>
+                                    <span class="user-first-name" id="userFirstNameDisplay">Alex</span>
+                                    <i class="fa-solid fa-chevron-down user-chevron"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                                    <div class="dropdown-user-header">
+                                        <div class="dropdown-avatar-circle">
+                                            <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
+                                        </div>
+                                        <div class="dropdown-user-info">
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="./profile.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>My Profile</span>
+                                    </a>
+                                    <a href="./ticket.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-ticket"></i>
+                                        <span>My E-Tickets</span>
+                                        <span class="booking-count-badge" id="navBookingBadge" style="display: none;">0</span>
+                                    </a>
+                                    <a href="./destination-page.html" class="dropdown-item" role="menuitem">
+                                        <i class="fa-solid fa-compass"></i>
+                                        <span>Explore Destinations</span>
+                                    </a>
+                                    <a href="./services.html" class="dropdown-item active-item" role="menuitem">
+                                        <i class="fa-solid fa-hand-holding-heart"></i>
+                                        <span>Travel Services</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                        <span>Log Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <select name="Language" id="lang" aria-label="Select Language">
+                                <option value="eng">En</option>
+                                <option value="Guj">Guj</option>
+                                <option value="Hi">Hi</option>
+                            </select>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-main services-page-main">
+        <!-- Breadcrumb Navigation -->
+        <nav class="page-breadcrumb" aria-label="Breadcrumb">
+            <a href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-chevron-right breadcrumb-separator"></i>
+            <span class="breadcrumb-current">Services</span>
+        </nav>
+
+        <!-- Services Hero Section -->
+        <section class="services-hero-header">
+            <span class="services-badge"><i class="fa-solid fa-sparkles"></i> World-Class Travel Services</span>
+            <h1 class="services-title">Bespoke Travel Services For Every Journey</h1>
+            <p class="services-subtitle">From real-time climate tracking and private jet charters to VIP skip-the-line passes, discover how Jadoo elevates your voyage from ordinary to unforgettable.</p>
+            <div class="services-header-actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button type="button" class="btn-primary-glow" id="btnOpenCreateServiceModal" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.8rem; border-radius: 9999px; cursor: pointer; font-weight: 600; font-size: 0.95rem; border: none; box-shadow: 0 10px 25px rgba(223, 105, 81, 0.35);">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Create Custom Service</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Category Filter Toolbar -->
+        <div class="services-filter-bar">
+            <div class="services-chips" id="serviceCategoryChips">
+                <button type="button" class="service-chip is-active" data-category="all"><i class="fa-solid fa-globe"></i> All Services</button>
+                <button type="button" class="service-chip" data-category="Air & Flights"><i class="fa-solid fa-plane"></i> Air & Flights</button>
+                <button type="button" class="service-chip" data-category="Planning"><i class="fa-solid fa-compass-drafting"></i> Planning & Visas</button>
+                <button type="button" class="service-chip" data-category="VIP & Events"><i class="fa-solid fa-star"></i> VIP & Events</button>
+                <button type="button" class="service-chip" data-category="Bespoke"><i class="fa-solid fa-wand-magic-sparkles"></i> Bespoke Tours</button>
+                <button type="button" class="service-chip" data-category="Stays"><i class="fa-solid fa-hotel"></i> Stays & Villas</button>
+                <button type="button" class="service-chip" data-category="Logistics"><i class="fa-solid fa-shield-halved"></i> Logistics & Care</button>
+            </div>
+        </div>
+
+        <!-- Services Cards Grid -->
+        <section class="services-cards-grid" id="servicesGrid">
+            <!-- Dynamically populated or static cards rendered by JavaScript -->
+            <div class="service-card-loading">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading Jadoo Travel Services...</p>
+            </div>
+        </section>
+
+        <!-- Why Choose Jadoo Feature Banner -->
+        <section class="services-why-banner">
+            <div class="why-banner-content">
+                <span class="why-badge"><i class="fa-solid fa-award"></i> The Jadoo Distinction</span>
+                <h2 class="why-title">Why 50,000+ Explorers Choose Our Services</h2>
+                <div class="why-perks-row">
+                    <div class="why-perk">
+                        <div class="why-icon"><i class="fa-solid fa-shield-check"></i></div>
+                        <h3>100% Protection</h3>
+                        <p>Every booking includes verified guarantees, flexible cancellations, and secure payments.</p>
+                    </div>
+                    <div class="why-perk">
+                        <div class="why-icon"><i class="fa-solid fa-headset"></i></div>
+                        <h3>24/7 Concierge</h3>
+                        <p>Real human travel architects at your fingertips via live chat, call, or WhatsApp.</p>
+                    </div>
+                    <div class="why-perk">
+                        <div class="why-icon"><i class="fa-solid fa-gem"></i></div>
+                        <h3>VIP Access</h3>
+                        <p>Enjoy private entries, early hotel check-ins, and exclusive local culinary black books.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Interactive Service Details & Inquiry Modal -->
+    <div class="features-modal-overlay" id="serviceModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="serviceModalBackdrop"></div>
+        <div class="features-modal-card service-modal-card">
+            <div class="service-modal-hero" id="serviceModalHero">
+                <button type="button" class="modal-close-btn" id="serviceModalClose" aria-label="Close service details">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="service-modal-header-meta">
+                    <span class="service-modal-badge" id="modalServiceBadge">Bestseller</span>
+                    <h2 class="service-modal-title" id="modalServiceTitle">Calculated Weather Forecasts</h2>
+                    <p class="service-modal-tagline" id="modalServiceTagline">Hyper-local climate precision for every trip</p>
+                </div>
+            </div>
+
+            <div class="service-modal-body">
+                <div class="service-modal-details-col">
+                    <h3 class="service-modal-section-h">Overview & Inclusions</h3>
+                    <p class="service-modal-desc" id="modalServiceDesc"></p>
+
+                    <h4 class="service-modal-sub-h"><i class="fa-solid fa-check-double"></i> Key Capabilities</h4>
+                    <ul class="service-features-list" id="modalServiceFeatures"></ul>
+
+                    <h4 class="service-modal-sub-h"><i class="fa-solid fa-gift"></i> Complimentary Perks</h4>
+                    <div class="service-perks-tags" id="modalServicePerks"></div>
+                </div>
+
+                <div class="service-modal-inquiry-col">
+                    <div class="service-inquiry-card">
+                        <div class="inquiry-price-header">
+                            <span class="inquiry-price-label">Starting Price</span>
+                            <div class="inquiry-price-val" id="modalServicePrice">$180 <span class="inquiry-unit">/ segment</span></div>
+                        </div>
+
+                        <form id="serviceInquiryForm" class="service-inquiry-form">
+                            <input type="hidden" id="inquiryServiceId">
+                            <input type="hidden" id="inquiryServiceTitle">
+
+                            <div class="inquiry-field">
+                                <label for="inqName">Your Name <span class="req">*</span></label>
+                                <input type="text" id="inqName" placeholder="e.g. Eleanor Vance" required>
+                            </div>
+
+                            <div class="inquiry-field">
+                                <label for="inqEmail">Email Address <span class="req">*</span></label>
+                                <input type="email" id="inqEmail" placeholder="e.g. eleanor@example.com" required>
+                            </div>
+
+                            <div class="inquiry-field">
+                                <label for="inqDestination">Destination of Interest</label>
+                                <input type="text" id="inqDestination" placeholder="e.g. Rome, Italy or Paris, France">
+                            </div>
+
+                            <div class="inquiry-field">
+                                <label for="inqMessage">Specific Requests / Dates</label>
+                                <textarea id="inqMessage" rows="3" placeholder="Tell us about your flight dates, villa preferences, or bespoke requests..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary-glow service-inquire-btn" id="submitInquiryBtn">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Request This Service</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Custom Service Modal -->
+    <div class="features-modal-overlay" id="createServiceModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="createServiceModalBackdrop"></div>
+        <div class="features-modal-card" style="max-width: 620px;">
+            <div class="features-modal-header">
+                <div>
+                    <span class="modal-header-badge"><i class="fa-solid fa-crown"></i> Bespoke Concierge</span>
+                    <h3 class="features-modal-title">Create Custom Travel Service</h3>
+                </div>
+                <button type="button" class="features-modal-close" id="createServiceModalClose" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="features-modal-body">
+                <form id="createServiceForm">
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="newServiceTitle">Service Title <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-heading input-icon"></i>
+                                <input type="text" id="newServiceTitle" placeholder="e.g. Private Yacht Island Cruise" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="newServiceCategory">Category <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-layer-group input-icon"></i>
+                                <select id="newServiceCategory" required>
+                                    <option value="Bespoke">Bespoke</option>
+                                    <option value="Air & Flights">Air & Flights</option>
+                                    <option value="VIP & Events">VIP & Events</option>
+                                    <option value="Stays">Stays & Villas</option>
+                                    <option value="Planning">Planning</option>
+                                    <option value="Logistics">Logistics</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="newServicePrice">Starting Price <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-dollar-sign input-icon"></i>
+                                <input type="text" id="newServicePrice" placeholder="e.g. $850" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="newServiceUnit">Pricing Unit <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-calendar-day input-icon"></i>
+                                <input type="text" id="newServiceUnit" placeholder="e.g. per charter / day" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="newServiceTagline">Tagline / Subheading</label>
+                        <div class="booking-input-wrap">
+                            <i class="fa-solid fa-feather input-icon"></i>
+                            <input type="text" id="newServiceTagline" placeholder="e.g. Bespoke maritime cruising across Mediterranean coves">
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="newServiceShortDesc">Short Overview <span class="required-star">*</span></label>
+                        <textarea id="newServiceShortDesc" rows="2" placeholder="Brief 1-2 sentence overview for the card display..." required></textarea>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="newServiceFeatures">Key Features (comma-separated)</label>
+                        <div class="booking-input-wrap">
+                            <i class="fa-solid fa-list-check input-icon"></i>
+                            <input type="text" id="newServiceFeatures" placeholder="Dedicated skipper, Champagne welcome, Route customization">
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="newServiceBadge">Badge Pill</label>
+                        <div class="booking-input-wrap">
+                            <i class="fa-solid fa-certificate input-icon"></i>
+                            <input type="text" id="newServiceBadge" placeholder="e.g. VIP Bespoke, Private, Exclusive" value="VIP Bespoke">
+                        </div>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="button" class="btn-secondary-flat" id="createServiceCancelBtn">Cancel</button>
+                        <button type="submit" class="btn-primary-glow" id="createServiceSubmitBtn">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>Publish Service</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="foot">
+            <div class="lab">
+                <div class="fh">Jadoo.</div>
+                <div class="fp">Book your trip in minute, get full Control for much longer.</div>
+            </div>
+            <div class="ccol">
+                <div class="col">
+                    <div class="fch">Company</div>
+                    <div class="fcp"><a href="../index.html">About</a></div>
+                    <div class="fcp"><a href="./services.html">Services</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Destinations</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">Explore & Care</div>
+                    <div class="fcp"><a href="./contact.html">Help & FAQ</a></div>
+                    <div class="fcp"><a href="./ticket.html">E-Ticket View</a></div>
+                    <div class="fcp"><a href="./profile.html">Traveler Profile</a></div>
+                </div>
+                <div class="col">
+                    <div class="fch">More</div>
+                    <div class="fcp"><a href="./contact.html">Airline fees</a></div>
+                    <div class="fcp"><a href="./destination-page.html">Airlines</a></div>
+                    <div class="fcp"><a href="./contact.html">Low fare tips</a></div>
+                </div>
+            </div>
+            <div class="fico">
+                <div class="footi">
+                    <button class="fic fb" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></button>
+                    <button class="fic ins" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></button>
+                    <button class="fic tw" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></button>
+                </div>
+                <div class="fih">Discover our app</div>
+                <div class="store">
+                    <button class="fps"><img src="../assets/google-play.png" alt="Google Play Store"></button>
+                    <button class="fps"><img src="../assets/apple-store.png" alt="Apple App Store"></button>
+                </div>
+            </div>
+        </div>
+        <div class="lfp">All rights reserved @jadoo.co</div>
+    </footer>
+
+    <!-- Floating Dark Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script type="module" src="../scripts/db.js"></script>
+    <script type="module" src="../scripts/features.js"></script>
+    <script type="module">
+        import { JadooDB } from '../scripts/db.js';
+        import { JadooNavAuth, JadooTheme, JadooToast } from '../scripts/features.js';
+
+        if (typeof window !== 'undefined') {
+            window.JadooTheme = JadooTheme;
+            window.toggleThemeGlobal = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                return JadooTheme.toggle();
+            };
+        }
+
+        // Initialize Theme & Auth Sync across navigation and modals
+        JadooTheme.init();
+        JadooNavAuth.init();
+
+        // Load & Render Services
+        let currentServices = [];
+        let activeCategory = 'all';
+
+        function getFallbackServices() {
+            return [
+                {
+                    id: 'srv-weather',
+                    slug: 'calculated-weather',
+                    title: 'Calculated Weather & Climate Forecasts',
+                    tagline: 'Hyper-local meteorological precision for seamless trip scheduling',
+                    category: 'Planning',
+                    icon: 'fa-solid fa-cloud-sun-rain',
+                    badge: 'Popular',
+                    short_desc: 'Predictive micro-climate forecasts, seasonal rainfall tracking, and AI-powered packing recommendations for any destination.',
+                    description: 'Never let unexpected monsoon showers or sudden temperature drops interrupt your holiday. Our Calculated Weather intelligence cross-analyzes multi-decade satellite records with real-time atmospheric radar to deliver hour-by-hour route forecasts, ideal sun-bathing hours, and wardrobe recommendations.',
+                    features: [
+                        'Hourly microclimate radar tracking',
+                        'AI wardrobe & equipment packing guides',
+                        'Historical seasonal rainfall heatmaps',
+                        'Extreme weather alerts & automatic route rerouting'
+                    ],
+                    starting_price: 'Included',
+                    unit: 'Free with any booking',
+                    rating: 4.9,
+                    reviews_count: 1420,
+                    included_perks: ['24/7 Weather Radar SMS alerts', 'Destination climate guide PDF', 'Route contingency guarantee'],
+                    banner_image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-flights',
+                    slug: 'best-flights',
+                    title: 'Best Flights & Private Air Charter',
+                    tagline: 'Preferred corporate airfares, private charters, and priority sky lounges',
+                    category: 'Air & Flights',
+                    icon: 'fa-solid fa-plane-departure',
+                    badge: 'Bestseller',
+                    short_desc: 'Exclusive airline partnerships offering guaranteed best seat fares, business upgrades, and flexible charter routes worldwide.',
+                    description: 'Fly with distinguished luxury and peace of mind. Jadoo partners with Star Alliance, SkyTeam, and boutique private aviation networks across Europe, North America, and Asia to secure discounted business-class cabins, expedited terminal transfers, and private runway charters.',
+                    features: [
+                        'Global airfare price-drop guarantee',
+                        'Complimentary airport VIP lounge access',
+                        'Complimentary excess baggage allowance',
+                        'Flexible same-day itinerary rescheduling'
+                    ],
+                    starting_price: '$180',
+                    unit: 'per flight segment',
+                    rating: 4.95,
+                    reviews_count: 3280,
+                    included_perks: ['Fast-track security clearance pass', 'Dedicated air transit concierge', 'Flight delay compensation insurance'],
+                    banner_image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-events',
+                    slug: 'local-events',
+                    title: 'VIP Local Events & Cultural Pass',
+                    tagline: 'Front-row festival access, private museum tours, and cultural galas',
+                    category: 'VIP & Events',
+                    icon: 'fa-solid fa-masks-theater',
+                    badge: 'Exclusive',
+                    short_desc: 'Curated backstage passes, sold-out theatre tickets, historic gala admissions, and private after-hours museum entries.',
+                    description: 'Experience your destination through the eyes of an insider. Skip the 3-hour tourist queues with VIP skip-the-line privileges at the Vatican, private gondola serenades in Venice, Michelin-star chef table reservations, and front-row tickets to iconic opera and arts festivals.',
+                    features: [
+                        'Skip-the-line express admission to major world landmarks',
+                        'Private historian and certified local art guides',
+                        'Exclusive culinary tastings with Master Sommeliers',
+                        'Sold-out sports and cultural festival access'
+                    ],
+                    starting_price: '$65',
+                    unit: 'per experience pass',
+                    rating: 4.88,
+                    reviews_count: 980,
+                    included_perks: ['Bilingual private guide', 'Audio headset & private transport', 'Complimentary welcome aperitivo'],
+                    banner_image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-custom',
+                    slug: 'customization',
+                    title: 'Bespoke Itinerary Customization',
+                    tagline: 'Tailor-made journeys crafted around your personal passions',
+                    category: 'Bespoke',
+                    icon: 'fa-solid fa-wand-magic-sparkles',
+                    badge: 'VIP Bespoke',
+                    short_desc: 'One-on-one travel architecture matching private villas, charter yachts, and rare destination experiences.',
+                    description: 'No two travelers are alike. Our dedicated senior travel architects build your voyage from scratch — from sourcing private clifftop villas in Santorini to organizing helicopter glacier landings in the Swiss Alps.',
+                    features: [
+                        'Dedicated 1-on-1 certified luxury travel architect',
+                        'Fully personalized day-by-day interactive itinerary app',
+                        'Private air & luxury ground fleet synchronization',
+                        'Unrestricted itinerary adjustments until departure'
+                    ],
+                    starting_price: '$350',
+                    unit: 'per personalized itinerary',
+                    rating: 4.98,
+                    reviews_count: 2150,
+                    included_perks: ['Private airport chauffeur transfer', '24/7 dedicated travel concierge hotline', 'Custom leather travel wallet & destination dossier'],
+                    banner_image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-villas',
+                    slug: 'stays-villas',
+                    title: 'Luxury Stays & Heritage Villas',
+                    tagline: 'Hand-inspected historic châteaux, cliffside suites, and private private villas',
+                    category: 'Stays',
+                    icon: 'fa-solid fa-hotel',
+                    badge: 'Curated',
+                    short_desc: 'Verified five-star boutique hotels and private estates with daily breakfast, room upgrades, and late checkout.',
+                    description: 'Retreat into unmatched elegance. From 16th-century Tuscan estates surrounded by vineyards to overwater bungalows in the Maldives, each residence is personally inspected by our hospitality auditors.',
+                    features: [
+                        'Guaranteed room upgrade upon arrival (subject to availability)',
+                        'Complimentary daily gourmet artisanal breakfast',
+                        'Early 10:00 AM check-in and guaranteed late 4:00 PM check-out',
+                        '$100 property spa or culinary credit per stay'
+                    ],
+                    starting_price: '$240',
+                    unit: 'per suite / night',
+                    rating: 4.92,
+                    reviews_count: 1750,
+                    included_perks: ['Welcome vintage champagne & fruit basket', 'Complimentary hydrotherapy spa passes', 'Private butler service in select villas'],
+                    banner_image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-yacht',
+                    slug: 'private-yacht',
+                    title: 'Private Yacht & Maritime Charters',
+                    tagline: 'Skippered catamaran and superyacht voyages across azure coastlines',
+                    category: 'Bespoke',
+                    icon: 'fa-solid fa-sailboat',
+                    badge: 'Ultra Luxury',
+                    short_desc: 'Private catamaran and motor yacht charters across the Mediterranean, Caribbean, and Norwegian fjords.',
+                    description: 'Anchor in hidden coves accessible only by sea. Experience sunset sails along the Amalfi cliffs, island hopping across the Cyclades, or diving remote reef sanctuaries with a certified private crew.',
+                    features: [
+                        'Licensed captain, gourmet chef, and dedicated deck steward',
+                        'Seabob, paddleboard, and snorkeling equipment included',
+                        'Tailored nautical routes avoiding tourist anchorages',
+                        'Fuel, port docking permits, and maritime insurance included'
+                    ],
+                    starting_price: '$1,200',
+                    unit: 'per day / private charter',
+                    rating: 4.96,
+                    reviews_count: 640,
+                    included_perks: ['Fresh Mediterranean seafood lunch prepared on board', 'Complimentary premium open bar', 'Drone photo & 4K video reel of your cruise'],
+                    banner_image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-transfers',
+                    slug: 'luxury-transfers',
+                    title: 'Chauffeured Ground Fleet & Rail',
+                    tagline: 'Mercedes S-Class transfers, helicopter shuttles, and luxury scenic trains',
+                    category: 'Logistics',
+                    icon: 'fa-solid fa-car-side',
+                    badge: 'Reliable',
+                    short_desc: 'Stress-free intercity transfers with English-speaking professional drivers, flight tracking, and bottled refreshments.',
+                    description: 'Step directly from the arrivals gate into a pristine luxury vehicle. Our drivers track your flight status in real time, handle all heavy luggage, and provide seamless door-to-door transit.',
+                    features: [
+                        'Complimentary 60-minute airport waiting time for customs',
+                        'Real-time flight arrival tracking and flight gate greeting',
+                        'Fixed transparent pricing with zero peak surcharges',
+                        'Child safety seats and high-speed Wi-Fi provided on board'
+                    ],
+                    starting_price: '$75',
+                    unit: 'per private transfer',
+                    rating: 4.89,
+                    reviews_count: 4120,
+                    included_perks: ['Sanitized luxury vehicle guarantee', 'Chilled spring water and charging stations', 'Luggage porter assistance'],
+                    banner_image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=80'
+                },
+                {
+                    id: 'srv-concierge',
+                    slug: 'travel-concierge',
+                    title: '24/7 Global Travel Concierge',
+                    tagline: 'Instant reservations, medical assistance, and emergency travel support',
+                    category: 'Logistics',
+                    icon: 'fa-solid fa-headset',
+                    badge: 'Essential',
+                    short_desc: 'Round-the-clock peace of mind with multilingual travel advisors ready to solve any on-the-road challenge.',
+                    description: 'Travel with the confidence of having a dedicated guardian angel on call. From last-minute changes due to flight disruptions to securing impossible same-day reservations, our team is one tap away.',
+                    features: [
+                        'Average response time under 60 seconds via WhatsApp and in-app chat',
+                        'Emergency ticket reissuance and hotel rebooking guarantees',
+                        'Multilingual translation and local emergency medical coordination',
+                        'Lost luggage tracing and immediate courier replacement support'
+                    ],
+                    starting_price: '$45',
+                    unit: 'per trip pass',
+                    rating: 4.97,
+                    reviews_count: 5890,
+                    included_perks: ['Worldwide emergency medical coverage coordination', 'Real-time transit alert push notifications', 'Dedicated single point of contact'],
+                    banner_image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80'
+                }
+            ];
+        }
+
+        async function initServices() {
+            const grid = document.getElementById('servicesGrid');
+            try {
+                const res = await fetch('/api/services');
+                if (res.ok) {
+                    currentServices = await res.json();
+                } else {
+                    currentServices = getFallbackServices();
+                }
+            } catch (err) {
+                console.warn('API fetch warning, using seed services:', err);
+                currentServices = getFallbackServices();
+            }
+            if (!Array.isArray(currentServices) || currentServices.length === 0) {
+                currentServices = getFallbackServices();
+            }
+            renderServices();
+        }
+
+        function renderServices() {
+            const grid = document.getElementById('servicesGrid');
+            if (!grid) return;
+
+            const filtered = activeCategory === 'all' 
+                ? currentServices 
+                : currentServices.filter(s => s.category.toLowerCase() === activeCategory.toLowerCase());
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="no-services-msg">No services found for this category.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(s => `
+                <div class="service-luxury-card" data-slug="${escapeAttr(s.slug || s.id)}" tabindex="0" role="button" aria-label="Explore ${escapeAttr(s.title)}">
+                    <div class="service-card-top">
+                        <div class="service-icon-box">
+                            <i class="${escapeAttr(s.icon || 'fa-solid fa-sparkles')}"></i>
+                        </div>
+                        <span class="service-badge-pill">${escapeAttr(s.badge || 'VIP')}</span>
+                    </div>
+
+                    <div class="service-card-body">
+                        <span class="service-category-tag">${escapeAttr(s.category || 'Services')}</span>
+                        <h3 class="service-card-title">${escapeHTML(s.title)}</h3>
+                        <p class="service-card-short">${escapeHTML(s.short_desc || s.description || '')}</p>
+
+                        <div class="service-card-features">
+                            ${(s.features || []).slice(0, 3).map(f => `
+                                <div class="service-feature-item">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>${escapeHTML(f)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="service-card-bottom">
+                        <div class="service-pricing">
+                            <span class="service-price-label">Starting At</span>
+                            <div class="service-price-val">${escapeHTML(s.starting_price || '$0')} <span class="service-price-unit">${escapeHTML(s.unit || '')}</span></div>
+                        </div>
+                        <div class="service-card-actions">
+                            <button type="button" class="service-btn-details" data-slug="${escapeAttr(s.slug || s.id)}">
+                                <span>Details</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Attach click listeners to open modal
+            grid.querySelectorAll('.service-luxury-card, .service-btn-details').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const slug = el.getAttribute('data-slug') || el.closest('[data-slug]')?.getAttribute('data-slug');
+                    if (slug) openServiceModal(slug);
+                });
+            });
+        }
+
+        // Category Filter Chips
+        document.querySelectorAll('.service-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.service-chip').forEach(c => {
+                    c.classList.remove('is-active');
+                    c.classList.remove('active');
+                });
+                chip.classList.add('is-active');
+                chip.classList.add('active');
+                activeCategory = chip.getAttribute('data-category') || 'all';
+                renderServices();
+            });
+        });
+
+        // Service Modal Logic
+        const modal = document.getElementById('serviceModalOverlay');
+        const modalClose = document.getElementById('serviceModalClose');
+        const modalBackdrop = document.getElementById('serviceModalBackdrop');
+
+        function openServiceModal(slug) {
+            const service = currentServices.find(s => s.slug === slug || s.id === slug);
+            if (!service || !modal) return;
+
+            document.getElementById('inquiryServiceId').value = service.id;
+            document.getElementById('inquiryServiceTitle').value = service.title;
+            document.getElementById('modalServiceBadge').textContent = service.badge;
+            document.getElementById('modalServiceTitle').textContent = service.title;
+            document.getElementById('modalServiceTagline').textContent = service.tagline;
+            document.getElementById('modalServiceDesc').textContent = service.description;
+            document.getElementById('modalServicePrice').innerHTML = `${escapeHTML(service.starting_price)} <span class="inquiry-unit">${escapeHTML(service.unit)}</span>`;
+
+            const hero = document.getElementById('serviceModalHero');
+            if (hero && service.banner_image) {
+                hero.style.backgroundImage = `linear-gradient(to bottom, rgba(9, 13, 22, 0.4), rgba(9, 13, 22, 0.95)), url('${service.banner_image}')`;
+            }
+
+            const featuresList = document.getElementById('modalServiceFeatures');
+            if (featuresList) {
+                featuresList.innerHTML = service.features.map(f => `<li><i class="fa-solid fa-circle-check"></i> ${escapeHTML(f)}</li>`).join('');
+            }
+
+            const perksBox = document.getElementById('modalServicePerks');
+            if (perksBox) {
+                perksBox.innerHTML = service.included_perks.map(p => `<span class="service-perk-pill"><i class="fa-solid fa-sparkle"></i> ${escapeHTML(p)}</span>`).join('');
+            }
+
+            // Autofill user name and email if logged in
+            const currentUser = JadooDB.getCurrentUser();
+            if (currentUser) {
+                const nameInput = document.getElementById('inqName');
+                const emailInput = document.getElementById('inqEmail');
+                if (nameInput && !nameInput.value) nameInput.value = currentUser.full_name || '';
+                if (emailInput && !emailInput.value) emailInput.value = currentUser.email || '';
+            }
+
+            modal.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeServiceModal() {
+            if (modal) {
+                modal.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (modalClose) modalClose.addEventListener('click', closeServiceModal);
+        if (modalBackdrop) modalBackdrop.addEventListener('click', closeServiceModal);
+
+        // Submit Inquiry
+        const form = document.getElementById('serviceInquiryForm');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const service_id = document.getElementById('inquiryServiceId').value;
+                const service_title = document.getElementById('inquiryServiceTitle').value;
+                const customer_name = document.getElementById('inqName').value.trim();
+                const customer_email = document.getElementById('inqEmail').value.trim();
+                const travel_destination = document.getElementById('inqDestination').value.trim();
+                const message = document.getElementById('inqMessage').value.trim();
+
+                try {
+                    const res = await fetch('/api/services/inquire', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            service_id,
+                            service_title,
+                            customer_name,
+                            customer_email,
+                            travel_destination,
+                            message
+                        })
+                    });
+                    if (res.ok) {
+                        closeServiceModal();
+                        form.reset();
+                        if (window.JadooToast) {
+                            window.JadooToast.show('Inquiry Confirmed!', 'Our concierge team will reach out within 2 hours with customized options.', 'success');
+                        } else {
+                            alert('Thank you! Your inquiry has been sent to Jadoo Travel Concierge.');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Inquiry submission error:', err);
+                }
+            });
+        }
+
+        // Create Custom Service Modal Logic
+        const createModal = document.getElementById('createServiceModalOverlay');
+        const createModalClose = document.getElementById('createServiceModalClose');
+        const createModalBackdrop = document.getElementById('createServiceModalBackdrop');
+        const createModalCancel = document.getElementById('createServiceCancelBtn');
+        const btnOpenCreate = document.getElementById('btnOpenCreateServiceModal');
+
+        function openCreateServiceModal() {
+            if (createModal) {
+                createModal.classList.add('is-open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeCreateServiceModal() {
+            if (createModal) {
+                createModal.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (btnOpenCreate) btnOpenCreate.addEventListener('click', openCreateServiceModal);
+        if (createModalClose) createModalClose.addEventListener('click', closeCreateServiceModal);
+        if (createModalBackdrop) createModalBackdrop.addEventListener('click', closeCreateServiceModal);
+        if (createModalCancel) createModalCancel.addEventListener('click', closeCreateServiceModal);
+
+        const createForm = document.getElementById('createServiceForm');
+        if (createForm) {
+            createForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('newServiceTitle').value.trim();
+                const category = document.getElementById('newServiceCategory').value;
+                const starting_price = document.getElementById('newServicePrice').value.trim();
+                const unit = document.getElementById('newServiceUnit').value.trim();
+                const tagline = document.getElementById('newServiceTagline').value.trim();
+                const short_desc = document.getElementById('newServiceShortDesc').value.trim();
+                const badge = document.getElementById('newServiceBadge').value.trim() || 'VIP Bespoke';
+                const featuresRaw = document.getElementById('newServiceFeatures').value.trim();
+                const features = featuresRaw ? featuresRaw.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+                try {
+                    const res = await fetch('/api/services', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title,
+                            category,
+                            starting_price,
+                            unit,
+                            tagline,
+                            short_desc,
+                            description: short_desc,
+                            badge,
+                            features
+                        })
+                    });
+
+                    if (res.ok) {
+                        const newSvc = await res.json();
+                        currentServices.unshift(newSvc);
+                        activeCategory = 'all';
+                        document.querySelectorAll('.service-chip').forEach(c => c.classList.toggle('is-active', c.getAttribute('data-category') === 'all'));
+                        renderServices();
+                        closeCreateServiceModal();
+                        createForm.reset();
+                        if (window.JadooToast) {
+                            window.JadooToast.show('Service Published!', `"${newSvc.title}" is now available in our services directory.`, 'success');
+                        } else {
+                            alert(`Service "${newSvc.title}" created successfully!`);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Create service error:', err);
+                }
+            });
+        }
+
+        // Helpers
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+        function escapeAttr(str) {
+            return escapeHTML(str);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initServices);
+        } else {
+            initServices();
+        }
+    </script>
+</body>
+
+</html>
+

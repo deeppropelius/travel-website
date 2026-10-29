@@ -1,6 +1,8 @@
 @media (max-width: 880px) {
     section {
-        margin: 1%;
+        width: min(94%, 860px);
+        margin: clamp(2rem, 4vw, 3.5rem) auto;
+        box-sizing: border-box;
     }
 
     .destinations {
@@ -131,88 +133,208 @@
         cursor: pointer;
         padding: 4px 8px;
     }
-   .cards{
-    flex-wrap: wrap;
-    row-gap:20px;
-    height: 60%;
+
+    .cards {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 22px;
+        height: auto;
+        min-height: auto;
+        width: 100%;
+    }
    
-    flex: 1 1 auto;
-   }
+    .card {
+        flex: 0 1 calc(50% - 16px);
+        max-width: 290px;
+        min-height: 290px;
+        height: auto;
+        width: auto;
+    }
    
-   .card{
-    width: 60%;
-    max-width: 280px;
-   }
+    /* Carousel: 2 cards visible on tablet, 1 card on phablet/mobile */
+    .carousel {
+        height: clamp(25rem, 48vh, 30rem);
+    }
+
+    .tcard {
+        flex: 0 0 calc(50% - 12px);
+    }
+
+    @media (max-width: 768px) {
+        .tcard {
+            flex: 0 0 100% !important;
+        }
+    }
+
+    .tcard.place-card .place-card-img-wrap {
+        height: clamp(10rem, 18vh, 13rem);
+    }
+
+    /* Fourth Section on Tablet */
+    .fourth {
+        flex-direction: column;
+        align-items: center;
+        gap: 36px;
+        overflow: visible;
+    }
+
+    .ftext {
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+    }
+
+    .fthead {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto;
+        max-width: 520px;
+        width: 100%;
+    }
+
+    .fthead .row {
+        width: 100%;
+        text-align: left;
+    }
+
+    .fimg {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .fcard {
+        width: min(90%, 360px);
+    }
+
+    .over {
+        display: flex !important;
+        right: clamp(0%, 3%, 5%);
+        bottom: 15px;
+        width: clamp(60%, 62%, 70%);
+    }
    
-   /* Carousel: 2 cards visible on tablet */
-   .carousel {
-    height: 495px;
-   }
+    .sbox {
+        border-radius: 16px;
+        border-top-left-radius: clamp(3vw, 8vw, 6vw);
+        min-height: auto;
+        padding: clamp(2.5rem, 5vw, 3.5rem) clamp(1.25rem, 3vw, 2.5rem);
+    }
 
-   .tcard {
-    flex: 0 0 calc(50% - 12px);
-   }
-   
-  .sbox{
-    border-radius: 10px;
-    border-top-left-radius: 35px;
-  }
+    /* Testimonials on Tablet */
+    .fifth {
+        flex-direction: column;
+        margin: 40px 4%;
+        gap: 30px;
+    }
 
-  /* Testimonials on Tablet */
-  .fifth {
-    flex-direction: column;
-    margin: 40px 4%;
-    gap: 30px;
-  }
+    .fitext {
+        width: 100%;
+        text-align: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+    }
 
-  .fitext {
-    width: 100%;
-    text-align: center;
-  }
+    .fit {
+        width: 100%;
+        text-align: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+    }
 
-  .fiimg {
-    display: flex;
-    justify-content: center;
-    margin-top: 16px;
-  }
+    .testimonial-header-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin: clamp(0.75rem, 1.5vh, 1.25rem) auto;
+    }
 
-  .ficom {
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-  }
+    .btn-write-review {
+        margin: 0 auto;
+    }
 
-  .coms {
-    width: 85%;
-    max-width: 480px;
-    min-height: 360px;
-  }
+    .fiimg {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: clamp(0.9rem, 1.8vh, 1.5rem);
+        margin-bottom: clamp(1.4rem, 2.5vh, 2.2rem);
+        overflow: visible;
+        position: relative;
+        z-index: 10;
+    }
 
-  /* Footer on Tablet */
-  footer {
-    margin: 4.5rem 5% 2.5rem 5%;
-  }
+    .ficom {
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        margin-top: clamp(1rem, 2vh, 1.8rem);
+    }
 
-  .foot {
-    flex-wrap: wrap;
-    gap: 36px;
-    justify-content: space-between;
-  }
+    .coms {
+        width: 85%;
+        max-width: 480px;
+        min-height: 360px;
+    }
 
-  .lab {
-    flex: 0 0 100%;
-    max-width: 450px;
-  }
+    /* Footer on Tablet */
+    footer {
+        margin: 4.5rem 5% 2.5rem 5%;
+    }
 
-  .ccol {
-    flex: 1 1 auto;
-    justify-content: space-between;
-    gap: 24px;
-  }
+    .foot {
+        flex-wrap: wrap;
+        gap: 36px;
+        justify-content: space-between;
+    }
 
-  .fico {
-    flex: 0 0 100%;
-    align-items: flex-start;
-  }
- 
+    .lab {
+        flex: 0 0 100%;
+        max-width: 450px;
+    }
+
+    .ccol {
+        flex: 1 1 auto;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .fico {
+        flex: 0 0 100%;
+        align-items: flex-start;
+    }
+
+    /* Destination Page on Tablet */
+    .destination-hero {
+        width: min(94%, 860px);
+        padding: 0 1rem;
+        margin: clamp(4.5rem, 6vh, 6rem) auto clamp(1rem, 2vh, 1.8rem) auto;
+    }
+
+    .popular-locations-section {
+        width: min(94%, 860px);
+        margin: 0 auto clamp(2rem, 3.5vh, 3rem) auto;
+    }
+
+    .locations-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(1rem, 1.5vw, 1.4rem);
+    }
+
+    .destination-results-container {
+        width: min(94%, 860px);
+    }
+
+    .places-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(1rem, 1.5vw, 1.4rem);
+    }
 }

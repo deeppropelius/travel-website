@@ -1,20 +1,29 @@
-body {
-    display: block;
-    margin: 0;
-    position: relative;
+html {
+    scroll-behavior: smooth;
     width: 100%;
-    max-width: 100vw;
-    min-width: 320px;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #FFFFFF;
     overflow-x: hidden;
 }
 
-html {
-    scroll-behavior: smooth;
-    max-width: 100vw;
+[data-theme="dark"] html {
+    background-color: #090D16;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    width: 100%;
+    min-width: 320px;
+    min-height: 100%;
+    background-color: #FFFFFF;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    align-items: center;
     overflow-x: hidden;
 }
 
@@ -31,8 +40,11 @@ html {
 }
 
 section {
-    width: 90%;
-    margin: 2.5%;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(2.5rem, 5vh, 5rem) auto;
+    box-sizing: border-box;
+    position: relative;
 }
 
 /* Scroll reveal initial states */
@@ -332,24 +344,24 @@ section {
 .navbar {
     display: flex;
     position: fixed;
-    height: 74px;
+    height: clamp(4.25rem, 7.5vh, 5.25rem);
     top: 0;
     left: 0;
     right: 0;
     justify-content: space-between;
-    padding: 0 5%;
+    padding: 0 clamp(1.5rem, 5vw, 6rem);
     width: 100%;
     box-sizing: border-box;
     flex-wrap: nowrap;
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.65);
     align-items: center;
     z-index: 999;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 10px 30px -10px rgba(24, 30, 75, 0.08), 0 1px 0 0 rgba(255, 255, 255, 0.8) inset;
     margin: 0;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navlogo {
@@ -400,7 +412,7 @@ section {
     margin: 0;
     display: flex;
     align-items: center;
-    gap: clamp(14px, 2.2vw, 32px);
+    gap: clamp(1rem, 2.2vw, 2rem);
     list-style: none;
 }
 
@@ -528,10 +540,12 @@ section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    padding: clamp(100px, 13vh, 140px) 5% 3rem 5%;
+    width: 95%;
+    max-width: 2500px;
+    margin: 0 auto;
+    padding: clamp(11vh, 13vh, 16vh) clamp(1rem, 2vw, 2.5rem) clamp(2.5rem, 5vh, 4.5rem);
     box-sizing: border-box;
-    gap: 40px;
+    gap: clamp(2rem, 4vw, 5rem);
 }
 
 .dtexts {
@@ -734,55 +748,66 @@ section {
 }
 
 .second {
-    margin-top: 5%;
-    width: 100%;
-    height: clamp(30%, 40%, 50%);
+    width: 95%;
+    max-width: 2500px;
+    height: auto;
+    margin: clamp(2.5rem, 5vh, 5.5rem) auto;
     animation: fadeIn 1s ease-in forwards;
-
+    box-sizing: border-box;
 }
 
 .sec {
     position: relative;
     text-align: center;
-    font-size: smaller;
-    font-family: 'Volkhov', sans-serif;
+    font-family: 'Volkhov', serif;
+    margin-bottom: clamp(1.5rem, 3vw, 2.75rem);
 }
 
 .sec h3 {
-
-    font-size: clamp(.5rem, 5vw, 3rem);
-    font-family: 'Volkhov', sans-serif;
+    font-size: clamp(1.6rem, 3.8vw, 3rem);
+    font-family: 'Volkhov', serif;
+    color: #14183E;
+    margin: 0.5rem 0 0 0;
+    line-height: 1.25;
 }
 
 .sec p {
-    color: #5E6282;
-    font-family: "poppins", sans-serif;
+    color: #DF6951;
+    font-family: "Poppins", sans-serif;
     text-transform: uppercase;
-    font-size: clamp(8px, 1.5vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+    margin: 0;
 }
 
 .cards {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: nowrap;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(1.2rem, 2.2vw, 2rem);
     width: 100%;
-    height: 40vh;
-    align-items: center;
-    margin: 3% 0;
+    height: auto;
+    min-height: auto;
+    align-items: stretch;
+    margin: clamp(1rem, 2vw, 2rem) 0;
 }
 
 .card {
-    /* flex: 1 1 220px; */
-    width: 20%;
-    height: 100%;
-    padding: 1.5%;
-    border-radius: 22px;
+    flex: 1 1 clamp(20%, 22%, 25%);
+    max-width: min(100%, 280px);
+    min-height: clamp(32vh, 30vw, 42vh);
+    height: auto;
+    padding: clamp(1.5rem, 2vw, 2.2rem) clamp(1.1rem, 1.6vw, 1.6rem);
+    border-radius: 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: center;
     background: transparent;
     position: relative;
+    box-sizing: border-box;
     animation: fadeIn .7s ease-in forwards;
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     cursor: pointer;
@@ -845,12 +870,13 @@ section {
 
 .rblock {
     background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
-    width: clamp(24%, 32%, 42%);
+    width: clamp(35%, 40%, 45%);
+    height: clamp(35%, 40%, 45%);
     aspect-ratio: 1/1;
     z-index: -1;
     position: absolute;
-    bottom: -10%;
-    left: -15%;
+    bottom: -8px;
+    left: -12px;
     border-top-left-radius: 28px;
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
@@ -875,7 +901,7 @@ section {
 
 .card h4 {
     font-family: "Open Sans", sans-serif;
-    font-size: clamp(12px, 1.5vw, 1.5rem);
+    font-size: clamp(0.75rem, 1.5vw, 1.5rem);
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
@@ -887,7 +913,7 @@ section {
 .card p {
     font-family: "Poppins", sans-serif;
     color: #5E6282;
-    font-size: clamp(10px, 1.5vw, 1.5rem);
+    font-size: clamp(0.65rem, 1.5vw, 1.5rem);
     transition: color 0.3s ease;
 }
 
@@ -899,12 +925,15 @@ section {
 
 /*-----------------Third section------------------------------*/
 .third {
-    margin: 5%;
-
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(2.5rem, 5vh, 5rem) auto;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .third h3 {
-    font-size: clamp(.5rem, 5vw, 3rem);
+    font-size: clamp(1.6rem, 3.8vw, 3rem);
 }
 
 /* ── Upgraded Destinations Carousel ──────────────────────────── */
@@ -916,7 +945,7 @@ section {
 
 .carousel {
     position: relative;
-    height: 495px;
+    height: clamp(26rem, 50vh, 32rem);
     overflow: hidden;
     border-radius: 26px;
     user-select: none;
@@ -973,7 +1002,7 @@ section {
 .tcard.place-card .place-card-img-wrap {
     position: relative;
     width: 100%;
-    height: 220px;
+    height: clamp(11rem, 20vh, 14.5rem);
     overflow: hidden;
     background: #E2E8F0;
     flex-shrink: 0;
@@ -1226,12 +1255,13 @@ section {
     justify-content: center;
     align-items: center;
     gap: 8px;
+    padding: 6px 0;
 }
 
 .carousel-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
     background: #CBD5E1;
     border: none;
     cursor: pointer;
@@ -1241,10 +1271,11 @@ section {
 }
 
 .carousel-dot.active {
-    width: 32px;
-    border-radius: 6px;
+    width: 24px;
+    height: 8px;
+    border-radius: 9999px;
     background: #DF6951;
-    box-shadow: 0 2px 10px rgba(223, 105, 81, 0.4);
+    box-shadow: 0 2px 8px rgba(223, 105, 81, 0.4);
 }
 
 .carousel-dot:hover:not(.active) {
@@ -1254,6 +1285,7 @@ section {
 
 /* Carousel Progress Bar */
 .carousel-progress {
+    display: none;
     width: 140px;
     height: 4px;
     background: rgba(0, 0, 0, 0.08);
@@ -1328,21 +1360,24 @@ section {
 .testimonial-dots-svg {
     display: block;
     cursor: pointer;
+    overflow: visible;
 }
 
 .testimonial-dots-svg circle {
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), fill 0.3s ease, filter 0.3s ease;
+    transform-box: fill-box;
+    transform-origin: center;
 }
 
 .testimonial-dots-svg circle:hover {
-    transform-origin: center;
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .testimonial-dots-svg .dot-active {
     fill: #DF6951;
-    transition: fill 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(223, 105, 81, 0.7));
+    transition: fill 0.3s ease, filter 0.3s ease;
 }
 
 .testimonial-dots-svg .dot-inactive {
@@ -1353,38 +1388,52 @@ section {
 /*--------------------------------- fourth section ------------------------- */
 .fourth {
     display: flex;
-    margin: 5%;
-    overflow: hidden;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(2.5rem, 5vh, 5rem) auto;
+    overflow: visible;
+    position: relative;
+    gap: clamp(1.5rem, 4vw, 4rem);
+    box-sizing: border-box;
 }
 
 .fimg {
-    width: 50%;
+    flex: 1 1 50%;
     align-items: center;
     display: flex;
     justify-content: center;
+    position: relative;
+    padding: clamp(1vw, 2vw, 2.5vw);
 }
 
 .fcard {
     position: relative;
-    width: 60%;
-    height: max-content;
+    width: min(100%, 360px);
+    height: auto;
     display: flex;
     flex-direction: column;
-    color: #9CA0B0;
-    font-family: 'Poppins', serif;
-    padding: 5%;
-    border-radius: 5%;
-    box-shadow: 0px 1px 20px -6px rgba(0, 0, 0, 0.3);
+    color: #84829A;
+    font-family: 'Poppins', sans-serif;
+    padding: clamp(1.2rem, 2.5vw, 1.5rem);
+    border-radius: 26px;
+    box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.08);
+    background: #FFFFFF;
+    box-sizing: border-box;
 }
 
 .fcimg {
     width: 100%;
-    height: 40%;
-    border-radius: 10px;
+    height: clamp(18vh, 20vw, 24vh);
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 14px;
 }
 
 .fcimg img {
     width: 100%;
+    height: 100%;
     display: block;
     border-radius: inherit;
     object-fit: cover;
@@ -1392,46 +1441,53 @@ section {
 }
 
 .ftext {
-    width: 50%;
+    flex: 1 1 50%;
+    max-width: min(100%, 550px);
 }
 
 .ftext h1 {
-    font-family: Volkhov;
+    font-family: "Volkhov", serif;
     text-transform: capitalize;
-    font-size: clamp(.5rem, 5vw, 3rem);
+    font-size: clamp(1.6rem, 3.8vw, 3rem);
+    color: #14183E;
+    line-height: 1.25;
+    margin: 0.5rem 0 1.5rem 0;
 }
 
 .ftext h4 {
-    font-family: poppins;
-    color: #5E6282;
-    font-size: clamp(.5rem, 1.5vw, 2rem);
+    font-family: "Poppins", sans-serif;
+    color: #DF6951;
+    font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 0;
 }
 
 .ctext {
     display: flex;
     flex-direction: column;
-    height: 60%;
     width: 100%;
-    font-family: poppins;
+    font-family: 'Poppins', sans-serif;
 }
 
 .over {
-    padding: 3%;
+    padding: clamp(0.75rem, 2vw, 1.25rem);
     z-index: 3;
-    width: 62%;
+    width: clamp(60%, 64%, 72%);
     position: absolute;
-    background-color: white;
+    background-color: #FFFFFF;
     display: flex;
-    border-radius: 16px;
-    right: -25%;
-    bottom: 20%;
-    height: 28%;
+    align-items: center;
+    border-radius: 18px;
+    right: clamp(-8%, -6%, -2%);
+    bottom: clamp(10%, 15%, 20%);
     box-shadow: 0px 20px 48px -10px rgba(24, 30, 75, 0.18), 0 8px 24px -6px rgba(0, 0, 0, 0.06);
     animation: floatCard 4.5s ease-in-out infinite;
-    max-height: 12rem;
     border: 1px solid rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(10px);
     transition: transform 0.35s ease, box-shadow 0.35s ease;
+    box-sizing: border-box;
 }
 
 .over:hover {
@@ -1440,7 +1496,7 @@ section {
 }
 
 .st {
-    font-size: clamp(10px, 1.2vw, 15px);
+    font-size: clamp(0.65rem, 1.2vw, 0.95rem);
     color: #8A79DF;
     font-weight: 600;
     display: flex;
@@ -1507,12 +1563,12 @@ progress::-webkit-progress-value {
 .status {
     color: #181E4B;
     font-family: poppins;
-    font-size: clamp(12px, 1.5vw, 1.8rem);
+    font-size: clamp(0.75rem, 1.5vw, 1.8rem);
     font-weight: 600;
 }
 
 .ctext h4 {
-    font-size: clamp(15px, 1.7vw, 2rem);
+    font-size: clamp(0.9rem, 1.7vw, 2rem);
     color: rgb(0, 0, 0);
     font-family: poppins;
     margin: 2%;
@@ -1520,7 +1576,7 @@ progress::-webkit-progress-value {
 
 .ptext p {
     display: flex;
-    font-size: clamp(12px, 1.5vw, 1.5rem);
+    font-size: clamp(0.75rem, 1.5vw, 1.5rem);
     margin: 1%;
 
 }
@@ -1531,7 +1587,7 @@ progress::-webkit-progress-value {
 }
 
 .cicon {
-    font-size: clamp(10px, 1.3vw, 18px);
+    font-size: clamp(0.65rem, 1.3vw, 1.15rem);
     background-color: #F5F5F5;
     margin: 2%;
     width: 36px;
@@ -1575,7 +1631,7 @@ progress::-webkit-progress-value {
 .cfoot {
     display: flex;
     justify-content: space-between;
-    font-size: clamp(10px, 1.5vw, 20px);
+    font-size: clamp(0.65rem, 1.5vw, 1.25rem);
     align-items: center;
 }
 
@@ -1585,19 +1641,22 @@ progress::-webkit-progress-value {
 }
 
 .ch {
-    font-size: clamp(10px, 1.5vw, 20px);
+    font-size: clamp(0.65rem, 1.5vw, 1.25rem);
 }
 
 .fthead {
     display: flex;
     flex-direction: column;
-    width: 90%;
-    padding: 3%;
+    gap: clamp(1.2rem, 2.5vh, 2.2rem);
+    width: 100%;
+    padding: 0.5rem 0;
 }
 
 .row {
     display: flex;
     align-items: center;
+    gap: clamp(1rem, 2vw, 1.8rem);
+    width: 100%;
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     cursor: default;
 }
@@ -1608,20 +1667,24 @@ progress::-webkit-progress-value {
 
 .rimgs {
     align-items: center;
-    width: 12%;
+    justify-content: center;
+    width: auto;
+    flex-shrink: 0;
     display: flex;
 }
 
 .rimg {
-    width: 50px;
-    height: 50px;
+    width: clamp(2.8rem, 3.8vw, 3.5rem);
+    height: clamp(2.8rem, 3.8vw, 3.5rem);
     aspect-ratio: 1/1;
     align-items: center;
     display: flex;
     border-radius: 14px;
-    padding: 10px;
+    padding: clamp(0.5rem, 0.8vw, 0.8rem);
     justify-content: center;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    flex-shrink: 0;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
 }
 
@@ -1632,7 +1695,9 @@ progress::-webkit-progress-value {
 
 .rimg img {
     align-items: center;
-    width: 55%;
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
 }
 
 .fthead .row:nth-child(1) .rimg {
@@ -1650,48 +1715,78 @@ progress::-webkit-progress-value {
 .rt {
     display: flex;
     flex-direction: column;
-    padding: 3%;
     justify-content: center;
-    font-family: poppins;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
     color: #5E6282;
 }
 
 .rth {
-    margin: 0%;
-    font-size: clamp(10px, 1.5vw, 1.4rem);
+    margin: 0 0 0.3rem 0;
+    font-weight: 700;
+    color: #5E6282;
+    font-size: clamp(0.95rem, 1.25vw, 1.2rem);
 }
 
 .ctp {
-    margin: 0%;
-    font-size: clamp(.5rem, 1.2vw, 2rem);
+    margin: 0;
+    line-height: 1.55;
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+    color: #5E6282;
 }
 
 /* ------------------ fifth section ------------------------------- */
 .fifth {
     display: flex;
-    margin: 5%;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(2.5rem, 5vh, 5rem) auto;
+    position: relative;
+    gap: clamp(1.5rem, 4vw, 4rem);
+    box-sizing: border-box;
 }
 
 .fitext {
-    width: 50%;
+    flex: 1 1 45%;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.fit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
 }
 
 .fitp {
     text-transform: uppercase;
-    font-family: poppins;
-    font-size: clamp(.5rem, 2vw, 2.5rem);
+    font-family: 'Poppins', sans-serif;
+    color: #DF6951;
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+    letter-spacing: 1px;
+    margin: 0;
 }
 
 .fith {
-    font-family: volkhov;
-    font-size: clamp(.5rem, 5vw, 3rem);
+    font-family: "Volkhov", serif;
+    font-size: clamp(1.6rem, 3.8vw, 3rem);
+    color: #14183E;
+    line-height: 1.25;
+    margin: 0.5rem 0 1.5rem 0;
 }
 
 .ficom {
-    width: 50%;
+    flex: 1 1 55%;
     align-items: center;
     display: flex;
     justify-content: flex-start;
@@ -1700,8 +1795,9 @@ progress::-webkit-progress-value {
 
 .coms {
     position: relative;
-    width: 82%;
-    min-height: 380px;
+    width: 100%;
+    max-width: min(100%, 520px);
+    min-height: clamp(36vh, 36vw, 46vh);
     display: flex;
     align-items: flex-start;
 }
@@ -2008,32 +2104,44 @@ progress::-webkit-progress-value {
 
 /* -------------------- Seventh Section----------------------------- */
 .sev {
-    margin: 5%;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(3rem, 6vh, 6rem) auto;
     position: relative;
+    box-sizing: border-box;
 }
 
 .sbox {
     overflow: hidden;
     position: relative;
-    background-color: #DFD7F9;
     background: linear-gradient(135deg, #DFD7F9 0%, #a2bcf2 50%, #DFD7F9 100%);
-    border-radius: 20px;
-    border-top-left-radius: 167px;
+    border-radius: clamp(1.2rem, 2.5vw, 1.8rem);
+    border-top-left-radius: clamp(3vw, 10vw, 10vw);
     width: 100%;
-    aspect-ratio: 1.5/.5;
+    min-height: clamp(32vh, 32vw, 45vh);
+    height: auto;
+    aspect-ratio: auto;
     display: flex;
-    font-family: poppins;
+    font-family: 'Poppins', sans-serif;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: #5E6282;
+    padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1.25rem, 4vw, 3.5rem);
+    box-sizing: border-box;
 }
 
 .sbh {
-    width: 80%;
+    width: 100%;
+    max-width: min(100%, 750px);
     text-align: center;
     z-index: 1;
-    font-size: clamp(.6rem, 1.5vw, 2rem);
+    font-size: clamp(1.15rem, 2.4vw, 2.1rem);
+    font-family: "Volkhov", serif;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #5E6282;
+    margin: 0 0 clamp(1.25rem, 2.5vw, 2.2rem) 0;
 }
 
 .sbimg {
@@ -2050,22 +2158,27 @@ progress::-webkit-progress-value {
 
 .sdinp {
     z-index: 2;
-    margin-top: 6%;
-    width: 60%;
+    margin-top: 0;
+    width: min(100%, 540px);
     display: flex;
-    justify-content: space-between;
-    font-size: clamp(.6rem, 1.5vw, 2rem);
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.65rem, 1.5vw, 1rem);
+    box-sizing: border-box;
 }
 
 .sbinp {
-    padding: 12px 20px;
-    width: 65%;
-    border-radius: 10px;
+    padding: clamp(0.75rem, 1.4vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+    flex: 1 1 auto;
+    min-width: 0;
+    border-radius: 12px;
     border: 1.5px solid transparent;
-    font-size: clamp(.8rem, 1.1vw, 1rem);
+    font-size: clamp(0.85rem, 1vw, 1rem);
     font-family: 'Poppins', sans-serif;
     outline: none;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    background: #FFFFFF;
+    box-sizing: border-box;
     transition: all 0.3s ease;
 }
 
@@ -2075,18 +2188,22 @@ progress::-webkit-progress-value {
 }
 
 .sub {
-    width: 25%;
+    flex: 0 0 auto;
+    padding: clamp(0.75rem, 1.4vw, 1rem) clamp(1.25rem, 2.5vw, 2.1rem);
+    min-width: fit-content;
     position: relative;
     overflow: hidden;
     background: linear-gradient(180deg, #FF946D 0%, #FF7D68 100%);
-    border-radius: 10px;
+    border-radius: 12px;
     color: white;
     border: none;
-    font-size: clamp(.8rem, 1.2vw, 1.05rem);
+    font-size: clamp(0.88rem, 1.1vw, 1.05rem);
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 8px 20px rgba(255, 125, 104, 0.4);
+    box-sizing: border-box;
+    white-space: nowrap;
     transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -2128,8 +2245,8 @@ progress::-webkit-progress-value {
 }
 
 .ssend {
-    width: clamp(48px, 4.5vw, 68px);
-    height: clamp(48px, 4.5vw, 68px);
+    width: clamp(3rem, 4.5vw, 4.25rem);
+    height: clamp(3rem, 4.5vw, 4.25rem);
     border-radius: 50%;
     align-items: center;
     display: flex;
@@ -2155,22 +2272,22 @@ progress::-webkit-progress-value {
 
 /* ------------------------------footer--------------------------------------------------- */
 footer {
-    width: 100%;
-    max-width: 1240px;
-    margin: 4.5rem auto 2rem auto;
-    padding: 0 1.5rem;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(3.5rem, 6vh, 5.5rem) auto clamp(1.5rem, 3vh, 3rem) auto;
+    padding: 0 clamp(1rem, 2vw, 2rem);
     box-sizing: border-box;
 }
 
 .foot {
     width: 100%;
-    max-width: 1180px;
+    max-width: 2500px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 32px;
+    gap: clamp(1.5rem, 2.5vw, 2.5rem);
     font-family: 'Poppins', sans-serif;
 }
 
@@ -2268,35 +2385,89 @@ footer {
 
 .footer-social-icon {
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    width: clamp(2.75rem, 3.2vw, 3rem);
+    height: clamp(2.75rem, 3.2vw, 3rem);
     display: flex;
     align-items: center;
     justify-content: center;
     background: #FFFFFF;
-    color: #080809;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: #181E4B;
+    box-shadow: 0 4px 14px rgba(24, 30, 75, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1.5px solid rgba(24, 30, 75, 0.08);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer;
-    font-size: 1rem;
+    font-size: clamp(1rem, 1.15vw, 1.2rem);
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
 }
 
+.footer-social-icon i {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Individual Brand Styling - Base State */
+.footer-social-icon.facebook,
+.footer-social-icon:has(.fa-facebook-f),
+.footi > div:nth-child(1) {
+    color: #1877F2;
+}
+
+.footer-social-icon.instagram,
+.footer-social-icon:has(.fa-instagram),
+.footi > div:nth-child(2) {
+    background: #FFFFFF;
+    color: #E1306C;
+}
+
+.footer-social-icon.twitter,
+.footer-social-icon:has(.fa-twitter),
+.footi > div:nth-child(3) {
+    color: #1DA1F2;
+}
+
+/* Interactive Hover States with Signature Glow Effects */
 .footer-social-icon:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 8px 22px rgba(223, 105, 81, 0.3);
-    color: #DF6951;
+    transform: translateY(-4px) scale(1.12);
 }
 
-.instagram {
-    background: conic-gradient(from 180deg at 50% 50%, #B8D2F1 0deg, #F289AA 60deg, #C68BF0 106.09deg, #D164DA 153.75deg, #C963E8 221.25deg, #BFC2E8 258.75deg, #FFC999 288.75deg, #D0D8C9 315deg, #BAD0F1 334.13deg, #CED8CB 358.97deg, rgba(255, 255, 255, 0) 360deg);
-    color: #ffffff;
+.footer-social-icon:hover i {
+    transform: scale(1.15) rotate(6deg);
+    color: #FFFFFF !important;
 }
 
-.instagram:hover {
-    color: #ffffff;
-    box-shadow: 0 8px 22px rgba(209, 100, 218, 0.4);
+.footer-social-icon.facebook:hover,
+.footer-social-icon:has(.fa-facebook-f):hover,
+.footi > div:nth-child(1):hover {
+    background: linear-gradient(135deg, #1877F2 0%, #0d65d9 100%);
+    border-color: #1877F2;
+    color: #FFFFFF;
+    box-shadow: 0 10px 24px -2px rgba(24, 119, 242, 0.5), 0 4px 8px rgba(24, 119, 242, 0.25);
+}
+
+.footer-social-icon.instagram:hover,
+.footer-social-icon:has(.fa-instagram):hover,
+.footi > div:nth-child(2):hover {
+    background: linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #FCB045 100%);
+    border-color: transparent;
+    color: #FFFFFF;
+    box-shadow: 0 10px 24px -2px rgba(225, 48, 108, 0.55), 0 4px 8px rgba(253, 29, 29, 0.25);
+}
+
+.footer-social-icon.twitter:hover,
+.footer-social-icon:has(.fa-twitter):hover,
+.footi > div:nth-child(3):hover {
+    background: linear-gradient(135deg, #1DA1F2 0%, #0c85d0 100%);
+    border-color: #1DA1F2;
+    color: #FFFFFF;
+    box-shadow: 0 10px 24px -2px rgba(29, 161, 242, 0.5), 0 4px 8px rgba(29, 161, 242, 0.25);
+}
+
+.footer-social-icon:active {
+    transform: translateY(-2px) scale(1.04);
 }
 
 .fih {
@@ -2393,11 +2564,13 @@ footer {
    Destination Hero, Search, Sorting, Cards & Pagination
    ======================================================== */
 .destination-hero {
-    max-width: 1200px;
-    margin: 6.5rem auto 2rem auto;
-    padding: 0 1.5rem;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(5.5rem, 8vh, 7.5rem) auto clamp(1.5rem, 3vh, 2.5rem) auto;
+    padding: 0 clamp(1rem, 2.5vw, 3rem);
     text-align: center;
     position: relative;
+    box-sizing: border-box;
 }
 
 .hero-badge {
@@ -2405,11 +2578,11 @@ footer {
     background: linear-gradient(135deg, rgba(223, 105, 81, 0.12) 0%, rgba(241, 90, 36, 0.12) 100%);
     color: #DF6951;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.82rem;
+    font-size: clamp(0.78rem, 0.85vw, 0.95rem);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    padding: 0.5rem 1.25rem;
+    padding: clamp(0.4rem, 0.6vh, 0.6rem) clamp(1rem, 1.2vw, 1.5rem);
     border-radius: 30px;
     margin-bottom: 1rem;
     border: 1px solid rgba(223, 105, 81, 0.2);
@@ -2417,20 +2590,20 @@ footer {
 
 .hero-title {
     font-family: 'Volkhov', serif;
-    font-size: clamp(2rem, 4vw, 3.25rem);
+    font-size: clamp(2rem, 4vw, 3.5rem);
     font-weight: 700;
     color: #181E4B;
     line-height: 1.2;
     margin: 0 auto 0.75rem auto;
-    max-width: 800px;
+    max-width: clamp(48rem, 60vw, 75rem);
 }
 
 .hero-subtitle {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 1.1vw, 1.25rem);
     color: #5E6282;
-    margin: 0 auto 2.5rem auto;
-    max-width: 620px;
+    margin: 0 auto clamp(1.8rem, 3vh, 2.5rem) auto;
+    max-width: clamp(38rem, 50vw, 55rem);
     line-height: 1.6;
 }
 
@@ -2438,14 +2611,16 @@ footer {
 .search-form {
     display: flex;
     align-items: center;
-    max-width: 720px;
+    width: 100%;
+    max-width: clamp(38rem, 50vw, 55rem);
     margin: 0 auto 1.5rem auto;
     background: #FFFFFF;
     border-radius: 50px;
-    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
-    border: 2px solid #F1F5F9;
+    padding: clamp(0.4rem, 0.6vh, 0.6rem) clamp(0.5rem, 0.8vw, 0.8rem);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1.5px solid rgba(0, 0, 0, 0.06);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
 }
 
 .search-form:focus-within {
@@ -2602,9 +2777,11 @@ footer {
 
 /* Results Section */
 .destination-results-container {
-    max-width: 1200px;
-    margin: 2.5rem auto 5rem auto;
-    padding: 0 1.5rem;
+    width: 95%;
+    max-width: 2500px;
+    margin: clamp(2rem, 4vh, 3.5rem) auto clamp(3rem, 6vh, 5rem) auto;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Back to Popular Locations Navigation Bar */
@@ -2745,8 +2922,10 @@ footer {
 /* Places Grid */
 .places-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(18rem, 22vw, 25rem), 1fr));
+    gap: clamp(1.2rem, 1.8vw, 2rem);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Place Card */
@@ -3669,17 +3848,18 @@ footer {
 }
 
 .user-profile-btn {
-    text-decoration: none;
+    text-decoration: none !important;
 }
 
 .user-first-name {
     font-size: 0.92rem;
     font-weight: 600;
-    color: #181E4B;
+    color: #181E4B !important;
     max-width: 120px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-decoration: none !important;
 }
 
 .user-chevron {
@@ -3698,18 +3878,19 @@ footer {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    min-width: 240px;
+    min-width: 260px;
     background: #FFFFFF;
-    border-radius: 18px;
-    box-shadow: 0 16px 40px -8px rgba(24, 30, 75, 0.18), 0 0 1px 1px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 8px;
-    z-index: 1000;
+    border-radius: 20px;
+    box-shadow: 0 20px 48px -8px rgba(24, 30, 75, 0.22), 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 10px;
+    z-index: 2000;
     opacity: 0;
     visibility: hidden;
     transform: translateY(8px) scale(0.97);
     transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
     pointer-events: none;
+    box-sizing: border-box;
 }
 
 .user-profile-dropdown.open .user-dropdown-menu {
@@ -3730,8 +3911,8 @@ footer {
 }
 
 .dropdown-avatar-circle {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: linear-gradient(135deg, #DF6951 0%, #E87A65 100%);
     color: #FFFFFF;
@@ -3740,6 +3921,17 @@ footer {
     justify-content: center;
     font-size: 1.1rem;
     flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid rgba(223, 105, 81, 0.25);
+}
+
+.dropdown-avatar-circle img,
+.dropdown-user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
 }
 
 .dropdown-user-info {
@@ -3749,17 +3941,23 @@ footer {
 }
 
 .dropdown-user-name {
-    font-size: 0.92rem;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #181E4B;
+    color: #181E4B !important;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .dropdown-user-email {
-    font-size: 0.76rem;
-    color: #5E6282;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #5E6282 !important;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3771,22 +3969,31 @@ footer {
     margin: 4px 6px;
 }
 
-.dropdown-item {
-    width: 100%;
+.dropdown-item,
+a.dropdown-item,
+button.dropdown-item {
+    width: 97%;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 3% 3%;
     border: none;
     background: transparent;
     border-radius: 10px;
     color: #181E4B;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    text-decoration: none !important;
+}
+
+.dropdown-item span,
+a.dropdown-item span,
+button.dropdown-item span {
+    text-decoration: none !important;
 }
 
 .dropdown-item i {
@@ -3797,9 +4004,18 @@ footer {
     transition: color 0.2s ease;
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+a.dropdown-item:hover,
+button.dropdown-item:hover {
     background: #FFF5F2;
     color: #DF6951;
+    text-decoration: none !important;
+}
+
+.dropdown-item:hover span,
+a.dropdown-item:hover span,
+button.dropdown-item:hover span {
+    text-decoration: none !important;
 }
 
 .dropdown-item:hover i {
@@ -3825,10 +4041,16 @@ footer {
     color: #FFFFFF;
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 12px;
-    min-width: 18px;
-    text-align: center;
+    min-width: 20px;
+    height: 20px;
+    line-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -4645,35 +4867,82 @@ img.booking-item-img {
     justify-content: flex-end;
 }
 
-.btn-print-ticket {
+.btn-print-ticket,
+.btn-view-ticket {
     padding: 0.45rem 0.95rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%) !important;
     color: #FFFFFF !important;
-    border: none;
+    border: none !important;
     font-family: 'Poppins', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem;
     box-shadow: 0 4px 12px rgba(223, 105, 81, 0.25);
     transition: transform 0.2s, box-shadow 0.2s;
     text-decoration: none;
+    white-space: nowrap;
 }
 
-.btn-print-ticket:hover {
+.btn-print-ticket i,
+.btn-print-ticket span,
+.btn-view-ticket i,
+.btn-view-ticket span {
+    color: #FFFFFF !important;
+    display: inline-block;
+}
+
+.btn-print-ticket:hover,
+.btn-view-ticket:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 18px rgba(223, 105, 81, 0.35);
+    color: #FFFFFF !important;
 }
 
-.btn-cancel-trip {
+.btn-view-pass {
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    background: #F1F5F9 !important;
+    border: 1.5px solid #CBD5E1 !important;
+    color: #1E293B !important;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-view-pass i,
+.btn-view-pass span {
+    color: #1E293B !important;
+    display: inline-block;
+}
+
+.btn-view-pass:hover {
+    background: #E2E8F0 !important;
+    border-color: #181E4B !important;
+    color: #DF6951 !important;
+    transform: translateY(-1px);
+}
+
+.btn-cancel-trip,
+.btn-cancel-action {
     padding: 0.45rem 0.85rem;
-    border-radius: 8px;
-    border: 1px solid #FECACA;
-    background: #FFF;
-    color: #EF4444;
+    border-radius: 9999px;
+    border: 1px solid #FECACA !important;
+    background: #FFF !important;
+    color: #EF4444 !important;
     font-family: 'Poppins', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
@@ -4682,24 +4951,27 @@ img.booking-item-img {
     align-items: center;
     gap: 0.35rem;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
-.btn-cancel-trip:hover {
-    background: #FEF2F2;
-    border-color: #EF4444;
-    color: #DC2626;
+.btn-cancel-trip:hover,
+.btn-cancel-action:hover {
+    background: #FEF2F2 !important;
+    border-color: #EF4444 !important;
+    color: #DC2626 !important;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 860px) {
     .booking-item-card {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1rem;
+        align-items: stretch;
+        gap: 1.25rem;
+        padding: 1.25rem;
     }
     .booking-item-img, img.booking-item-img {
         width: 100%;
-        height: 140px;
+        height: 160px;
+        object-fit: cover;
     }
     .booking-item-actions-col {
         width: 100%;
@@ -4709,7 +4981,7 @@ img.booking-item-img {
         padding-left: 0;
         border-left: none;
         border-top: 1px dashed #E2E8F0;
-        padding-top: 0.75rem;
+        padding-top: 1rem;
         min-width: 0;
     }
 }
@@ -4815,25 +5087,25 @@ body.user-logged-in #destUserProfileDropdown {
    Destination Page - Featured Location Cards
    ========================================================================== */
 .popular-locations-section {
-    width: 100%;
-    max-width: 1260px;
-    margin: 0 auto 3rem auto;
-    padding: 0 5%;
+    width: 95%;
+    max-width: 2500px;
+    margin: 0 auto clamp(2rem, 4vh, 4rem) auto;
+    padding: 0;
     box-sizing: border-box;
 }
 
 .locations-header {
     text-align: center;
-    margin-bottom: 2.2rem;
+    margin-bottom: clamp(1.8rem, 3vh, 2.6rem);
 }
 
 .locations-badge {
     display: inline-block;
-    padding: 6px 16px;
+    padding: clamp(0.35rem, 0.5vh, 0.5rem) clamp(0.9rem, 1vw, 1.3rem);
     border-radius: 30px;
     background: rgba(223, 105, 81, 0.1);
     color: #DF6951;
-    font-size: 0.85rem;
+    font-size: clamp(0.8rem, 0.85vw, 0.95rem);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -4842,7 +5114,7 @@ body.user-logged-in #destUserProfileDropdown {
 
 .locations-title {
     font-family: "Volkhov", serif;
-    font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+    font-size: clamp(1.8rem, 3.2vw, 3.2rem);
     font-weight: 700;
     color: #181E4B;
     margin: 0 0 0.6rem 0;
@@ -4851,16 +5123,18 @@ body.user-logged-in #destUserProfileDropdown {
 .locations-subtitle {
     font-family: 'Poppins', sans-serif;
     color: #5E6282;
-    font-size: 1rem;
-    max-width: 620px;
+    font-size: clamp(0.95rem, 1.05vw, 1.2rem);
+    max-width: clamp(38rem, 50vw, 55rem);
     margin: 0 auto;
     line-height: 1.6;
 }
 
 .locations-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(17rem, 21vw, 24rem), 1fr));
+    gap: clamp(1.2rem, 1.8vw, 2rem);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .location-card {
@@ -4874,6 +5148,8 @@ body.user-logged-in #destUserProfileDropdown {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .location-card:hover {
@@ -4891,7 +5167,7 @@ body.user-logged-in #destUserProfileDropdown {
 .location-card-img-wrap {
     position: relative;
     width: 100%;
-    height: 185px;
+    height: clamp(12rem, 22vh, 18rem);
     overflow: hidden;
     background: #E2E8F0;
 }
@@ -5099,42 +5375,928 @@ body.user-logged-in #destUserProfileDropdown {
 }
 
 [data-theme="dark"] .user-profile-btn {
-    background: #1E293B;
-    border-color: #334155;
-    color: #F8FAFC;
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    color: #F8FAFC !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .user-profile-btn:hover,
+[data-theme="dark"] .user-profile-dropdown.open .user-profile-btn {
+    background: rgba(45, 59, 82, 0.98) !important;
+    border-color: #DF6951 !important;
+    box-shadow: 0 4px 16px rgba(223, 105, 81, 0.25) !important;
+    transform: translateY(-1px);
 }
 
 [data-theme="dark"] .user-first-name {
-    color: #F8FAFC;
+    color: #F8FAFC !important;
+    text-decoration: none !important;
+}
+
+[data-theme="dark"] .user-chevron {
+    color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .user-profile-dropdown.open .user-chevron {
+    color: #DF6951 !important;
 }
 
 [data-theme="dark"] .user-dropdown-menu {
-    background: #1E293B;
-    border-color: #334155;
-    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.7) !important;
 }
 
 [data-theme="dark"] .dropdown-user-header {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .dropdown-avatar-circle {
+    border-color: rgba(223, 105, 81, 0.5) !important;
 }
 
 [data-theme="dark"] .dropdown-user-name {
-    color: #F8FAFC;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    color: #F8FAFC !important;
 }
 
 [data-theme="dark"] .dropdown-user-email {
-    color: #94A3B8;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    color: #94A3B8 !important;
 }
 
 [data-theme="dark"] .dropdown-divider {
-    background: #334155;
+    background: rgba(255, 255, 255, 0.1) !important;
 }
 
-[data-theme="dark"] .dropdown-item {
-    color: #E2E8F0;
+[data-theme="dark"] .dropdown-item,
+[data-theme="dark"] a.dropdown-item,
+[data-theme="dark"] button.dropdown-item {
+    color: #E2E8F0 !important;
+    text-decoration: none !important;
 }
 
-[data-theme="dark"] .dropdown-item:hover {
-    background: rgba(223, 105, 81, 0.15);
-    color: #DF6951;
-}
+[data-theme="dark"] .dropdown-item span,
+[data-theme="dark"] a.dropdown-item span,
+[data-theme="dark"] button.dropdown-item span {
+    text-decoration: none !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] a.dropdown-item:hover,
+[data-theme="dark"] button.dropdown-item:hover {
+    background: rgba(223, 105, 81, 0.18) !important;
+    color: #FF8F73 !important;
+    text-decoration: none !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover span,
+[data-theme="dark"] a.dropdown-item:hover span,
+[data-theme="dark"] button.dropdown-item:hover span {
+    text-decoration: none !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover i {
+    color: #FF8F73 !important;
+}
+
+[data-theme="dark"] .dropdown-item.dropdown-logout-btn {
+    color: #F87171 !important;
+}
+
+[data-theme="dark"] .dropdown-item.dropdown-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #EF4444 !important;
+}
+
+.fiimg {
+    display: flex;
+    align-items: center;
+    margin-top: clamp(1rem, 2vh, 1.8rem);
+    margin-bottom: clamp(1.2rem, 2.2vh, 2rem);
+    padding: 0.25rem 0;
+    overflow: visible;
+    position: relative;
+    z-index: 10;
+}
+
+
+/* ==========================================================================
+   LARGE SCREEN ULTRA-FLUID SYSTEM (1400px - 2199px)
+   Adjusts typography, images, cards, hero, and containers proportionally
+   ========================================================================== */
+@media (min-width: 1400px) {
+    section {
+        width: 95%;
+        max-width: 2500px;
+        margin: clamp(3rem, 5.5vh, 6rem) auto;
+    }
+
+    /* Hero Section on Large Displays */
+    .destinations {
+        width: 95%;
+        max-width: 2500px;
+        gap: clamp(2.5rem, 4vw, 5rem);
+        padding: clamp(10vh, 12vh, 16vh) clamp(1rem, 2vw, 2.5rem) clamp(2.5rem, 5vh, 4rem);
+    }
+
+    .dtexts {
+        flex: 1 1 54%;
+    }
+
+    .dtexts h4 {
+        font-size: clamp(1rem, 1.25vw, 1.35rem);
+    }
+
+    .dtexts h1 {
+        font-size: clamp(3.2rem, 4.8vw, 5.5rem);
+        line-height: 1.12;
+    }
+
+    .dtexts p {
+        font-size: clamp(1.05rem, 1.2vw, 1.3rem);
+        max-width: min(100%, 640px);
+        line-height: 1.75;
+    }
+
+    .dobut {
+        padding: clamp(1rem, 1.3vh, 1.4rem) clamp(2.25rem, 2.4vw, 3.125rem);
+        font-size: clamp(1.05rem, 1.15vw, 1.22rem);
+        border-radius: 14px;
+    }
+
+    .playdemo p {
+        font-size: clamp(1.05rem, 1.15vw, 1.2rem);
+    }
+
+    .drbut {
+        width: clamp(3.25rem, 3.6vw, 3.9rem);
+        height: clamp(3.25rem, 3.6vw, 3.9rem);
+        min-width: 52px;
+        min-height: 52px;
+    }
+
+    .dimgs {
+        flex: 1 1 46%;
+    }
+
+    .dimgs img {
+        max-width: min(100%, 720px);
+    }
+
+    .image {
+        width: 48vw;
+        max-width: 1050px;
+    }
+
+    /* Services / Category Cards on Large Displays */
+    .cards {
+        gap: clamp(1.5rem, 2.5vw, 2.6rem);
+    }
+
+    .card {
+        flex: 1 1 clamp(20%, 22%, 24%);
+        max-width: min(100%, 360px);
+        min-height: clamp(22vh, 25vh, 30vh);
+        padding: clamp(2.2rem, 2.5vw, 3.2rem) clamp(1.4rem, 1.8vw, 2.2rem);
+        border-radius: 30px;
+    }
+
+    .cimg {
+        height: clamp(4.5rem, 5.5vw, 6rem);
+        margin-bottom: 14px;
+    }
+
+    .card h4 {
+        font-size: clamp(1.2rem, 1.35vw, 1.55rem);
+    }
+
+    .card p {
+        font-size: clamp(0.95rem, 1.05vw, 1.15rem);
+        max-width: 300px;
+    }
+
+    .rblock {
+        width: clamp(32%, 35%, 38%);
+        height: clamp(32%, 35%, 38%);
+    }
+
+    /* Top Destinations Carousel on Large Displays */
+    .carousel {
+        height: clamp(52vh, 55vh, 62vh);
+        border-radius: 32px;
+    }
+
+    .tcards {
+        gap: clamp(1.5rem, 2vw, 2.25rem);
+    }
+
+    .tcard.place-card .place-card-img-wrap {
+        height: clamp(24vh, 26vh, 30vh);
+    }
+
+    .tcard.place-card .place-title {
+        font-size: clamp(1.25rem, 1.35vw, 1.55rem);
+    }
+
+    .tcard.place-card .place-description {
+        font-size: clamp(0.92rem, 0.98vw, 1.05rem);
+    }
+
+    .tcard.place-card .place-card-body {
+        padding: clamp(1.4rem, 1.6vw, 1.8rem);
+    }
+
+    .carousel-btn {
+        width: 56px;
+        height: 56px;
+        font-size: 1.3rem;
+    }
+
+    /* Fourth Section (Book Steps & Trip Card) on Large Displays */
+    .fourth {
+        gap: clamp(3.5rem, 5vw, 6.5rem);
+    }
+
+    .ftext {
+        max-width: min(100%, 680px);
+    }
+
+    .ftext h1 {
+        font-size: clamp(2.4rem, 3.8vw, 3.8rem);
+    }
+
+    .fthead {
+        gap: clamp(1.5rem, 2.5vh, 2.5rem);
+    }
+
+    .rimg {
+        width: clamp(3.5rem, 4vw, 4.4rem);
+        height: clamp(3.5rem, 4vw, 4.4rem);
+        border-radius: 18px;
+    }
+
+    .rth {
+        font-size: clamp(1.1rem, 1.3vw, 1.35rem);
+    }
+
+    .ctp {
+        font-size: clamp(0.92rem, 1.05vw, 1.1rem);
+        line-height: 1.6;
+        max-width: 520px;
+    }
+
+    .fcard {
+        width: clamp(28vw, 32vw, 35vw);
+        padding: clamp(1.8rem, 2.2vw, 2.5rem);
+        border-radius: 30px;
+    }
+
+    .fcimg {
+        height: clamp(18vh, 20vh, 24vh);
+        border-radius: 20px;
+    }
+
+    .over {
+        width: clamp(20vw, 22vw, 24vw);
+        padding: clamp(0.85rem, 1.4vw, 1.25rem);
+        border-radius: 20px;
+        right: clamp(-2.5vw, -2vw, -0.8vw);
+        bottom: clamp(2vh, 4vh, 5vh);
+    }
+
+    /* Fifth Section (Testimonials) on Large Displays */
+    .fifth {
+        gap: clamp(3.5rem, 5vw, 6.5rem);
+    }
+
+    .fitext {
+        max-width: min(100%, 620px);
+    }
+
+    .fith {
+        font-size: clamp(2.4rem, 3.8vw, 3.8rem);
+    }
+
+    .coms {
+        max-width: min(100%, 620px);
+        min-height: clamp(34vh, 38vh, 44vh);
+    }
+
+    .com {
+        padding: clamp(2rem, 2.5vw, 3rem);
+        border-radius: 26px;
+    }
+
+    .cp {
+        font-size: clamp(1rem, 1.15vw, 1.25rem);
+        line-height: 1.75;
+    }
+
+    .cn {
+        font-size: clamp(1.15rem, 1.25vw, 1.35rem);
+    }
+
+    .cl {
+        font-size: clamp(0.85rem, 0.95vw, 1rem);
+    }
+
+    .ficimg {
+        width: 72px;
+        height: 72px;
+        top: -30px;
+        left: -30px;
+    }
+
+    /* Newsletter Section on Large Displays */
+    .sev {
+        width: 95%;
+        max-width: 2500px;
+    }
+
+    .sbox {
+        min-height: clamp(32vh, 35vh, 45vh);
+        padding: clamp(3.5rem, 5.5vh, 5.5rem) clamp(3rem, 6vw, 6rem);
+        border-radius: 34px;
+        border-top-left-radius: clamp(8vw, 10vw, 9rem);
+    }
+
+    .sbh {
+        font-size: clamp(1.65rem, 2.5vw, 2.8rem);
+        max-width: min(100%, 950px);
+    }
+
+    .sdinp {
+        width: min(100%, 680px);
+        gap: 20px;
+    }
+
+    .sbinp {
+        padding: clamp(1rem, 1.5vh, 1.4rem) clamp(1.4rem, 2vw, 2rem);
+        font-size: clamp(1.05rem, 1.15vw, 1.22rem);
+        border-radius: 14px;
+    }
+
+    .sub {
+        padding: clamp(1rem, 1.5vh, 1.4rem) clamp(2rem, 2.5vw, 3rem);
+        font-size: clamp(1.05rem, 1.15vw, 1.22rem);
+        border-radius: 14px;
+    }
+
+    .ssend {
+        width: clamp(3.5rem, 4.5vw, 4.75rem);
+        height: clamp(3.5rem, 4.5vw, 4.75rem);
+        font-size: clamp(1.3rem, 1.6vw, 1.8rem);
+    }
+
+    /* Footer on Large Displays */
+    footer {
+        width: 95%;
+        max-width: 2500px;
+        margin: 5.5rem auto 3rem auto;
+    }
+
+    .fh {
+        font-size: clamp(2.8rem, 3.2vw, 3.5rem);
+    }
+
+    .fp {
+        font-size: clamp(0.92rem, 1vw, 1.05rem);
+    }
+
+    .fch {
+        font-size: clamp(1.35rem, 1.5vw, 1.65rem);
+    }
+
+    .fcp a {
+        font-size: clamp(1.08rem, 1.15vw, 1.25rem);
+    }
+}
+
+@media (min-width: 1800px) {
+    section {
+        width: 95%;
+        max-width: 2600px;
+        margin: clamp(3.5rem, 6vh, 7rem) auto;
+    }
+
+    .destinations {
+        width: 95%;
+        max-width: 2600px;
+        padding-top: clamp(12vh, 13vh, 17vh);
+        padding-bottom: clamp(3rem, 5vh, 5rem);
+    }
+
+    .dtexts h1 {
+        font-size: clamp(3.8rem, 4.8vw, 5.8rem);
+    }
+
+    .dtexts p {
+        font-size: clamp(1.15rem, 1.25vw, 1.45rem);
+        max-width: min(100%, 750px);
+    }
+
+    .dimgs img {
+        max-width: min(100%, 820px);
+    }
+
+    .image {
+        width: 48vw;
+        max-width: 1200px;
+    }
+
+    .cards {
+        gap: clamp(1.8rem, 2.5vw, 3rem);
+    }
+
+    .card {
+        max-width: clamp(18rem, 21vw, 24rem);
+        min-height: clamp(22rem, 24vh, 26rem);
+        padding: clamp(2.5rem, 2.6vw, 3.4rem) clamp(1.6rem, 1.8vw, 2.4rem);
+    }
+
+    .cimg {
+        height: clamp(5rem, 5.8vw, 6.5rem);
+    }
+
+    .card h4 {
+        font-size: clamp(1.3rem, 1.4vw, 1.65rem);
+    }
+
+    .card p {
+        font-size: clamp(1rem, 1.08vw, 1.2rem);
+        max-width: 320px;
+    }
+
+    .carousel {
+        height: clamp(54vh, 58vh, 66vh);
+    }
+
+    .fourth {
+        gap: clamp(3.5rem, 5vw, 6.5rem);
+    }
+
+    .ftext {
+        max-width: min(100%, 760px);
+    }
+
+    .fcard {
+        width: clamp(26vw, 29vw, 34vw);
+        max-width: 520px;
+    }
+
+    .over {
+        width: clamp(18vw, 20vw, 24vw);
+        max-width: 380px;
+    }
+
+    .fifth {
+        gap: clamp(3.5rem, 5vw, 6.5rem);
+    }
+
+    .fitext {
+        max-width: min(100%, 720px);
+    }
+
+    .coms {
+        max-width: min(100%, 720px);
+        min-height: clamp(36vh, 40vh, 46vh);
+    }
+
+    .sev {
+        width: 95%;
+        max-width: 2600px;
+    }
+
+    .sbox {
+        min-height: clamp(34vh, 38vh, 46vh);
+        padding: clamp(4rem, 6vh, 6.5rem) clamp(3rem, 6vw, 7rem);
+    }
+
+    .sbh {
+        font-size: clamp(1.8rem, 2.5vw, 3rem);
+        max-width: min(100%, 1050px);
+    }
+
+    .sdinp {
+        width: min(100%, 750px);
+    }
+}
+
+/* ==========================================================================
+   4K ULTRA-WIDE FLUID DISPLAY SYSTEM (2200px - 3840px+)
+   Balances typography, hero framing, cards distribution, and container widths
+   ========================================================================== */
+@media (min-width: 2200px) {
+    section {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(4rem, 6vh, 8rem) auto;
+    }
+
+    /* Top-most Hero Section Framed with 95% Width on 4K */
+    .destinations {
+        width: 95%;
+        max-width: 2800px;
+        margin: 0 auto;
+        padding: clamp(13vh, 15vh, 18vh) clamp(1.5rem, 2.5vw, 3.5rem) clamp(3.5rem, 6vh, 6rem);
+        gap: clamp(3rem, 5vw, 7rem);
+    }
+
+    .dtexts {
+        flex: 1 1 52%;
+        max-width: 1100px;
+    }
+
+    .dtexts h4 {
+        font-size: clamp(1.15rem, 1.25vw, 1.55rem);
+        letter-spacing: 1px;
+    }
+
+    .dtexts h1 {
+        font-size: clamp(4.2rem, 4.6vw, 6.5rem);
+        line-height: 1.1;
+        letter-spacing: -1.5px;
+    }
+
+    .dtexts p {
+        font-size: clamp(1.2rem, 1.25vw, 1.6rem);
+        max-width: min(100%, 850px);
+        line-height: 1.8;
+    }
+
+    .dobut {
+        padding: clamp(1.1rem, 1.4vh, 1.6rem) clamp(2.5rem, 2.6vw, 3.8rem);
+        font-size: clamp(1.12rem, 1.2vw, 1.35rem);
+        border-radius: 16px;
+    }
+
+    .playdemo p {
+        font-size: clamp(1.15rem, 1.2vw, 1.35rem);
+    }
+
+    .drbut {
+        width: clamp(3.8rem, 4vw, 4.6rem);
+        height: clamp(3.8rem, 4vw, 4.6rem);
+        font-size: 1.25rem;
+    }
+
+    .dimgs {
+        flex: 1 1 48%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dimgs img {
+        max-width: min(100%, 920px);
+    }
+
+    .image {
+        width: 48vw;
+        max-width: 1400px;
+    }
+
+    /* Category / Services Section on 4K */
+    .second {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(4rem, 6vh, 7rem) auto;
+    }
+
+    .sec h3 {
+        font-size: clamp(2.4rem, 3.5vw, 3.8rem);
+    }
+
+    .sec p {
+        font-size: clamp(1.05rem, 1.2vw, 1.35rem);
+    }
+
+    .cards {
+        gap: clamp(2rem, 2.5vw, 4rem);
+        justify-content: center;
+        margin: clamp(2rem, 3vh, 3.5rem) 0;
+    }
+
+    .card {
+        flex: 1 1 clamp(20%, 22%, 23%);
+        max-width: clamp(21rem, 22vw, 28rem);
+        min-height: clamp(24rem, 26vh, 30rem);
+        padding: clamp(2.8rem, 3vw, 4.2rem) clamp(1.8rem, 2vw, 2.8rem);
+        border-radius: 36px;
+    }
+
+    .cimg {
+        height: clamp(5.8rem, 6.2vw, 8rem);
+        margin-bottom: 18px;
+    }
+
+    .card h4 {
+        font-size: clamp(1.4rem, 1.5vw, 1.85rem);
+        margin: 0.8rem 0;
+    }
+
+    .card p {
+        font-size: clamp(1.08rem, 1.15vw, 1.35rem);
+        max-width: 360px;
+        line-height: 1.7;
+    }
+
+    /* Top Destinations Section on 4K */
+    .third {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(4rem, 6vh, 8rem) auto;
+    }
+
+    .third h3 {
+        font-size: clamp(2.4rem, 3.5vw, 3.8rem);
+    }
+
+    .carousel {
+        height: clamp(34rem, 52vh, 42rem);
+        border-radius: 38px;
+    }
+
+    .tcards {
+        gap: clamp(2rem, 2.4vw, 3.2rem);
+    }
+
+    .tcard.place-card .place-card-img-wrap {
+        height: clamp(15rem, 24vh, 20rem);
+    }
+
+    .tcard.place-card .place-title {
+        font-size: clamp(1.4rem, 1.55vw, 1.85rem);
+    }
+
+    .tcard.place-card .place-description {
+        font-size: clamp(1.02rem, 1.1vw, 1.25rem);
+        line-height: 1.6;
+    }
+
+    .tcard.place-card .place-card-body {
+        padding: clamp(1.6rem, 1.8vw, 2.4rem);
+    }
+
+    .carousel-btn {
+        width: 68px;
+        height: 68px;
+        font-size: 1.6rem;
+    }
+
+    /* Book Steps Section on 4K */
+    .fourth {
+        width: 95%;
+        max-width: 2800px;
+        gap: clamp(4rem, 6vw, 9rem);
+        margin: clamp(4rem, 6vh, 8rem) auto;
+    }
+
+    .ftext {
+        max-width: min(100%, 880px);
+    }
+
+    .ftext h4 {
+        font-size: clamp(1.05rem, 1.2vw, 1.35rem);
+    }
+
+    .ftext h1 {
+        font-size: clamp(2.8rem, 3.6vw, 4.4rem);
+        line-height: 1.2;
+    }
+
+    .fthead {
+        gap: clamp(1.8rem, 2.8vh, 3.2rem);
+    }
+
+    .row {
+        gap: clamp(1.4rem, 2vw, 2.4rem);
+    }
+
+    .rimg {
+        width: clamp(4.2rem, 4.6vw, 5.6rem);
+        height: clamp(4.2rem, 4.6vw, 5.6rem);
+        border-radius: 22px;
+    }
+
+    .rth {
+        font-size: clamp(1.25rem, 1.4vw, 1.65rem);
+    }
+
+    .ctp {
+        font-size: clamp(1.05rem, 1.15vw, 1.3rem);
+        max-width: 640px;
+        line-height: 1.65;
+    }
+
+    .fcard {
+        width: clamp(28vw, 30vw, 36vw);
+        max-width: 620px;
+        padding: clamp(2.2rem, 2.5vw, 3.2rem);
+        border-radius: 36px;
+    }
+
+    .fcimg {
+        height: clamp(22vh, 25vh, 32vh);
+        border-radius: 24px;
+    }
+
+    .over {
+        width: clamp(20vw, 22vw, 26vw);
+        max-width: 440px;
+        padding: clamp(1rem, 1.5vw, 1.6rem);
+        border-radius: 24px;
+        right: clamp(-2vw, -1.2vw, 0vw);
+        bottom: clamp(3vh, 5vh, 7vh);
+    }
+
+    /* Testimonials Section on 4K */
+    .fifth {
+        width: 95%;
+        max-width: 2800px;
+        gap: clamp(4rem, 6vw, 9rem);
+        margin: clamp(4rem, 6vh, 8rem) auto;
+    }
+
+    .fitext {
+        max-width: min(100%, 820px);
+    }
+
+    .fitp {
+        font-size: clamp(1.05rem, 1.2vw, 1.35rem);
+    }
+
+    .fith {
+        font-size: clamp(2.8rem, 3.6vw, 4.4rem);
+    }
+
+    .coms {
+        max-width: min(100%, 820px);
+        min-height: clamp(38vh, 42vh, 50vh);
+    }
+
+    .com {
+        padding: clamp(2.5rem, 3.2vw, 4rem);
+        border-radius: 32px;
+    }
+
+    .cp {
+        font-size: clamp(1.15rem, 1.25vw, 1.45rem);
+        line-height: 1.8;
+    }
+
+    .cn {
+        font-size: clamp(1.3rem, 1.4vw, 1.65rem);
+    }
+
+    .cl {
+        font-size: clamp(0.95rem, 1.05vw, 1.15rem);
+    }
+
+    .ficimg {
+        width: 84px;
+        height: 84px;
+        top: -36px;
+        left: -36px;
+    }
+
+    /* Newsletter Section on 4K */
+    .sev {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(4rem, 7vh, 8rem) auto;
+    }
+
+    .sbox {
+        min-height: clamp(36vh, 40vh, 50vh);
+        padding: clamp(4.5rem, 6.5vh, 7.5rem) clamp(3.5rem, 6.5vw, 8rem);
+        border-radius: 44px;
+        border-top-left-radius: clamp(9vw, 10vw, 11rem);
+    }
+
+    .sbh {
+        font-size: clamp(2rem, 2.8vw, 3.5rem);
+        max-width: min(100%, 1200px);
+        line-height: 1.35;
+    }
+
+    .sdinp {
+        width: min(100%, 880px);
+        gap: 26px;
+    }
+
+    .sbinp {
+        padding: clamp(1.15rem, 1.6vh, 1.6rem) clamp(1.6rem, 2vw, 2.5rem);
+        font-size: clamp(1.12rem, 1.2vw, 1.35rem);
+        border-radius: 16px;
+    }
+
+    .sub {
+        padding: clamp(1.15rem, 1.6vh, 1.6rem) clamp(2.4rem, 2.8vw, 3.8rem);
+        font-size: clamp(1.12rem, 1.2vw, 1.35rem);
+        border-radius: 16px;
+    }
+
+    .ssend {
+        width: clamp(4.2rem, 4.8vw, 5.5rem);
+        height: clamp(4.2rem, 4.8vw, 5.5rem);
+        font-size: clamp(1.5rem, 1.8vw, 2.2rem);
+    }
+
+    /* Footer on 4K */
+    footer {
+        width: 95%;
+        max-width: 2800px;
+        margin: 6.5rem auto 3.5rem auto;
+    }
+
+    .foot {
+        width: 100%;
+        max-width: 2800px;
+    }
+
+    .fh {
+        font-size: clamp(3.2rem, 3.6vw, 4.2rem);
+    }
+
+    .fp {
+        font-size: clamp(1.05rem, 1.1vw, 1.25rem);
+    }
+
+    .fch {
+        font-size: clamp(1.45rem, 1.6vw, 1.85rem);
+    }
+
+    .fcp a {
+        font-size: clamp(1.15rem, 1.2vw, 1.35rem);
+    }
+
+    /* Destination Page & Featured Locations on 4K */
+    .destination-hero {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(6.5rem, 10vh, 9rem) auto clamp(2rem, 3.5vh, 3.5rem) auto;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 3.8vw, 4.8rem);
+        max-width: min(100%, 1400px);
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1.15rem, 1.25vw, 1.55rem);
+        max-width: min(100%, 1050px);
+    }
+
+    .search-form {
+        max-width: min(100%, 1100px);
+        padding: clamp(0.7rem, 0.9vh, 1.1rem) clamp(1rem, 1.2vw, 1.6rem);
+    }
+
+    .search-form input[type="text"] {
+        font-size: clamp(1.15rem, 1.25vw, 1.45rem);
+    }
+
+    .search-btn {
+        padding: clamp(0.9rem, 1.1vh, 1.3rem) clamp(1.8rem, 2vw, 2.8rem);
+        font-size: clamp(1.1rem, 1.2vw, 1.35rem);
+    }
+
+    .popular-locations-section {
+        width: 95%;
+        max-width: 2800px;
+        margin: 0 auto clamp(3.5rem, 5vh, 6rem) auto;
+    }
+
+    .locations-title {
+        font-size: clamp(2.6rem, 3.2vw, 4.2rem);
+    }
+
+    .locations-subtitle {
+        font-size: clamp(1.15rem, 1.25vw, 1.5rem);
+        max-width: min(100%, 1000px);
+    }
+
+    .locations-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(1.8rem, 2.2vw, 3rem);
+    }
+
+    .location-card-img-wrap {
+        height: clamp(14rem, 24vh, 22rem);
+    }
+
+    .destination-results-container {
+        width: 95%;
+        max-width: 2800px;
+        margin: clamp(3rem, 5vh, 5rem) auto clamp(4rem, 7vh, 8rem) auto;
+    }
+
+    .places-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(1.8rem, 2.2vw, 3rem);
+    }
+}

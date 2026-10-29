@@ -16,6 +16,10 @@ export const JadooTheme = {
     STORAGE_KEY: 'jadoo_dark_theme',
 
     isDark(): boolean {
+        if (typeof document !== 'undefined' && document.documentElement) {
+            const attr = document.documentElement.getAttribute('data-theme');
+            if (attr === 'dark') return true;
+        }
         try {
             const local = localStorage.getItem(this.STORAGE_KEY);
             if (local !== null) {
@@ -73,12 +77,16 @@ export const JadooTheme = {
 
     toggle(): boolean {
         const now = Date.now();
-        if (now - this._lastToggleTime < 250) {
+        if (now - this._lastToggleTime < 200) {
             return this.isDark();
         }
         this._lastToggleTime = now;
 
-        const nextDark = !this.isDark();
+        const currentDark = (typeof document !== 'undefined' && document.documentElement) ?
+            document.documentElement.getAttribute('data-theme') === 'dark' :
+            this.isDark();
+        const nextDark = !currentDark;
+
         try {
             localStorage.setItem(this.STORAGE_KEY, String(nextDark));
             localStorage.setItem('jadoo_theme', JSON.stringify(nextDark));
@@ -128,7 +136,7 @@ export const JadooTheme = {
         }
 
         window.addEventListener('storage', (e) => {
-            if (e.key === this.STORAGE_KEY) {
+            if (e.key === this.STORAGE_KEY || e.key === 'jadoo_theme') {
                 this.apply(this.isDark());
             }
         });
@@ -155,6 +163,13 @@ export const JadooTheme = {
 // Expose globally immediately so scripts and inline attributes can access it
 if (typeof window !== 'undefined') {
     (window as any).JadooTheme = JadooTheme;
+    (window as any).toggleThemeGlobal = (e?: Event) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        return JadooTheme.toggle();
+    };
 }
 
 // --------------------------------------------------------------------------
@@ -379,6 +394,8 @@ export class TestimonialReviewController {
         // Add to Database
         const newTestimonial = JadooDB.addTestimonial({
             user_id: currentUser?.id,
+            costumer_id: currentUser?.id,
+            author_email: currentUser?.email,
             destination_name: destination,
             author_name: authorName,
             author_location: authorLocation,
@@ -423,7 +440,7 @@ export class TestimonialReviewController {
                 <div class="cmeta">
                     <div class="crating">
                         ${starsHTML}
-                        <span>${t.rating.toFixed(1)}</span>
+                        <span>${(parseFloat(t.rating as any) || 5.0).toFixed(1)}</span>
                     </div>
                     <span class="cbadge"><i class="fa-solid fa-shield-heart"></i> ${escapeHTML(t.role_title)}</span>
                 </div>
@@ -512,7 +529,7 @@ export class BoardingPassController {
         setTxt('ticketTravelDate', booking.travel_date);
         setTxt('ticketGuestsCount', `${booking.guests_count} Traveler(s)`);
         setTxt('ticketPackageType', booking.package_type.toUpperCase());
-        setTxt('ticketTotalPrice', `$${booking.total_price.toFixed(2)} USD`);
+        setTxt('ticketTotalPrice', `$${(parseFloat(booking.total_price as any) || 0).toFixed(2)} USD`);
         setTxt('ticketStubRef', booking.id);
 
         const statusBadge = document.getElementById('ticketStatusBadge');
@@ -614,7 +631,20 @@ export class BookingStatusController {
             }
         };
 
-        listContainer.innerHTML = filteredBookings.map(b => `
+        listContainer.innerHTML = filteredBookings.map(b => {
+            const formattedDate = (() => {
+                if (!b.travel_date) return 'Flexible Schedule';
+                try {
+                    const d = new Date(b.travel_date);
+                    if (isNaN(d.getTime())) return String(b.travel_date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                } catch {
+                    return String(b.travel_date);
+                }
+            })();
+            const isCancelled = (b.status || '').toLowerCase() === 'cancelled';
+
+            return `
             <div class="booking-item-card" data-id="${b.id}">
                 <img src="${resolveImg(b.image_url)}" alt="${escapeHTML(b.attraction_name)}" class="booking-item-img" onerror="this.onerror=null; this.src='${isComp ? '../assets/destination-rome.png' : './assets/destination-rome.png'}';">
                 <div class="booking-item-info">
@@ -624,25 +654,25 @@ export class BookingStatusController {
                     </div>
                     <div class="booking-item-meta">
                         <span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(b.destination_name)}</span>
-                        <span><i class="fa-solid fa-calendar-days"></i> ${b.travel_date}</span>
+                        <span><i class="fa-solid fa-calendar-days"></i> ${formattedDate}</span>
                         <span><i class="fa-solid fa-user-group"></i> ${b.guests_count} guest(s)</span>
                         <span><i class="fa-solid fa-award"></i> ${b.package_type}</span>
                     </div>
                     ${b.special_request ? `<div class="booking-item-requests"><i class="fa-regular fa-comment-dots"></i> "${escapeHTML(b.special_request)}"</div>` : ''}
                 </div>
                 <div class="booking-item-actions-col">
-                    <div class="booking-price-highlight">$${b.total_price.toFixed(2)}</div>
+                    <div class="booking-price-highlight">$${(parseFloat(b.total_price as any) || 0).toFixed(2)}</div>
                     <div class="booking-item-actions">
-                        <a href="${typeof window !== 'undefined' && window.location.pathname.includes('/components/') ? './ticket.html' : './components/ticket.html'}?id=${b.id}" class="btn-print-ticket" style="text-decoration: none;">
-                            <i class="fa-solid fa-ticket"></i>
-                            <span>E-Ticket</span>
+                        <a href="${typeof window !== 'undefined' && window.location.pathname.includes('/components/') ? './ticket.html' : './components/ticket.html'}?id=${b.id}" class="btn-print-ticket btn-view-ticket" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.45rem 0.95rem; border-radius: 9999px; background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%) !important; color: #FFFFFF !important; font-size: 0.8rem; font-weight: 600; border: none !important; cursor: pointer; box-shadow: 0 4px 12px rgba(223, 105, 81, 0.25);" title="Open Boarding Pass">
+                            <i class="fa-solid fa-ticket" style="color: #FFFFFF !important;"></i>
+                            <span style="color: #FFFFFF !important;">E-Ticket</span>
                         </a>
-                        <button type="button" class="btn-print-ticket btn-view-pass" data-id="${b.id}" title="Quick Pass Preview">
+                        <button type="button" class="btn-view-pass" data-id="${b.id}" title="Quick Pass Preview" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.45rem 0.95rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
                             <i class="fa-solid fa-eye"></i>
                             <span>Pass</span>
                         </button>
-                        ${b.status !== 'cancelled' ? `
-                            <button type="button" class="btn-cancel-trip btn-cancel-action" data-id="${b.id}">
+                        ${!isCancelled ? `
+                            <button type="button" class="btn-cancel-trip btn-cancel-action" data-id="${b.id}" title="Cancel this reservation">
                                 <i class="fa-solid fa-ban"></i>
                                 <span>Cancel</span>
                             </button>
@@ -650,7 +680,8 @@ export class BookingStatusController {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         // Attach action handlers
         listContainer.querySelectorAll<HTMLButtonElement>('.btn-view-pass').forEach(btn => {
@@ -721,24 +752,10 @@ export class ProfileDashboardController {
             });
         }
 
-        // Hook into user dropdown on navbar
-        const userDropdown = document.getElementById('userDropdownMenu');
-        if (userDropdown && !document.getElementById('navProfileBtn')) {
-            const profileBtn = document.createElement('button');
-            profileBtn.type = 'button';
-            profileBtn.className = 'dropdown-item';
-            profileBtn.id = 'navProfileBtn';
-            profileBtn.setAttribute('role', 'menuitem');
-            profileBtn.innerHTML = `
-                <i class="fa-solid fa-id-card"></i>
-                <span>My Profile & Stats</span>
-            `;
-            profileBtn.addEventListener('click', () => this.open());
-            // Insert before logout
-            const logoutBtn = document.getElementById('navLogoutBtn');
-            if (logoutBtn && logoutBtn.parentNode) {
-                logoutBtn.parentNode.insertBefore(profileBtn, logoutBtn);
-            }
+        // If an explicit navProfileBtn exists in DOM, bind it
+        const existingProfileBtn = document.getElementById('navProfileBtn');
+        if (existingProfileBtn) {
+            existingProfileBtn.addEventListener('click', () => this.open());
         }
     }
 
@@ -763,10 +780,10 @@ export class ProfileDashboardController {
     private renderStats(): void {
         const user = JadooDB.getCurrentUser();
         const bookings = JadooDB.getUserBookings(user?.email);
-        const testimonials = JadooDB.getTestimonials().filter(t => t.user_id === user?.id || (user && t.author_name.toLowerCase() === user.full_name.toLowerCase()));
+        const testimonials = JadooDB.getTestimonials().filter(t => (user?.id && t.user_id === user.id) || (user && (t.author_name || '').toLowerCase() === (user.full_name || '').toLowerCase()));
 
         const confirmedTrips = bookings.filter(b => b.status === 'confirmed').length;
-        const totalSpent = bookings.reduce((sum, b) => b.status !== 'cancelled' ? sum + b.total_price : sum, 0);
+        const totalSpent = bookings.reduce((sum, b) => b.status !== 'cancelled' ? sum + (parseFloat(b.total_price as any) || 0) : sum, 0);
 
         const setTxt = (id: string, val: string) => {
             const el = document.getElementById(id);
@@ -840,6 +857,63 @@ export const JadooTicketUtilities = {
     renderQrCode(container: HTMLElement | null, text: string, size = 120): void {
         if (!container) return;
         container.innerHTML = '';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.overflow = 'hidden';
+
+        const ensureSingleImage = (): boolean => {
+            const canvases = container.querySelectorAll('canvas');
+            const imgs = container.querySelectorAll('img');
+
+            for (let i = 0; i < imgs.length; i++) {
+                const img = imgs[i];
+                if (img.src && img.src.length > 50 && (img.src.startsWith('data:image') || img.src.startsWith('http') || img.src.startsWith('blob:'))) {
+                    img.style.display = 'block';
+                    img.style.width = `${size}px`;
+                    img.style.height = `${size}px`;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+                    img.style.objectFit = 'contain';
+                    img.style.borderRadius = '8px';
+                    canvases.forEach(c => c.remove());
+                    imgs.forEach(other => { if (other !== img) other.remove(); });
+                    return true;
+                }
+            }
+
+            if (canvases.length > 0) {
+                const canvas = canvases[0];
+                try {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    if (dataUrl && dataUrl.length > 100 && !dataUrl.includes('data:,')) {
+                        container.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        img.alt = 'Verified Ticket QR Pass';
+                        img.style.display = 'block';
+                        img.style.width = `${size}px`;
+                        img.style.height = `${size}px`;
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                        img.style.objectFit = 'contain';
+                        img.style.borderRadius = '8px';
+                        container.appendChild(img);
+                        return true;
+                    }
+                } catch (_) {}
+
+                canvases.forEach((c, idx) => { if (idx > 0) c.remove(); });
+                imgs.forEach(i => i.remove());
+                canvas.style.display = 'block';
+                canvas.style.width = `${size}px`;
+                canvas.style.height = `${size}px`;
+                canvas.style.maxWidth = '100%';
+                canvas.style.borderRadius = '8px';
+                return true;
+            }
+            return false;
+        };
 
         // 1. Try QRCode library (Canvas / SVG)
         if (typeof (window as any).QRCode !== 'undefined') {
@@ -850,17 +924,24 @@ export const JadooTicketUtilities = {
                     height: size,
                     colorDark: '#0F172A',
                     colorLight: '#FFFFFF',
-                    correctLevel: (window as any).QRCode.CorrectLevel.H
+                    correctLevel: (window as any).QRCode.CorrectLevel.M
                 });
+                if (!ensureSingleImage()) {
+                    setTimeout(ensureSingleImage, 30);
+                    setTimeout(ensureSingleImage, 100);
+                }
                 return;
             } catch (e) {
                 console.warn('QRCode JS instance failed, using image fallback:', e);
             }
         }
 
-        // Try dynamically loading QRCode in background
-        this.ensureScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', 'QRCode').then(loaded => {
-            if (loaded && typeof (window as any).QRCode !== 'undefined' && container.querySelector('img')) {
+        // Try dynamically loading local QRCode in background
+        const scriptPath = typeof window !== 'undefined' && window.location.pathname.includes('/components/')
+            ? '../scripts/qrcode.min.js'
+            : './scripts/qrcode.min.js';
+        this.ensureScript(scriptPath, 'QRCode').then(loaded => {
+            if (loaded && typeof (window as any).QRCode !== 'undefined' && container) {
                 try {
                     container.innerHTML = '';
                     new (window as any).QRCode(container, {
@@ -869,8 +950,12 @@ export const JadooTicketUtilities = {
                         height: size,
                         colorDark: '#0F172A',
                         colorLight: '#FFFFFF',
-                        correctLevel: (window as any).QRCode.CorrectLevel.H
+                        correctLevel: (window as any).QRCode.CorrectLevel.M
                     });
+                    if (!ensureSingleImage()) {
+                        setTimeout(ensureSingleImage, 30);
+                        setTimeout(ensureSingleImage, 100);
+                    }
                 } catch (_) {}
             }
         });
@@ -880,10 +965,13 @@ export const JadooTicketUtilities = {
         img.crossOrigin = 'anonymous';
         img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=2&data=${encodeURIComponent(text)}`;
         img.alt = `Scannable QR Code for ${text}`;
-        img.style.width = '100%';
-        img.style.height = '100%';
+        img.style.width = `${size}px`;
+        img.style.height = `${size}px`;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
         img.style.objectFit = 'contain';
         img.style.display = 'block';
+        img.style.borderRadius = '8px';
 
         // 3. Fully offline SVG matrix fallback
         img.onerror = () => {
@@ -975,7 +1063,7 @@ export const JadooTicketUtilities = {
     },
 
     getDestinationWeather(destName: string): { tempC: number; tempF: number; condition: string; icon: string; advisory: string } {
-        const lower = destName.toLowerCase();
+        const lower = (destName || '').toLowerCase();
         if (lower.includes('rome') || lower.includes('italy')) {
             return { tempC: 22, tempF: 72, condition: 'Sunny & Pleasant', icon: 'fa-sun', advisory: 'Ideal mild weather. Wear comfortable footwear for cobblestone paths.' };
         } else if (lower.includes('london') || lower.includes('uk')) {
@@ -989,7 +1077,7 @@ export const JadooTicketUtilities = {
     },
 
     getFlightTelemetry(booking: DbBooking) {
-        const hash = (booking.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100);
+        const hash = ((booking.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100);
         return {
             flightNumber: `JA-${700 + (hash % 90)}`,
             aircraft: 'Boeing 787-9 Dreamliner (Starlink Satellite In-Flight Wi-Fi)',
@@ -1616,25 +1704,12 @@ export const TicketSecurityMiddleware = {
     },
 
     async verifyWithServer(bookingId: string, token: string): Promise<{ verified: boolean; clearance: string; details?: any }> {
-        try {
-            const isSameOriginNode = typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '3001');
-            const candidateBases = isSameOriginNode ? ['', 'http://localhost:3000', 'http://localhost:3001'] : ['http://localhost:3000', 'http://localhost:3001', ''];
-            for (const base of candidateBases) {
-                try {
-                    const res = await fetch(`${base}/api/ticket/verify?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(token)}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        return data;
-                    }
-                } catch (_) {}
-            }
-        } catch (_) {}
-        // Fallback to client verification if server is offline or static hosting
+        // Pure client-side validation (no localhost or backend server needed)
         const isValid = this.validateToken(bookingId, token);
         return {
             verified: isValid,
             clearance: isValid ? 'GRANTED' : 'DENIED',
-            details: { fallback: true }
+            details: { clientVerified: true }
         };
     },
 
@@ -1814,15 +1889,15 @@ export const JadooNavAuth = {
         const destDropdownUserEmail = document.getElementById('destDropdownUserEmail');
         const destBookingBadge = document.getElementById('destNavBookingBadge');
 
-        const isAuthenticated = Boolean(currentUser && (currentUser.email || currentUser.full_name || currentUser.id));
+        const isAuthenticated = Boolean(currentUser && (currentUser.email || currentUser.full_name));
 
-        if (isAuthenticated) {
+        if (isAuthenticated && currentUser) {
             document.documentElement.classList.add('user-logged-in');
             if (document.body) document.body.classList.add('user-logged-in');
 
-            const userEmail = currentUser?.email || 'alex.traveler@example.com';
-            const fullName = currentUser?.full_name || 'Alex Johnson';
-            const firstName = fullName.split(' ')[0] || 'Alex';
+            const userEmail = currentUser.email || '';
+            const fullName = currentUser.full_name || 'Traveler';
+            const firstName = fullName.split(' ')[0] || 'Traveler';
             const bookings = JadooDB.getUserBookings(userEmail);
             const confirmedCount = bookings.filter(b => b.status !== 'cancelled').length;
 
@@ -1834,18 +1909,28 @@ export const JadooNavAuth = {
             if (dropdownUserName) dropdownUserName.textContent = fullName;
             if (dropdownUserEmail) dropdownUserEmail.textContent = userEmail;
 
+            const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+            let avatarSrc = currentUser.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
+            if (isComp && avatarSrc.startsWith('./assets/')) {
+                avatarSrc = '.' + avatarSrc;
+            } else if (!isComp && avatarSrc.startsWith('../assets/')) {
+                avatarSrc = avatarSrc.replace(/^\.\.\//, './');
+            }
+
             const navAvatarImg = document.getElementById('navUserAvatarImg') as HTMLImageElement | null;
             if (navAvatarImg) {
-                const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
-                let avatarSrc = currentUser?.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
-                if (isComp && avatarSrc.startsWith('./assets/')) {
-                    avatarSrc = '.' + avatarSrc;
-                } else if (!isComp && avatarSrc.startsWith('../assets/')) {
-                    avatarSrc = avatarSrc.replace(/^\.\.\//, './');
-                }
                 navAvatarImg.src = avatarSrc;
                 navAvatarImg.style.display = 'block';
             }
+
+            const dropdownAvatarImgs = document.querySelectorAll<HTMLImageElement>('#dropdownUserAvatarImg, #destDropdownUserAvatarImg, .dropdown-avatar-circle img');
+            dropdownAvatarImgs.forEach((img) => {
+                img.src = avatarSrc;
+                img.style.display = 'block';
+                if (img.nextElementSibling) {
+                    (img.nextElementSibling as HTMLElement).style.display = 'none';
+                }
+            });
 
             if (navBookingBadge) {
                 navBookingBadge.textContent = confirmedCount.toString();
@@ -1877,6 +1962,9 @@ export const JadooNavAuth = {
             if (destUserDropdown) {
                 destUserDropdown.style.setProperty('display', 'none', 'important');
             }
+            if (firstNameDisplay) firstNameDisplay.textContent = '';
+            if (dropdownUserName) dropdownUserName.textContent = '';
+            if (dropdownUserEmail) dropdownUserEmail.textContent = '';
         }
     },
 
@@ -2083,6 +2171,13 @@ export function initAdvancedFeatures(): {
     // Expose globally for vanilla scripts
     if (typeof window !== 'undefined') {
         (window as any).JadooTheme = JadooTheme;
+        (window as any).toggleThemeGlobal = (e?: Event) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            return JadooTheme.toggle();
+        };
         (window as any).JadooToast = JadooToast;
         (window as any).JadooTicketUtilities = JadooTicketUtilities;
         (window as any).TicketSecurityMiddleware = TicketSecurityMiddleware;

@@ -6,13 +6,15 @@ A modern, responsive, full-featured travel agency platform built with HTML5, CSS
 
 ## 🌟 What's New & Advanced Features
 
-### 1. Database Engine & Schema Implementation
-Integrated client-side database layer in [`scripts/db.ts`](file:///c:/Users/Abcom/Desktop/task/scripts/db.ts) implementing the custom Draw.io ER Diagram:
-- **`user`**: `id` (uuid), `full_name`, `email`, `password`, `created_at`, `logged_in_at`, `updated_at`.
-- **`destinations`**: `name` (PK), `country`, `latitude`, `longitude`, `source`, `created_at`, `updated_at`.
-- **`attraction`**: `name` (PK), `destination_name` (FK), `category`, `description`, `image_url`, `price_amount`, `rating`, `reviews_count`, `duration`, `wiki_url`, `point: {lat, lon}`, `created_at`, `updated_at`.
-- **`booking`**: `id` (PK), `destination_name` (FK), `attraction_name` (FK), `user_name`, `user_email`, `phone_number`, `travel_date`, `guests_count`, `package_type` (`standard` | `VIP` | `luxury`), `price_per_person`, `total_price`, `special_request`, `status` (`pending` | `confirmed` | `cancelled`), `created_at`, `updated_at`.
-- **`testimonial`**: `id` (PK), `user_id` (FK), `destination_name` (FK), `author_name`, `author_location`, `role_title`, `quote`, `rating`, `avatar_url`, `trip_tag`, `created_at`, `updated_at`.
+### 1. PostgreSQL Relational Database Backend (with Express REST API)
+Full real-world database architecture powered by PostgreSQL and an Express backend API:
+- **`Customer`**: `id: uuid` (PK), `full_name`, `email` (unique), `password`, `phone`, `avatar_url`, `logged_in_at`, `created_at`, `updated_at`.
+- **`Destination`**: `id: uuid` (PK), `name` (unique), `country`, `latitude`, `longitude`, `hero_img`, `description`, `created_at`, `updated_at`.
+- **`Attraction`**: `id: uuid` (PK), `name`, `destination_name` (FK &rarr; destination.name), `category`, `description`, `image_url`, `price_amount`, `rating`, `reviews_count`, `duration`, `wiki_url`, `point` (jsonb), `created_at`, `updated_at`.
+- **`Booking`**: `id: uuid` (PK), `booking_ref` (unique), `customer_id` (FK &rarr; customer.id), `destination_id` (FK &rarr; destination.id), `destination_name`, `attraction_name`, `user_name`, `user_email`, `phone_number`, `travel_date`, `guests_count`, `package_type`, `price_per_person`, `total_price`, `special_request`, `status`, `image_url`, `created_at`, `updated_at`.
+- **`Testimonials`**: `id: uuid` (PK), `costumer_id` (FK &rarr; customer.id), `destination_id` (FK &rarr; destination.id), `destination_name`, `author_name`, `author_location`, `role_title`, `quote`, `rating`, `avatar_url`, `trip_tag`, `created_at`, `updated_at`.
+- **One-Command Migration**: Run `npm run migrate` to automatically apply [`schema.sql`](file:///c:/Users/Abcom/Desktop/task/schema.sql) and seed initial records into PostgreSQL.
+- **REST API Endpoints**: Endpoints available for health, destinations, attractions, bookings, testimonials, authentication, and ticket verification. Includes offline fallback cache for zero UI disruption.
 
 ### 2. Interactive Testimonial Submission Modal
 - Direct CTA button **"Share Your Journey"** on the Testimonials section.

@@ -1,4 +1,4 @@
-import { JadooDB, DbAttraction } from "./db.js";
+import { JadooDB, DbAttraction, apiFetch } from "./db.js";
 import { JadooNavAuth, JadooTheme } from "./features.js";
 
 declare const L: any;
@@ -280,40 +280,32 @@ async function getData(destination: string) {
   let loadedPlaces: Place[] = [];
   let foundDestination = query;
 
+  // 1. Fetch live attractions from backend API proxy (OpenTripMap + Wikipedia)
   try {
-    // 1. Try local Node API with smart port detection (3000 or backup port 3001)
-    const currentPort = typeof window !== 'undefined' && window.location.port ? window.location.port : '3000';
-    const candidatePorts = currentPort === '3001' ? ['3001', '3000'] : ['3000', '3001'];
-    
-    let response: Response | null = null;
-    for (const port of candidatePorts) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1400);
-        const res = await fetch(`http://localhost:${port}/api/destination?name=${encodeURIComponent(query)}`, {
-          signal: controller.signal
-        }).catch(() => null);
-        clearTimeout(timeoutId);
-
-        if (res && res.ok) {
-          response = res;
-          break;
-        }
-      } catch {
-        // try next port
-      }
+    const data = await apiFetch<DestinationData>(`/api/destination?name=${encodeURIComponent(query)}`);
+    if (data && Array.isArray(data.places) && data.places.length > 0) {
+      foundDestination = data.country ? `${data.destination}, ${data.country}` : data.destination;
+      loadedPlaces = data.places;
     }
-
-    if (response && response.ok) {
-      const data: DestinationData = await response.json();
-      foundDestination = data.destination || query;
-      loadedPlaces = data.places || [];
-    }
-  } catch {
-    // Silently fall through to Schema Database
+  } catch (err) {
+    console.warn("Live destination API error:", err);
   }
 
-  // 2. If API didn't return places, fallback to JadooDB schema
+  // 2. Fallback to PostgreSQL database attractions
+  if (loadedPlaces.length === 0) {
+    try {
+      const attractions = await JadooDB.getAttractionsAsync(query);
+      if (attractions && attractions.length > 0) {
+        const dbDest = JadooDB.getDestination(query);
+        foundDestination = dbDest ? `${dbDest.name}, ${dbDest.country}` : query;
+        loadedPlaces = attractions.map(convertDbAttractionToPlace);
+      }
+    } catch (err) {
+      console.warn("PostgreSQL attractions fetch error:", err);
+    }
+  }
+
+  // 3. Fallback to cached/seed database
   if (loadedPlaces.length === 0) {
     const dbDest = JadooDB.getDestination(query);
     const dbAttractions = JadooDB.getAttractions(query);
@@ -322,11 +314,11 @@ async function getData(destination: string) {
       foundDestination = dbDest ? `${dbDest.name}, ${dbDest.country}` : query;
       loadedPlaces = dbAttractions.map(convertDbAttractionToPlace);
     } else {
-      // If city not found, search all attractions matching name or general
       const allAttractions = JadooDB.getAttractions();
       const matched = allAttractions.filter(a =>
         a.name.toLowerCase().includes(query.toLowerCase()) ||
-        a.destination_name.toLowerCase().includes(query.toLowerCase())
+        a.destination_name.toLowerCase().includes(query.toLowerCase()) ||
+        a.category.toLowerCase().includes(query.toLowerCase())
       );
       if (matched.length > 0) {
         foundDestination = query;
@@ -546,6 +538,15 @@ function createPlaceCard(place: Place, index: number): HTMLElement {
 }
 
 function openBookingModalForPlace(place: Place): void {
+  const currentUser = (window as any).JadooDB?.getCurrentUser() || (window as any).JadooAuth?.getCurrentUser();
+  if (!currentUser) {
+    const proceed = confirm("You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.");
+    if (proceed) {
+      window.location.href = "auth.html#signin";
+    }
+    return;
+  }
+
   const jadooUI = (window as any).JadooUI;
   const placePrice = place.amount || (typeof place.price === "string" ? parseFloat(place.price.replace(/[^0-9.]/g, "")) : 55) || 55;
   const imgSrc = place.img || place.image || place.preview?.source || "./assets/destination-rome.png";
@@ -756,6 +757,20 @@ modalBookCta?.addEventListener("click", () => {
   if (currentModalPlace) {
     closePlaceModal();
     openBookingModalForPlace(currentModalPlace);
+  }
+});
+
+const btnShareLandmarkReview = document.getElementById("btnShareLandmarkReview");
+btnShareLandmarkReview?.addEventListener("click", () => {
+  const currentDest = currentDestination;
+  const currentPlace = currentModalPlace;
+  closePlaceModal();
+  if (typeof (window as any).JadooReviewModal !== 'undefined' && (window as any).JadooReviewModal.open) {
+    (window as any).JadooReviewModal.open();
+    const destSelect = document.getElementById("reviewDestinationSelect") as HTMLSelectElement | null;
+    const tagInput = document.getElementById("reviewTripTag") as HTMLInputElement | null;
+    if (destSelect && currentDest) destSelect.value = currentDest;
+    if (tagInput && currentPlace) tagInput.value = `${currentPlace.name} Tour`;
   }
 });
 

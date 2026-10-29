@@ -37,9 +37,57 @@
                     document.documentElement.removeAttribute('data-theme');
                 }
 
-                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
-                if (!loggedOut) {
-                    document.documentElement.classList.add('user-logged-in');
+                // Global instant theme toggle handler
+                window.toggleThemeGlobal = function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+                        return window.JadooTheme.toggle();
+                    }
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme') === 'dark';
+                    var next = !current;
+                    if (next) {
+                        html.setAttribute('data-theme', 'dark');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'true');
+                            localStorage.setItem('jadoo_theme', 'true');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    } else {
+                        html.removeAttribute('data-theme');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'false');
+                            localStorage.setItem('jadoo_theme', 'false');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    }
+                    var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+                    icons.forEach(function (ic) {
+                        ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    });
+                    var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+                    btns.forEach(function (btn) {
+                        btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.style.transform = 'scale(1.2) rotate(25deg)';
+                        setTimeout(function () { btn.style.transform = ''; }, 320);
+                    });
+                    return next;
+                };
+
+                var userRaw = localStorage.getItem('jadoo_current_user');
+                if (userRaw && localStorage.getItem('jadoo_logged_out') !== 'true') {
+                    try {
+                        var u = JSON.parse(userRaw);
+                        if (u && (u.email || u.id)) {
+                            document.documentElement.classList.add('user-logged-in');
+                        }
+                    } catch(e) {}
                 }
             } catch (e) { }
         })();
@@ -70,6 +118,7 @@
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
                         <li><a href="./destination-page.html" class="navlink active-page">Destinations</a></li>
+                        <li><a href="./services.html" class="navlink">Services</a></li>
                         <li><a href="./profile.html" class="navlink">My Profile</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
@@ -86,7 +135,8 @@
                                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
                                     <div class="dropdown-user-header">
                                         <div class="dropdown-avatar-circle">
-                                            <i class="fa-solid fa-user"></i>
+                                            <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
                                             <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
@@ -480,9 +530,9 @@
             </div>
             <div class="col fico">
                 <div class="footi">
-                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
-                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                    <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
                 </div>
                 <div class="fih">Discover our app</div>
                 <div class="store">
@@ -587,6 +637,10 @@
                     </div>
 
                     <div class="modal-actions-wrap">
+                        <button type="button" class="modal-share-cta" id="btnShareLandmarkReview" title="Share your experience visiting this landmark" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(223, 105, 81, 0.12); color: #DF6951; border: 1px solid rgba(223, 105, 81, 0.35); border-radius: 9999px; padding: 0.6rem 1.15rem; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease;">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                            <span>Share Experience</span>
+                        </button>
                         <a id="modal-wiki-link" href="#" target="_blank" rel="noopener noreferrer" class="modal-wiki-btn">
                             <span>Read Article</span>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -838,7 +892,7 @@
     </div>
 
     <!-- Floating Dark Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
@@ -997,6 +1051,113 @@
                         <button type="submit" class="btn-primary-glow">
                             <i class="fa-solid fa-floppy-disk"></i>
                             <span>Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonial Review Submission Modal -->
+    <div class="features-modal-overlay" id="reviewModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="reviewModalBackdrop"></div>
+        <div class="features-modal-card">
+            <div class="features-modal-header">
+                <div>
+                    <span class="modal-header-badge"><i class="fa-solid fa-feather-pointed"></i> Share Your Story</span>
+                    <h3 class="features-modal-title">Write a Testimonial</h3>
+                </div>
+                <button type="button" class="features-modal-close" id="reviewModalClose" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="features-modal-body">
+                <form id="testimonialReviewForm">
+                    <div class="booking-field-group">
+                        <label>Trip Experience Rating <span class="required-star">*</span></label>
+                        <div class="star-rating-picker" id="starRatingPicker">
+                            <button type="button" class="star-btn is-active" data-value="1" aria-label="1 star"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="2" aria-label="2 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="3" aria-label="3 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="4" aria-label="4 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="5" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+                            <span class="star-rating-label" id="starRatingLabel">5.0 - Exceptional Experience</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="reviewAuthorName">Your Full Name <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="reviewAuthorName" placeholder="e.g. Mike Taylor" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewDestinationSelect">Destination Visited <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-location-dot input-icon"></i>
+                                <select id="reviewDestinationSelect" required>
+                                    <option value="">Select Destination...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewAuthorLocation">Location / City</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-city input-icon"></i>
+                                <input type="text" id="reviewAuthorLocation" placeholder="e.g. London, UK">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewRoleTitle">Role or Profession</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-briefcase input-icon"></i>
+                                <input type="text" id="reviewRoleTitle" placeholder="e.g. Travel Photographer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="reviewTripTag">Trip Tagline / Package Name</label>
+                        <div class="booking-input-wrap">
+                            <i class="fa-solid fa-tag input-icon"></i>
+                            <input type="text" id="reviewTripTag" placeholder="e.g. European Executive Retreat, Grand Tour">
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="reviewQuote">Your Story &amp; Feedback <span class="required-star">*</span></label>
+                        <textarea id="reviewQuote" rows="3" placeholder="Tell other travelers about your unforgettable moments with Jadoo..." required></textarea>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label>Choose Your Traveler Avatar</label>
+                        <div class="avatar-selection-grid" id="avatarSelectionGrid">
+                            <div class="avatar-chip is-selected" data-avatar="../assets/testimonials-avatar-1.png">
+                                <img src="../assets/testimonials-avatar-1.png" alt="Avatar 1">
+                            </div>
+                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-2.png">
+                                <img src="../assets/testimonials-avatar-2.png" alt="Avatar 2">
+                            </div>
+                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-3.png">
+                                <img src="../assets/testimonials-avatar-3.png" alt="Avatar 3">
+                            </div>
+                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar 4">
+                            </div>
+                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar 5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="button" class="btn-secondary-flat" id="reviewCancelBtn">Cancel</button>
+                        <button type="submit" class="btn-primary-glow">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Submit Travel Story</span>
                         </button>
                     </div>
                 </form>

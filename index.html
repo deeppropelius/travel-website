@@ -20,6 +20,15 @@
   <link rel="stylesheet" href="./styles/mobile.css">
   <link rel="stylesheet" href="./styles/dark-theme.css">
   <link rel="stylesheet" href="./styles/features.css">
+  <noscript>
+    <style>
+      [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    </style>
+  </noscript>
   <!-- Early dark theme execution to prevent light-theme flash -->
   <script>
     (function () {
@@ -39,16 +48,76 @@
           document.documentElement.removeAttribute('data-theme');
         }
 
-        var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
-        if (!loggedOut) {
-          document.documentElement.classList.add('user-logged-in');
+        // Global instant theme toggle handler
+        window.toggleThemeGlobal = function (e) {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+            return window.JadooTheme.toggle();
+          }
+          var html = document.documentElement;
+          var current = html.getAttribute('data-theme') === 'dark';
+          var next = !current;
+          if (next) {
+            html.setAttribute('data-theme', 'dark');
+            try {
+              localStorage.setItem('jadoo_dark_theme', 'true');
+              localStorage.setItem('jadoo_theme', 'true');
+              var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+              document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+            } catch (_) { }
+          } else {
+            html.removeAttribute('data-theme');
+            try {
+              localStorage.setItem('jadoo_dark_theme', 'false');
+              localStorage.setItem('jadoo_theme', 'false');
+              var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+              document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+            } catch (_) { }
+          }
+          var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+          icons.forEach(function (ic) {
+            ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+          });
+          var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+          btns.forEach(function (btn) {
+            btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+            btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+            btn.style.transform = 'scale(1.2) rotate(25deg)';
+            setTimeout(function () { btn.style.transform = ''; }, 320);
+          });
+          return next;
+        };
+
+        var userRaw = localStorage.getItem('jadoo_current_user');
+        if (userRaw && localStorage.getItem('jadoo_logged_out') !== 'true') {
+          try {
+            var u = JSON.parse(userRaw);
+            if (u && (u.email || u.id)) {
+              document.documentElement.classList.add('user-logged-in');
+            }
+          } catch(e) {}
         }
+        // Failsafe visibility timer to guarantee all data-reveal elements appear
+        setTimeout(function () {
+          var unrevealed = document.querySelectorAll('[data-reveal]:not(.is-revealed)');
+          for (var i = 0; i < unrevealed.length; i++) {
+            unrevealed[i].classList.add('is-revealed');
+          }
+        }, 1200);
       } catch (e) { }
     })();
   </script>
 
-  <!-- Real QR Code Generator Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Real QR Code Generator Library (Local first with CDN fallback) -->
+  <script src="./scripts/qrcode.min.js"></script>
+  <script>
+    if (typeof QRCode === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+    }
+  </script>
   <!-- Direct Client-Side PDF Generation Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -93,7 +162,8 @@
                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
                   <div class="dropdown-user-header">
                     <div class="dropdown-avatar-circle">
-                      <i class="fa-solid fa-user"></i>
+                      <img src="./assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                      <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                     </div>
                     <div class="dropdown-user-info">
                       <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
@@ -162,7 +232,7 @@
       <h3>We Offer Best Services</h3>
     </div>
     <div class="cards">
-      <div class="card" data-reveal="up" data-delay="1">
+      <div class="card" data-reveal="up" data-delay="1" onclick="window.location.href='./components/services.html?category=planning'" style="cursor: pointer;" title="Explore Calculated Weather & Planning Services">
         <div class="rblock"></div>
         <div class="cimg">
           <img src="./assets/service-card-1.png" alt="Calculated Weather service icon">
@@ -172,7 +242,7 @@
           <p>Built Wicket longer admire do barton vanity itself do in it.</p>
         </div>
       </div>
-      <div class="card" data-reveal="up" data-delay="2">
+      <div class="card" data-reveal="up" data-delay="2" onclick="window.location.href='./components/services.html?category=air'" style="cursor: pointer;" title="Explore Best Flights & Private Aviation">
         <div class="rblock"></div>
         <div class="cimg airplain">
           <img src="./assets/service-card-2.png" alt="Best Flights service icon">
@@ -182,7 +252,7 @@
           <p>Engrossed listening. Park gate sell they west hard for the.</p>
         </div>
       </div>
-      <div class="card" data-reveal="up" data-delay="3">
+      <div class="card" data-reveal="up" data-delay="3" onclick="window.location.href='./components/services.html?category=vip'" style="cursor: pointer;" title="Explore VIP Local Events & Access">
         <div class="rblock"></div>
         <div class="cimg">
           <img src="./assets/service-card-3.png" alt="Local Events service icon">
@@ -192,7 +262,7 @@
           <p>Barton vanity itself do in it. Preferred to men it engrossed listening.</p>
         </div>
       </div>
-      <div class="card" data-reveal="up" data-delay="4">
+      <div class="card" data-reveal="up" data-delay="4" onclick="window.location.href='./components/services.html?category=bespoke'" style="cursor: pointer;" title="Explore Bespoke Customization Concierge">
         <div class="rblock"></div>
         <div class="cimg">
           <img src="./assets/service-card-4.png" alt="Customization service icon">
@@ -202,6 +272,13 @@
           <p>We deliver outsourced aviation services for military customers</p>
         </div>
       </div>
+    </div>
+    <div class="services-explore-cta" style="display: flex; justify-content: center; margin-top: clamp(2rem, 3.5vh, 3rem);" data-reveal="up">
+      <a href="./components/services.html" class="btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.85rem 2rem; border-radius: 9999px; text-decoration: none; font-family: 'Poppins', sans-serif; font-size: clamp(0.88rem, 1vw, 1.05rem); font-weight: 600; box-shadow: 0 10px 25px rgba(223, 105, 81, 0.35);">
+        <i class="fa-solid fa-bell-concierge"></i>
+        <span>Explore All 8 Luxury Services & Bespoke Inquiries</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
     </div>
   </section>
   <!----------------------------------------------Third Section-------------------------------->
@@ -514,11 +591,11 @@
         </div>
       </div>
       <div class="fiimg">
-        <svg class="testimonial-dots-svg" width="87" height="12" viewBox="0 0 87 12" fill="none"
+        <svg class="testimonial-dots-svg" width="108" height="28" viewBox="0 0 108 28" fill="none"
           xmlns="http://www.w3.org/2000/svg" aria-label="Testimonial pagination dots">
-          <circle cx="6" cy="6" r="6" class="dot-active" />
-          <circle cx="44" cy="6" r="6" class="dot-inactive" />
-          <circle cx="81" cy="6" r="6" class="dot-inactive" />
+          <circle cx="18" cy="14" r="6" class="dot-active" />
+          <circle cx="54" cy="14" r="6" class="dot-inactive" />
+          <circle cx="90" cy="14" r="6" class="dot-inactive" />
         </svg>
       </div>
     </div>
@@ -711,9 +788,9 @@
       </div>
       <div class="col fico">
         <div class="footi">
-          <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
-          <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
-          <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+          <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+          <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+          <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
         </div>
         <div class="fih">Discover our app</div>
         <div class="store">
@@ -1069,7 +1146,7 @@
   </div>
 
   <!-- Floating Dark Theme Toggle Button -->
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
     <i class="fa-solid fa-moon" id="themeIcon" aria-hidden="true"></i>
   </button>
 

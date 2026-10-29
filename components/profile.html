@@ -18,10 +18,11 @@
     <link rel="stylesheet" href="../styles/features.css">
     <link rel="stylesheet" href="../styles/pages.css">
 
-    <!-- Early dark theme & Auth execution -->
+    <!-- Early dark theme & Auth guard (runs synchronously before paint) -->
     <script>
         (function () {
             try {
+                // Dark theme
                 var saved = localStorage.getItem('jadoo_dark_theme');
                 if (saved === null) {
                     var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
@@ -37,17 +38,85 @@
                     document.documentElement.removeAttribute('data-theme');
                 }
 
-                // Navbar Auth: Immediately apply user-logged-in on profile page if not logged out
-                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
-                if (!loggedOut) {
+                // Global instant theme toggle handler
+                window.toggleThemeGlobal = function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+                        return window.JadooTheme.toggle();
+                    }
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme') === 'dark';
+                    var next = !current;
+                    if (next) {
+                        html.setAttribute('data-theme', 'dark');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'true');
+                            localStorage.setItem('jadoo_theme', 'true');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    } else {
+                        html.removeAttribute('data-theme');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'false');
+                            localStorage.setItem('jadoo_theme', 'false');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    }
+                    var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+                    icons.forEach(function (ic) {
+                        ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    });
+                    var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+                    btns.forEach(function (btn) {
+                        btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.style.transform = 'scale(1.2) rotate(25deg)';
+                        setTimeout(function () { btn.style.transform = ''; }, 320);
+                    });
+                    return next;
+                };
+
+                // Instant auth guard - redirect immediately, no flash
+                var isLoggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                var userRaw = localStorage.getItem('jadoo_current_user');
+                var hasUser = false;
+                if (!isLoggedOut && userRaw) {
+                    try {
+                        var u = JSON.parse(userRaw);
+                        if (u && (u.email || u.id)) { hasUser = true; }
+                    } catch (e) {}
+                }
+                if (!hasUser && !isLoggedOut) {
+                    var cm = document.cookie.match(/(?:^|; )jadoo_current_user=([^;]*)/);
+                    if (cm) {
+                        try {
+                            var cu = JSON.parse(decodeURIComponent(cm[1]));
+                            if (cu && (cu.email || cu.id)) { hasUser = true; }
+                        } catch (e) {}
+                    }
+                }
+                if (!hasUser) {
+                    document.documentElement.style.display = 'none';
+                    window.location.replace('./auth.html#signin');
+                } else {
                     document.documentElement.classList.add('user-logged-in');
                 }
             } catch (e) { }
         })();
     </script>
 
-    <!-- Real QR Code Generator Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Real QR Code Generator Library (Local first with CDN fallback) -->
+    <script src="../scripts/qrcode.min.js"></script>
+    <script>
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+        }
+    </script>
     <!-- Direct Client-Side PDF Generation Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -72,6 +141,7 @@
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
                         <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./services.html" class="navlink">Services</a></li>
                         <li><a href="./profile.html" class="navlink active-page">My Profile</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
@@ -88,7 +158,8 @@
                                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
                                     <div class="dropdown-user-header">
                                         <div class="dropdown-avatar-circle">
-                                            <i class="fa-solid fa-user"></i>
+                                            <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
                                             <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
@@ -215,27 +286,27 @@
 
         <!-- Interactive Tabs Header -->
         <div class="profile-tabs-header" id="profileTabsNav">
-            <button type="button" class="profile-tab-button is-active" data-tab="bookings">
+            <button type="button" class="profile-tab-button is-active" data-tab="bookings" onclick="window.switchProfileTab('bookings')">
                 <i class="fa-solid fa-suitcase-rolling"></i>
                 <span>My Bookings</span>
                 <span class="tab-counter" id="badgeBookingsCount">0</span>
             </button>
-            <button type="button" class="profile-tab-button" data-tab="wishlist">
+            <button type="button" class="profile-tab-button" data-tab="wishlist" onclick="window.switchProfileTab('wishlist')">
                 <i class="fa-solid fa-heart"></i>
                 <span>Saved Wishlist</span>
                 <span class="tab-counter">6</span>
             </button>
-            <button type="button" class="profile-tab-button" data-tab="reviews">
+            <button type="button" class="profile-tab-button" data-tab="reviews" onclick="window.switchProfileTab('reviews')">
                 <i class="fa-solid fa-comment-dots"></i>
                 <span>My Reviews</span>
-                <span class="tab-counter" id="badgeReviewsCount">1</span>
+                <span class="tab-counter" id="badgeReviewsCount">0</span>
             </button>
-            <button type="button" class="profile-tab-button" data-tab="tickets" id="profileTabTicketsBtn">
+            <button type="button" class="profile-tab-button" data-tab="tickets" id="profileTabTicketsBtn" onclick="window.switchProfileTab('tickets')">
                 <i class="fa-solid fa-ticket" style="color: #DF6951;"></i>
                 <span>E-Tickets</span>
                 <span class="tab-counter" id="badgeTicketsCount" style="background: rgba(223, 105, 81, 0.15); color: #DF6951;">0</span>
             </button>
-            <button type="button" class="profile-tab-button" data-tab="settings">
+            <button type="button" class="profile-tab-button" data-tab="settings" onclick="window.switchProfileTab('settings')">
                 <i class="fa-solid fa-gear"></i>
                 <span>Account Settings</span>
             </button>
@@ -245,19 +316,19 @@
         <div class="profile-tab-pane is-active" id="tabPaneBookings">
             <!-- Filter Bar -->
             <div class="bookings-filter-bar" id="profileBookingFilters">
-                <button type="button" class="status-tab-btn is-active" data-status="all">
+                <button type="button" class="status-tab-btn is-active" data-status="all" onclick="window.filterProfileBookings('all')">
                     <i class="fa-solid fa-border-all"></i>
                     <span>All Trips</span>
                 </button>
-                <button type="button" class="status-tab-btn" data-status="confirmed">
+                <button type="button" class="status-tab-btn" data-status="confirmed" onclick="window.filterProfileBookings('confirmed')">
                     <i class="fa-solid fa-circle-check" style="color: #10B981;"></i>
                     <span>Confirmed</span>
                 </button>
-                <button type="button" class="status-tab-btn" data-status="pending">
+                <button type="button" class="status-tab-btn" data-status="pending" onclick="window.filterProfileBookings('pending')">
                     <i class="fa-solid fa-clock" style="color: #F59E0B;"></i>
                     <span>Pending</span>
                 </button>
-                <button type="button" class="status-tab-btn" data-status="cancelled">
+                <button type="button" class="status-tab-btn" data-status="cancelled" onclick="window.filterProfileBookings('cancelled')">
                     <i class="fa-solid fa-ban" style="color: #EF4444;"></i>
                     <span>Cancelled</span>
                 </button>
@@ -489,31 +560,115 @@
                 </form>
             </div>
 
-        <!-- Tab 5: Dedicated E-Tickets & Boarding Passes -->
-        <div class="profile-tab-pane" id="tabPaneTickets">
-            <div class="profile-tickets-section">
-                <div class="tickets-hero-header">
-                    <div>
-                        <span class="modal-header-badge"><i class="fa-solid fa-plane-circle-check"></i> Verified Gate Access Passes</span>
-                        <h3 class="profile-section-title">Official E-Tickets & Boarding Passes</h3>
-                        <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem; margin-top: 0.25rem;">
-                            Access your active flight passes, scannable QR tokens, and airport check-in itineraries with 1-click download and wallet synchronization.
-                        </p>
-                    </div>
-                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <button type="button" class="btn-secondary-flat" id="profileRefreshTicketsBtn" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #FFF;">
-                            <i class="fa-solid fa-arrows-rotate"></i>
-                            <span>Refresh Passes</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="profile-tickets-list" id="profileTicketsList">
-                    <!-- Populated dynamically via JS -->
-                </div>
-            </div>
         </div>
     </main>
+
+    <!-- Testimonial Review Submission Modal -->
+    <div class="features-modal-overlay" id="reviewModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="features-modal-backdrop" id="reviewModalBackdrop"></div>
+        <div class="features-modal-card">
+            <div class="features-modal-header">
+                <div>
+                    <span class="modal-header-badge"><i class="fa-solid fa-feather-pointed"></i> Share Your Story</span>
+                    <h3 class="features-modal-title">Write a Testimonial</h3>
+                </div>
+                <button type="button" class="features-modal-close" id="reviewModalClose" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="features-modal-body">
+                <form id="testimonialReviewForm">
+                    <div class="booking-field-group">
+                        <label>Trip Experience Rating <span class="required-star">*</span></label>
+                        <div class="star-rating-picker" id="starRatingPicker">
+                            <button type="button" class="star-btn is-active" data-value="1" aria-label="1 star"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="2" aria-label="2 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="3" aria-label="3 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="4" aria-label="4 stars"><i class="fa-solid fa-star"></i></button>
+                            <button type="button" class="star-btn is-active" data-value="5" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+                            <span class="star-rating-label" id="starRatingLabel">5.0 - Exceptional Experience</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-form-grid">
+                        <div class="booking-field-group">
+                            <label for="reviewAuthorName">Your Full Name <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="reviewAuthorName" placeholder="e.g. Mike Taylor" required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewDestinationSelect">Destination Visited <span class="required-star">*</span></label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-location-dot input-icon"></i>
+                                <select id="reviewDestinationSelect" required>
+                                    <option value="">Select Destination...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewAuthorLocation">Location / City</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-city input-icon"></i>
+                                <input type="text" id="reviewAuthorLocation" placeholder="e.g. London, UK">
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="reviewRoleTitle">Role or Profession</label>
+                            <div class="booking-input-wrap">
+                                <i class="fa-solid fa-briefcase input-icon"></i>
+                                <input type="text" id="reviewRoleTitle" placeholder="e.g. Travel Photographer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="reviewTripTag">Trip Tagline / Package Name</label>
+                        <div class="booking-input-wrap">
+                            <i class="fa-solid fa-tag input-icon"></i>
+                            <input type="text" id="reviewTripTag" placeholder="e.g. European Executive Retreat, Grand Tour">
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label for="reviewQuote">Your Story & Feedback <span class="required-star">*</span></label>
+                        <textarea id="reviewQuote" rows="3" placeholder="Tell other travelers about your unforgettable moments with Jadoo..." required></textarea>
+                    </div>
+
+                    <div class="booking-field-group full-width">
+                        <label>Choose Your Traveler Avatar</label>
+                        <div class="avatar-selection-grid" id="avatarSelectionGrid">
+                            <div class="avatar-chip is-selected" data-avatar="../assets/testimonials-avatar-1.png">
+                                <img src="../assets/testimonials-avatar-1.png" alt="Avatar 1">
+                            </div>
+                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-2.png">
+                                <img src="../assets/testimonials-avatar-2.png" alt="Avatar 2">
+                            </div>
+                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-3.png">
+                                <img src="../assets/testimonials-avatar-3.png" alt="Avatar 3">
+                            </div>
+                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar 4">
+                            </div>
+                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar 5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="button" class="btn-secondary-flat" id="reviewCancelBtn">Cancel</button>
+                        <button type="submit" class="btn-primary-glow" id="reviewSubmitBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Publish Testimonial</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -544,9 +699,9 @@
             </div>
             <div class="col fico">
                 <div class="footi">
-                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
-                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                    <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
                 </div>
                 <div class="fih">Discover our app</div>
                 <div class="store">
@@ -575,65 +730,199 @@
     </footer>
 
     <!-- Floating Dark Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB } from '../scripts/db.js';
         import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
 
+        // Guarantee global exposure immediately for inline handlers
+        if (typeof window !== 'undefined') {
+            window.JadooTheme = JadooTheme;
+            window.toggleThemeGlobal = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                return JadooTheme.toggle();
+            };
+        }
+
         let currentFilter = 'all';
 
-        function initProfilePage() {
-            JadooTheme.init();
-            JadooNavAuth.init();
-            const user = JadooDB.getCurrentUser();
-            renderProfileHeader(user);
-            renderStats(user);
-            renderBookings(user);
-            renderTickets(user);
-            renderReviews(user);
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+        window.escapeHTML = escapeHTML;
 
-            // Tab Switching
+        function formatBookingDate(raw) {
+            if (!raw) return 'Flexible Schedule';
+            try {
+                const d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch {
+                return raw;
+            }
+        }
+
+        function getBookingImgUrl(raw) {
+            if (!raw) return '../assets/destination-rome.png';
+            if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+                return raw;
+            }
+            if (raw.startsWith('./assets/')) {
+                return '.' + raw;
+            }
+            if (raw.startsWith('assets/')) {
+                return '../' + raw;
+            }
+            if (!raw.startsWith('../assets/')) {
+                return '../assets/' + raw.replace(/^\.?\/?(assets\/)?/, '');
+            }
+            return raw;
+        }
+
+        // Global Tab Switcher (available instantly, 0ms latency)
+        function switchProfileTab(tabName) {
+            if (!tabName) return;
             const tabButtons = document.querySelectorAll('#profileTabsNav .profile-tab-button');
             const tabPanes = document.querySelectorAll('.profile-tab-pane');
 
             tabButtons.forEach(btn => {
+                btn.classList.toggle('is-active', btn.getAttribute('data-tab') === tabName);
+            });
+
+            tabPanes.forEach(pane => {
+                const paneId = `tabPane${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`;
+                pane.classList.toggle('is-active', pane.id === paneId);
+            });
+
+            try {
+                const u = JadooDB.getCurrentUser();
+                if (tabName === 'bookings') renderBookings(u);
+                else if (tabName === 'tickets') renderTickets(u);
+                else if (tabName === 'reviews') renderReviews(u);
+            } catch (_) {}
+        }
+        window.switchProfileTab = switchProfileTab;
+
+        // Global Booking Status Filter (available instantly)
+        function filterProfileBookings(status) {
+            currentFilter = (status || 'all').toLowerCase();
+            const filterBtns = document.querySelectorAll('#profileBookingFilters .status-tab-btn');
+            filterBtns.forEach(btn => {
+                const st = (btn.getAttribute('data-status') || 'all').toLowerCase();
+                btn.classList.toggle('is-active', st === currentFilter);
+            });
+            try {
+                renderBookings(JadooDB.getCurrentUser());
+            } catch (_) {}
+        }
+        window.filterProfileBookings = filterProfileBookings;
+
+        // Global Share Trip Click Handler (safe, no quote conflicts)
+        window.handleShareTripClick = function(btn) {
+            const dest = btn.getAttribute('data-dest') || '';
+            const attr = btn.getAttribute('data-attr') || '';
+            const id = btn.getAttribute('data-id') || '';
+            window.openShareTripExperience(dest, attr, id);
+        };
+
+        // Global Cancel Action (syncs to backend and cache)
+        window.cancelTripAction = async function (id) {
+            if (confirm(`Are you sure you want to cancel booking #${id}?`)) {
+                await JadooDB.updateBookingStatusAsync(id, 'cancelled');
+                JadooDB.updateBookingStatus(id, 'cancelled');
+                const user = JadooDB.getCurrentUser();
+                try { renderStats(user); } catch (_) {}
+                try { renderBookings(user); } catch (_) {}
+                try { renderTickets(user); } catch (_) {}
+                JadooToast.show('Reservation Cancelled', `Booking #${id} has been cancelled successfully.`, 'info');
+            }
+        };
+
+        // Bind interactive tabs and filter buttons synchronously
+        function bindTabAndFilterEvents() {
+            const tabButtons = document.querySelectorAll('#profileTabsNav .profile-tab-button');
+            tabButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const targetTab = btn.getAttribute('data-tab');
-                    tabButtons.forEach(b => b.classList.remove('is-active'));
-                    tabPanes.forEach(p => p.classList.remove('is-active'));
-
-                    btn.classList.add('is-active');
-                    const pane = document.getElementById(`tabPane${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`);
-                    if (pane) pane.classList.add('is-active');
+                    if (targetTab) switchProfileTab(targetTab);
                 });
             });
 
+            const filterBtns = document.querySelectorAll('#profileBookingFilters .status-tab-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const st = btn.getAttribute('data-status') || 'all';
+                    filterProfileBookings(st);
+                });
+            });
+        }
+
+        async function initProfilePage() {
+            JadooTheme.init();
+            JadooNavAuth.init();
+            bindTabAndFilterEvents();
+
+            // Guard: check auth immediately before any async work to avoid FOUC
+            const user = JadooDB.getCurrentUser();
+            if (!user) {
+                window.location.replace('./auth.html#signin');
+                return;
+            }
+
+            // 1. Instant Initial Render from current cache / localStorage (0ms latency)
+            try { renderProfileHeader(user); } catch (e) { console.error('renderProfileHeader:', e); }
+            try { renderStats(user); } catch (e) { console.error('renderStats:', e); }
+            try { renderBookings(user); } catch (e) { console.error('renderBookings:', e); }
+            try { renderTickets(user); } catch (e) { console.error('renderTickets:', e); }
+            try { renderReviews(user); } catch (e) { console.error('renderReviews:', e); }
+
+            // 2. Refresh data from PostgreSQL in background
+            try {
+                if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
+                    await JadooDB.primeCache();
+                }
+                if (user?.email) {
+                    const freshBookings = await fetch(`/api/bookings?email=${encodeURIComponent(user.email)}`)
+                        .then(r => r.ok ? r.json() : [])
+                        .catch(() => []);
+                    if (Array.isArray(freshBookings) && freshBookings.length > 0) {
+                        window.__jadoo_bookings_cache = freshBookings;
+                        try { localStorage.setItem('jadoo_bookings', JSON.stringify(freshBookings)); } catch (_) {}
+                    }
+                }
+            } catch (err) {
+                console.warn('primeCache error:', err);
+            }
+
+            // 3. Re-render with freshly primed backend data
+            const freshUser = JadooDB.getCurrentUser() || user;
+            try { renderProfileHeader(freshUser); } catch (e) { console.error('renderProfileHeader:', e); }
+            try { renderStats(freshUser); } catch (e) { console.error('renderStats:', e); }
+            try { renderBookings(freshUser); } catch (e) { console.error('renderBookings:', e); }
+            try { renderTickets(freshUser); } catch (e) { console.error('renderTickets:', e); }
+            try { renderReviews(freshUser); } catch (e) { console.error('renderReviews:', e); }
+
             // Automatically open Tickets tab if #tickets is in URL hash
             if (window.location.hash === '#tickets') {
-                const ticketsBtn = document.getElementById('profileTabTicketsBtn');
-                if (ticketsBtn) ticketsBtn.click();
+                switchProfileTab('tickets');
             }
 
             // Refresh passes button
-            document.getElementById('profileRefreshTicketsBtn')?.addEventListener('click', () => {
+            document.getElementById('profileRefreshTicketsBtn')?.addEventListener('click', async () => {
+                try { await JadooDB.primeCache(); } catch (_) {}
                 const latestUser = JadooDB.getCurrentUser();
                 renderStats(latestUser);
                 renderTickets(latestUser);
                 JadooToast.show('Passes Updated', 'All boarding passes and gate tokens are up to date.', 'info');
-            });
-
-            // Filter Buttons in Bookings Tab
-            const filterBtns = document.querySelectorAll('#profileBookingFilters .status-tab-btn');
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterBtns.forEach(b => b.classList.remove('is-active'));
-                    btn.classList.add('is-active');
-                    currentFilter = btn.getAttribute('data-status') || 'all';
-                    renderBookings(user);
-                });
             });
 
             // Settings Form Save
@@ -681,8 +970,8 @@
             const phoneInput = document.getElementById('settingsPhone');
 
             const defaultAvatar = '../assets/testimonials-avatar-1.png';
-            if (nameEl) nameEl.textContent = user?.full_name || 'Alex Johnson';
-            if (emailEl) emailEl.textContent = user?.email || 'alex.traveler@example.com';
+            if (nameEl) nameEl.textContent = user?.full_name || 'Traveler';
+            if (emailEl) emailEl.textContent = user?.email || '';
             if (avatarEl) {
                 let av = user?.avatar_url;
                 if (!av || av.startsWith('./assets/')) {
@@ -695,36 +984,50 @@
                 };
             }
 
-            if (nameInput) nameInput.value = user?.full_name || 'Alex Johnson';
-            if (emailInput) emailInput.value = user?.email || 'alex.traveler@example.com';
-            if (phoneInput) phoneInput.value = user?.phone || '+1 (555) 234-5678';
+            if (nameInput) nameInput.value = user?.full_name || '';
+            if (emailInput) emailInput.value = user?.email || '';
+            if (phoneInput) phoneInput.value = user?.phone || '';
         }
 
         function renderStats(user) {
             const bookings = JadooDB.getUserBookings(user?.email);
-            const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
-            const totalSpent = bookings.reduce((sum, b) => b.status !== 'cancelled' ? sum + b.total_price : sum, 0);
+            const confirmedCount = bookings.filter(b => (b.status || '').toLowerCase() === 'confirmed').length;
+            const totalSpent = bookings.reduce((sum, b) => (b.status || '').toLowerCase() !== 'cancelled' ? sum + (parseFloat(b.total_price) || 0) : sum, 0);
 
-            document.getElementById('statTotalTrips').textContent = `${bookings.length}`;
-            document.getElementById('statConfirmedTrips').textContent = `${confirmedCount}`;
-            document.getElementById('statTotalExpended').textContent = `$${totalSpent.toFixed(0)}`;
-            document.getElementById('badgeBookingsCount').textContent = `${bookings.length}`;
+            const allTestimonials = JadooDB.getTestimonials();
+            const userReviews = allTestimonials.filter(t => 
+                (user?.id && (t.user_id === user.id || t.customer_id === user.id || t.costumer_id === user.id)) ||
+                (user?.email && t.author_email && t.author_email.toLowerCase() === user.email.toLowerCase()) ||
+                (user?.full_name && (t.author_name || '').trim().toLowerCase() === user.full_name.trim().toLowerCase())
+            );
+
+            const statTotal = document.getElementById('statTotalTrips');
+            if (statTotal) statTotal.textContent = String(bookings.length);
+            const statConf = document.getElementById('statConfirmedTrips');
+            if (statConf) statConf.textContent = String(confirmedCount);
+            const statSpent = document.getElementById('statTotalExpended');
+            if (statSpent) statSpent.textContent = '$' + (parseFloat(totalSpent) || 0).toFixed(0);
+            const badgeBookings = document.getElementById('badgeBookingsCount');
+            if (badgeBookings) badgeBookings.textContent = String(bookings.length);
             const badgeTickets = document.getElementById('badgeTicketsCount');
-            if (badgeTickets) badgeTickets.textContent = `${confirmedCount}`;
+            if (badgeTickets) badgeTickets.textContent = String(confirmedCount);
+            const badgeReviews = document.getElementById('badgeReviewsCount');
+            if (badgeReviews) badgeReviews.textContent = String(userReviews.length);
         }
 
         function renderTickets(user) {
             const listEl = document.getElementById('profileTicketsList');
             if (!listEl) return;
 
-            const bookings = JadooDB.getUserBookings(user?.email);
+            const allBookings = JadooDB.getUserBookings(user?.email);
+            const bookings = allBookings.filter(b => (b.status || '').toLowerCase() !== 'cancelled');
 
             if (bookings.length === 0) {
                 listEl.innerHTML = `
                     <div class="bookings-empty-state">
                         <div class="empty-icon-wrap"><i class="fa-solid fa-ticket"></i></div>
                         <h3>No E-Tickets Issued Yet</h3>
-                        <p>When you reserve any destination or adventure on Jadoo, your official digital boarding pass and gate-entry QR token will appear right here.</p>
+                        <p>When you reserve any destination or adventure on Jadoo, your official digital pass and gate-entry QR token will appear right here.</p>
                         <a href="./destination-page.html" class="btn-empty-explore">
                             <i class="fa-solid fa-earth-americas"></i>
                             <span>Explore Destinations</span>
@@ -735,69 +1038,64 @@
             }
 
             listEl.innerHTML = bookings.map(b => {
-                const destCode = b.destination_name.substring(0, 3).toUpperCase();
-                const currentSeat = localStorage.getItem(`jadoo_seat_${b.id}`) || 'Suite 02A';
-                const gateNum = ((parseInt(b.id.replace(/\D/g, '') || '24', 10) % 30) + 1);
-                const gate = `Gate B${gateNum < 10 ? '0' + gateNum : gateNum}`;
-                const isBoarded = localStorage.getItem(`jadoo_boarded_${b.id}`) === 'true';
+                const bookingRef = b.booking_ref ? (b.booking_ref.startsWith('#') ? b.booking_ref : '#' + b.booking_ref) : ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'));
+                const formattedDate = formatBookingDate(b.travel_date);
+                const status = (b.status || 'confirmed').toLowerCase();
+                const statusIcon = status === 'confirmed' ? 'fa-circle-check' : (status === 'cancelled' ? 'fa-circle-xmark' : 'fa-clock');
+                const guests = b.guests_count || 1;
+                const tier = (b.package_type || 'Standard').toUpperCase();
+                const meeting = b.destination_name ? `Main Tourist Gate, ${b.destination_name}` : 'Main Visitor Entrance';
+                const destCode = (b.destination_name || 'TOUR').substring(0, 3).toUpperCase();
 
                 return `
                     <div class="profile-ticket-card" data-id="${b.id}">
-                        <div class="card-notch card-notch-top"></div>
-                        <div class="card-notch card-notch-bottom"></div>
-
-                        <!-- Left Airline & Flight Route Stub -->
+                        <!-- Left Destination & Brand Identity -->
                         <div class="ticket-card-route">
                             <div class="ticket-carrier-tag">
-                                <i class="fa-solid fa-plane-departure"></i>
-                                <span>JADOO AIRWAYS</span>
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>JADOO VOUCHER</span>
                             </div>
-                            <div class="ticket-route-code">DEP ➔ ${destCode}</div>
+                            <div class="ticket-route-code">${destCode}</div>
                             <span class="ticket-route-dest"><i class="fa-solid fa-location-dot"></i> ${b.destination_name}</span>
                             <div class="ticket-sub-flight">
-                                <span>FLIGHT JA-708</span>
+                                <span>OFFICIAL PASS</span>
                                 <span>•</span>
-                                <span class="ticket-booking-ref">#${b.id}</span>
+                                <span class="ticket-booking-ref">${bookingRef}</span>
                             </div>
                         </div>
 
-                        <!-- Center Passenger & Travel Manifest -->
+                        <!-- Center Tour & Traveler Manifest -->
                         <div class="ticket-card-meta">
                             <div class="ticket-meta-block">
                                 <span>Attraction Tour</span>
-                                <strong title="${b.attraction_name}">${b.attraction_name}</strong>
+                                <strong title="${escapeHTML(b.attraction_name)}">${escapeHTML(b.attraction_name)}</strong>
                             </div>
                             <div class="ticket-meta-block">
-                                <span>Departure Date</span>
-                                <strong><i class="fa-regular fa-calendar" style="color: #64748B;"></i> ${b.travel_date}</strong>
+                                <span>Tour Date</span>
+                                <strong><i class="fa-regular fa-calendar" style="color: #64748B;"></i> ${formattedDate}</strong>
                             </div>
                             <div class="ticket-meta-block highlight-seat-box">
-                                <span>Suite Cabin Seat</span>
-                                <strong style="color: #F1A501;"><i class="fa-solid fa-chair"></i> ${currentSeat}</strong>
+                                <span>Experience Tier</span>
+                                <strong style="color: #F1A501;"><i class="fa-solid fa-award"></i> ${tier} Package</strong>
                             </div>
                             <div class="ticket-meta-block highlight-gate-box">
-                                <span>Boarding Gate</span>
-                                <strong style="color: #DF6951;"><i class="fa-solid fa-door-open"></i> ${gate}</strong>
+                                <span>Meeting Point</span>
+                                <strong style="color: #DF6951;" title="${escapeHTML(meeting)}"><i class="fa-solid fa-map-pin"></i> ${escapeHTML(meeting)}</strong>
                             </div>
                             <div class="ticket-meta-block">
-                                <span>Gate Clearance</span>
-                                <span class="badge-status status-${isBoarded ? 'confirmed' : b.status}">
-                                    <i class="fa-solid ${isBoarded ? 'fa-circle-check' : 'fa-shield-halved'}"></i>
-                                    ${isBoarded ? 'BOARDED' : b.status.toUpperCase()}
+                                <span>Entry Clearance</span>
+                                <span class="badge-status status-${status}">
+                                    <i class="fa-solid ${statusIcon}"></i>
+                                    ${status === 'confirmed' ? 'VERIFIED PASS' : status.toUpperCase()}
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Right Gate Pass Actions & Barcode Stub -->
+                        <!-- Right QR Pass Action -->
                         <div class="ticket-card-actions">
-                            <div class="mini-barcode-simulation" title="IATA Digital Boarding Token"></div>
-                            <a href="./ticket.html?id=${b.id}" class="btn-open-boarding-pass">
-                                <i class="fa-solid fa-ticket"></i>
-                                <span>Open Boarding Pass</span>
-                            </a>
-                            <a href="./ticket.html?id=${b.id}&view=ticket_only" target="_blank" class="btn-secondary-flat btn-direct-pass" title="Open Clean E-Ticket for Gate Scanning">
+                            <a href="./ticket.html?id=${b.id}" class="btn-open-boarding-pass" style="text-decoration: none;">
                                 <i class="fa-solid fa-qrcode"></i>
-                                <span>Direct Gate Pass</span>
+                                <span>View E-Ticket & QR</span>
                             </a>
                         </div>
                     </div>
@@ -826,88 +1124,282 @@
                 return;
             }
 
-            function getBookingImgUrl(raw) {
-                if (!raw) return '../assets/destination-rome.png';
-                if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
-                    return raw;
-                }
-                if (raw.startsWith('./assets/')) {
-                    return '.' + raw; // converts ./assets/ to ../assets/
-                }
-                if (raw.startsWith('assets/')) {
-                    return '../' + raw; // converts assets/ to ../assets/
-                }
-                if (!raw.startsWith('../assets/')) {
-                    return '../assets/' + raw.replace(/^\.?\/?(assets\/)?/, '');
-                }
-                return raw;
-            }
+            listEl.innerHTML = bookings.map(b => {
+                const status = (b.status || 'confirmed').toLowerCase();
+                const statusIcon = status === 'confirmed' ? 'fa-circle-check' : (status === 'cancelled' ? 'fa-circle-xmark' : 'fa-clock');
+                const destTitle = escapeHTML(b.destination_name || 'Destination');
+                const attrTitle = escapeHTML(b.attraction_name || 'Tour');
+                const imgUrl = getBookingImgUrl(b.image_url);
+                const travelDate = formatBookingDate(b.travel_date);
+                const guests = b.guests_count || 1;
+                const pkg = (b.package_type || 'Standard').toUpperCase();
+                const price = Number(b.total_price || 0).toFixed(2);
 
-            listEl.innerHTML = bookings.map(b => `
-                <div class="booking-item-card" data-id="${b.id}">
-                    <img src="${getBookingImgUrl(b.image_url)}" alt="${b.attraction_name}" class="booking-item-img" onerror="this.onerror=null; this.src='../assets/destination-rome.png';">
-                    <div class="booking-item-info">
-                        <div class="booking-item-header">
-                            <h4 class="booking-item-title">${b.attraction_name}</h4>
-                            <span class="badge-status status-${b.status}">${b.status}</span>
+                return `
+                    <div class="booking-item-card" data-id="${b.id}">
+                        <img src="${imgUrl}" alt="${attrTitle}" class="booking-item-img" onerror="this.onerror=null; this.src='../assets/destination-rome.png';">
+                        <div class="booking-item-info">
+                            <div class="booking-item-header">
+                                <h4 class="booking-item-title">${attrTitle}</h4>
+                                <span class="badge-status status-${status}">
+                                    <i class="fa-solid ${statusIcon}"></i>
+                                    ${status.toUpperCase()}
+                                </span>
+                            </div>
+                            <div class="booking-item-meta">
+                                <span><i class="fa-solid fa-location-dot"></i> ${destTitle}</span>
+                                <span><i class="fa-solid fa-calendar-days"></i> ${travelDate}</span>
+                                <span><i class="fa-solid fa-user-group"></i> ${guests} guest${guests > 1 ? 's' : ''}</span>
+                                <span><i class="fa-solid fa-award"></i> ${pkg}</span>
+                            </div>
                         </div>
-                        <div class="booking-item-meta">
-                            <span><i class="fa-solid fa-location-dot"></i> ${b.destination_name}</span>
-                            <span><i class="fa-solid fa-calendar-days"></i> ${b.travel_date}</span>
-                            <span><i class="fa-solid fa-user-group"></i> ${b.guests_count} guest${b.guests_count > 1 ? 's' : ''}</span>
-                            <span><i class="fa-solid fa-award"></i> ${(b.package_type || 'Standard').toUpperCase()}</span>
-                        </div>
-                    </div>
-                    <div class="booking-item-actions-col">
-                        <div class="booking-price-highlight">$${Number(b.total_price || 0).toFixed(2)}</div>
-                        <div class="booking-item-actions">
-                            <a href="./ticket.html?id=${b.id}" class="btn-print-ticket" style="text-decoration: none;">
-                                <i class="fa-solid fa-ticket"></i>
-                                <span>View Ticket</span>
-                            </a>
-                            ${b.status !== 'cancelled' ? `
-                                <button type="button" class="btn-cancel-trip" onclick="cancelTripAction('${b.id}')">
-                                    <i class="fa-solid fa-ban"></i>
-                                    <span>Cancel</span>
+                        <div class="booking-item-actions-col">
+                            <div class="booking-price-highlight">$${price}</div>
+                            <div class="booking-item-actions">
+                                <button type="button" class="btn-share-exp" onclick="window.handleShareTripClick(this)" data-dest="${destTitle}" data-attr="${attrTitle}" data-id="${b.id}" title="Share your experience on this trip" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.95rem; border-radius: 9999px; background: linear-gradient(135deg, #DF6951 0%, #F15A24 100%); color: #FFF; border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                                    <i class="fa-solid fa-feather-pointed"></i>
+                                    <span>Share Experience</span>
                                 </button>
-                            ` : ''}
+                                <a href="./ticket.html?id=${b.id}" class="btn-print-ticket" style="text-decoration: none;" title="Open Boarding Pass">
+                                    <i class="fa-solid fa-ticket"></i>
+                                    <span>View Ticket</span>
+                                </a>
+                                ${status !== 'cancelled' ? `
+                                    <button type="button" class="btn-cancel-trip" onclick="window.cancelTripAction('${b.id}')" title="Cancel this reservation">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderReviews(user) {
             const container = document.getElementById('profileReviewsContainer');
             if (!container) return;
 
-            const testimonials = JadooDB.getTestimonials();
-            container.innerHTML = testimonials.map(t => `
-                <div class="channel-card" style="margin-bottom: 1rem;">
-                    <div class="channel-icon" style="background: rgba(241, 165, 1, 0.12); color: #F1A501;">
-                        <i class="fa-solid fa-quote-left"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <h4>${t.trip_tag || t.destination_name}</h4>
-                            <span style="color: #F1A501; font-weight: 700;"><i class="fa-solid fa-star"></i> ${t.rating.toFixed(1)}</span>
+            const allTestimonials = JadooDB.getTestimonials();
+            const userReviews = allTestimonials.filter(t => 
+                (user?.id && (t.user_id === user.id || t.customer_id === user.id || t.costumer_id === user.id)) ||
+                (user?.email && t.author_email && t.author_email.toLowerCase() === user.email.toLowerCase()) ||
+                (user?.full_name && (t.author_name || '').trim().toLowerCase() === user.full_name.trim().toLowerCase())
+            );
+
+            const badgeReviews = document.getElementById('badgeReviewsCount');
+            if (badgeReviews) badgeReviews.textContent = String(userReviews.length);
+
+            if (userReviews.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-card" style="text-align: center; padding: 3rem 1.5rem; background: var(--card-bg, #fff); border-radius: 20px; border: 1px dashed rgba(148, 163, 184, 0.35);">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(223, 105, 81, 0.12); color: #DF6951; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-feather-pointed"></i>
                         </div>
-                        <p style="font-style: italic; margin: 0.4rem 0;">&ldquo;${t.quote}&rdquo;</p>
-                        <span style="font-size: 0.8rem; color: #94A3B8;">Destination: ${t.destination_name} • Author: ${t.author_name}</span>
+                        <h3 style="margin-bottom: 0.5rem; font-family: 'Volkhov', serif; color: var(--text-heading, #14183E);">No Reviews Shared Yet</h3>
+                        <p style="color: var(--text-muted, #64748B); max-width: 440px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; line-height: 1.6;">You haven't posted any trip reviews or testimonials yet. Share your experience from your journeys to inspire fellow travelers!</p>
+                        <button type="button" class="btn-primary-glow" onclick="window.openShareTripExperience('', '', '')" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.6rem; border-radius: 9999px; border: none; font-weight: 600; cursor: pointer;">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Write Your First Trip Review</span>
+                        </button>
                     </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+                    <div>
+                        <h3 style="font-family: 'Volkhov', serif; font-size: 1.25rem; color: var(--text-heading, #14183E); margin: 0 0 0.25rem 0;">My Travel Stories (${userReviews.length})</h3>
+                        <p style="color: var(--text-muted, #64748B); font-size: 0.85rem; margin: 0;">Verified reviews published across Jadoo destinations &amp; testimonials.</p>
+                    </div>
+                    <button type="button" class="btn-primary-glow" onclick="window.openShareTripExperience('', '', '')" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 9999px; border: none; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                        <i class="fa-solid fa-feather-pointed"></i>
+                        <span>Write New Review</span>
+                    </button>
                 </div>
-            `).join('');
+                <div class="user-reviews-grid" style="display: grid; gap: 1.25rem;">
+                    ${userReviews.map(t => `
+                        <div class="channel-card" style="display: flex; gap: 1.25rem; align-items: flex-start; padding: 1.4rem; border-radius: 18px; background: var(--card-bg, #fff); box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color, rgba(0,0,0,0.06));">
+                            <div class="channel-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(241, 165, 1, 0.12); color: #F1A501; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                <i class="fa-solid fa-quote-left"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                                    <h4 style="margin: 0; font-size: 1.05rem; font-family: 'Poppins', sans-serif; color: var(--text-heading, #14183E); font-weight: 600;">${escapeHTML(t.trip_tag || t.destination_name)}</h4>
+                                    <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(241, 165, 1, 0.14); padding: 0.25rem 0.65rem; border-radius: 9999px; color: #F1A501; font-weight: 700; font-size: 0.88rem;">
+                                        <i class="fa-solid fa-star"></i>
+                                        <span>${(parseFloat(t.rating) || 5.0).toFixed(1)}</span>
+                                    </div>
+                                </div>
+                                <p style="font-style: italic; margin: 0.6rem 0; color: var(--text-color, #475569); line-height: 1.6; font-size: 0.95rem;">&ldquo;${escapeHTML(t.quote)}&rdquo;</p>
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.82rem; color: #94A3B8; border-top: 1px dashed var(--border-color, rgba(0,0,0,0.08)); padding-top: 0.6rem; margin-top: 0.5rem;">
+                                    <span><i class="fa-solid fa-location-dot" style="color: #DF6951; margin-right: 0.35rem;"></i>${escapeHTML(t.destination_name || 'Global')}</span>
+                                    <span><i class="fa-solid fa-user-check" style="margin-right: 0.35rem;"></i>${escapeHTML(t.author_role || 'Verified Explorer')}</span>
+                                    <span><i class="fa-regular fa-clock" style="margin-right: 0.35rem;"></i>${t.created_at ? new Date(t.created_at).toLocaleDateString() : 'Recent'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
 
-        window.cancelTripAction = function (id) {
-            if (confirm(`Are you sure you want to cancel booking #${id}?`)) {
-                JadooDB.cancelBooking(id);
-                JadooToast.show('Reservation Cancelled', `Booking #${id} has been marked as cancelled.`, 'info');
-                const user = JadooDB.getCurrentUser();
-                renderStats(user);
-                renderBookings(user);
+        // --- Write / Share Trip Experience Modal Handler ---
+        let profileRating = 5;
+        let profileSelectedAvatar = '../assets/testimonials-avatar-1.png';
+
+        window.openShareTripExperience = function (destName, attractionName, bookingId) {
+            const modal = document.getElementById('reviewModalOverlay');
+            if (!modal) return;
+
+            const user = JadooDB.getCurrentUser();
+            const nameInput = document.getElementById('reviewAuthorName');
+            const destSelect = document.getElementById('reviewDestinationSelect');
+            const tagInput = document.getElementById('reviewTripTag');
+
+            if (nameInput && user) nameInput.value = user.full_name || '';
+            if (tagInput) tagInput.value = attractionName ? `${attractionName} Journey` : `${destName} Expedition`;
+
+            // Populate destinations dropdown if not already populated
+            if (destSelect && destSelect.options.length <= 1) {
+                const dests = JadooDB.getDestinations();
+                dests.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = `${d.name}, ${d.country}`;
+                    destSelect.appendChild(opt);
+                });
             }
+
+            if (destSelect && destName) {
+                for (let i = 0; i < destSelect.options.length; i++) {
+                    if (destSelect.options[i].value.toLowerCase().includes(destName.toLowerCase())) {
+                        destSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            modal.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
         };
+
+        // Wire "Share Travel Story" hero button
+        document.getElementById('profileWriteReviewBtn')?.addEventListener('click', () => {
+            window.openShareTripExperience('', '', '');
+        });
+
+        // Close Modal handlers
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModalOverlay');
+            if (modal) modal.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+        document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
+        document.getElementById('reviewModalBackdrop')?.addEventListener('click', closeReviewModal);
+        document.getElementById('reviewCancelBtn')?.addEventListener('click', closeReviewModal);
+
+        // Star rating picker
+        const starBtns = document.querySelectorAll('#starRatingPicker .star-btn');
+        const starLabel = document.getElementById('starRatingLabel');
+        const starLabels = {
+            1: '1.0 - Needs Improvement',
+            2: '2.0 - Fair Experience',
+            3: '3.0 - Good Journey',
+            4: '4.0 - Wonderful Trip',
+            5: '5.0 - Exceptional Experience'
+        };
+
+        function setProfileStarRating(val) {
+            profileRating = val;
+            starBtns.forEach(btn => {
+                const v = parseInt(btn.getAttribute('data-value') || '5', 10);
+                btn.classList.toggle('is-active', v <= val);
+            });
+            if (starLabel) starLabel.textContent = starLabels[val] || `${val}.0 Experience`;
+        }
+
+        starBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.getAttribute('data-value') || '5', 10);
+                setProfileStarRating(val);
+            });
+        });
+
+        // Avatar chips
+        const avatarChips = document.querySelectorAll('#avatarSelectionGrid .avatar-chip');
+        avatarChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                avatarChips.forEach(c => c.classList.remove('is-selected'));
+                chip.classList.add('is-selected');
+                profileSelectedAvatar = chip.getAttribute('data-avatar') || '../assets/testimonials-avatar-1.png';
+            });
+        });
+
+        // Submit Review Form
+        const reviewForm = document.getElementById('testimonialReviewForm');
+        reviewForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = JadooDB.getCurrentUser();
+            const author_name = document.getElementById('reviewAuthorName')?.value.trim() || user?.full_name || 'Traveler';
+            const destination_name = document.getElementById('reviewDestinationSelect')?.value || 'Rome, Italy';
+            const author_location = document.getElementById('reviewAuthorLocation')?.value.trim() || 'Global Traveler';
+            const author_role = document.getElementById('reviewRoleTitle')?.value.trim() || 'Explorer';
+            const trip_tag = document.getElementById('reviewTripTag')?.value.trim() || `${destination_name} Tour`;
+            const quote = document.getElementById('reviewQuote')?.value.trim();
+
+            if (!quote) {
+                JadooToast.show('Missing Feedback', 'Please write a brief summary of your journey.', 'warning');
+                return;
+            }
+
+            const newTestimonial = {
+                id: 'testi-' + Date.now().toString(36),
+                user_id: user?.id || null,
+                customer_id: user?.id || null,
+                costumer_id: user?.id || null,
+                author_name,
+                author_email: user?.email || '',
+                author_location,
+                author_role,
+                avatar_url: profileSelectedAvatar,
+                rating: profileRating,
+                trip_tag,
+                destination_name,
+                quote,
+                is_featured: true,
+                created_at: new Date().toISOString()
+            };
+
+            // 1. Save to local DB cache
+            JadooDB.addTestimonial(newTestimonial);
+
+            // 2. Persist to Backend API
+            try {
+                await fetch('/api/testimonials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTestimonial)
+                });
+            } catch (err) {
+                console.warn('API sync warning:', err);
+            }
+
+            closeReviewModal();
+            reviewForm.reset();
+
+            // Refresh UI
+            renderStats(user);
+            renderReviews(user);
+
+            // Automatically switch to My Reviews tab
+            const reviewsTabBtn = document.querySelector('#profileTabsNav [data-tab="reviews"]');
+            if (reviewsTabBtn) reviewsTabBtn.click();
+
+            JadooToast.show('Thank You, Explorer!', 'Your travel story has been published to our testimonials.', 'success');
+        });
     </script>
 </body>
 

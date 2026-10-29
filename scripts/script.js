@@ -44,6 +44,49 @@
             }
         }
     };
+    function getApiBase() {
+        if (typeof window !== 'undefined' && window.location) {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            const port = window.location.port;
+            // If served as a file:// URL, backend is always on localhost:3000
+            if (protocol === 'file:')
+                return 'http://localhost:3000';
+            // If already on port 3000 (Express serves HTML directly), use same origin
+            if (port === '3000')
+                return window.location.origin;
+            // Any other port means a static dev server (Live Server 5500-5510, Vite 5173, etc.)
+            // Backend is always on port 3000 of the same hostname
+            if (port && port !== '' && port !== '80' && port !== '443') {
+                return `http://${hostname}:3000`;
+            }
+            // Standard HTTP/HTTPS (production or reverse-proxy) — use origin
+            if (protocol === 'http:' || protocol === 'https:') {
+                return window.location.origin;
+            }
+        }
+        return 'http://localhost:3000';
+    }
+    const API_BASE = getApiBase();
+    function getStoredAuthToken() {
+        if (typeof localStorage !== 'undefined') {
+            const token = localStorage.getItem('jadoo_auth_token');
+            if (token)
+                return token;
+        }
+        if (typeof document !== 'undefined') {
+            const match = document.cookie.match(/(?:^|; )jadoo_auth_token=([^;]*)/);
+            if (match) {
+                try {
+                    return decodeURIComponent(match[1]);
+                }
+                catch (_) {
+                    return match[1];
+                }
+            }
+        }
+        return null;
+    }
     // Storage Keys Constants
     const STORAGE_KEYS = {
         USERS: 'jadoo_users',
@@ -127,95 +170,166 @@
                 return null;
             }
             let user = Storage.get(STORAGE_KEYS.CURRENT_USER, null);
-            if (!user && typeof localStorage !== 'undefined') {
-                user = Storage.get(STORAGE_KEYS.LAST_ACCOUNT, null);
-            }
-            if (!user) {
-                return {
-                    id: 'user_alex_johnson',
-                    fullName: 'Alex Johnson',
-                    email: 'alex.traveler@example.com',
-                    password: '',
-                    createdAt: '2026-01-15T08:00:00.000Z'
-                };
+            if (!user && typeof document !== 'undefined') {
+                const match = document.cookie.match(/(?:^|; )jadoo_current_user=([^;]*)/);
+                if (match) {
+                    try {
+                        const parsed = JSON.parse(decodeURIComponent(match[1]));
+                        if (parsed && (parsed.email || parsed.fullName || parsed.full_name)) {
+                            user = {
+                                id: parsed.id,
+                                fullName: parsed.fullName || parsed.full_name,
+                                email: parsed.email,
+                                password: '',
+                                createdAt: parsed.createdAt || new Date().toISOString()
+                            };
+                        }
+                    }
+                    catch { }
+                }
             }
             return user;
         },
         isAuthenticated() {
             return this.getCurrentUser() !== null;
         },
-        signUp(fullName, email, password) {
+        async signUp(fullName, email, password) {
             const cleanName = (fullName || '').trim();
             const cleanEmail = (email || '').trim().toLowerCase();
             if (!cleanName || !cleanEmail || !password) {
                 return { success: false, message: 'Please fill out all fields.' };
             }
-            const users = this.getUsers();
-            const existing = users.find(u => u.email === cleanEmail);
-            if (existing) {
-                return { success: false, message: 'An account with this email already exists.' };
-            }
-            const newUser = {
-                id: 'user_' + Date.now(),
-                fullName: cleanName,
-                email: cleanEmail,
-                password: password,
-                createdAt: new Date().toISOString()
-            };
-            users.push(newUser);
-            Storage.set(STORAGE_KEYS.USERS, users);
-            // Remember account for next login
-            Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
-                id: newUser.id,
-                email: newUser.email,
-                fullName: newUser.fullName
-            });
-            // Keep session active
-            this.createSession(newUser);
+            // Always register directly in PostgreSQL backend first
             try {
-                if (typeof window.JadooDB !== 'undefined') {
-                    window.JadooDB.setCurrentUser({
-                        id: newUser.id,
-                        full_name: newUser.fullName,
-                        email: newUser.email
-                    });
+                const res = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        full_name: cleanName,
+                        email: cleanEmail,
+                        password: password
+                    })
+                });
+                if (res.status === 409) {
+                    return { success: false, message: 'An account with this email already exists in PostgreSQL. Please log in.' };
+                }
+                if (res.ok) {
+                    const saved = await res.json();
+                    const newUser = {
+                        id: saved.id, // Real PostgreSQL UUID
+                        fullName: saved.full_name || cleanName,
+                        email: saved.email || cleanEmail,
+                        password: '',
+                        createdAt: saved.created_at || new Date().toISOString()
+                    };
+                    newUser.token = saved.token;
+                    const users = this.getUsers().filter(u => u.email !== cleanEmail);
+                    users.push(newUser);
+                    Storage.set(STORAGE_KEYS.USERS, users);
+                    this.createSession(newUser);
+                    try {
+                        if (typeof window.JadooDB !== 'undefined') {
+                            window.JadooDB.setCurrentUser({
+                                id: saved.id,
+                                full_name: newUser.fullName,
+                                email: newUser.email,
+                                token: saved.token
+                            });
+                        }
+                    }
+                    catch (_) { }
+                    return { success: true, message: 'Account created successfully in PostgreSQL!', user: newUser };
+                }
+                else {
+                    const err = await res.json().catch(() => ({ error: 'Registration failed' }));
+                    return { success: false, message: err.error || 'Registration failed' };
                 }
             }
-            catch (_) { }
-            return { success: true, message: 'Account created successfully!', user: newUser };
+            catch (networkErr) {
+                console.warn('Backend register failed, falling back to offline storage:', networkErr);
+                const users = this.getUsers();
+                if (users.find(u => u.email === cleanEmail)) {
+                    return { success: false, message: 'An account with this email already exists.' };
+                }
+                const fallbackUser = {
+                    id: 'user_' + Date.now(),
+                    fullName: cleanName,
+                    email: cleanEmail,
+                    password: password,
+                    createdAt: new Date().toISOString()
+                };
+                users.push(fallbackUser);
+                Storage.set(STORAGE_KEYS.USERS, users);
+                this.createSession(fallbackUser);
+                return { success: true, message: 'Account created in offline mode.', user: fallbackUser };
+            }
         },
-        signIn(identifier, password) {
+        async signIn(identifier, password) {
             const cleanId = (identifier || '').trim().toLowerCase();
-            const users = this.getUsers();
             if (!cleanId || !password) {
                 return { success: false, message: 'Please enter your email and password.' };
             }
-            const user = users.find(u => (u.email === cleanId || u.id === cleanId || u.fullName.toLowerCase() === cleanId) && u.password === password);
-            if (!user) {
-                return { success: false, message: 'Invalid credentials. Please verify your email/ID and password.' };
-            }
-            // Remember account for future logins
-            Storage.set(STORAGE_KEYS.LAST_ACCOUNT, {
-                id: user.id,
-                email: user.email,
-                fullName: user.fullName
-            });
-            this.createSession(user);
+            // Always authenticate with PostgreSQL backend first
             try {
-                if (typeof window.JadooDB !== 'undefined') {
-                    window.JadooDB.setCurrentUser({
-                        id: user.id,
-                        full_name: user.fullName,
-                        email: user.email
-                    });
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: cleanId, password })
+                });
+                if (res.ok) {
+                    const dbUser = await res.json();
+                    if (dbUser && dbUser.id) {
+                        const loggedIn = {
+                            id: dbUser.id, // Real PostgreSQL UUID
+                            fullName: dbUser.full_name || 'Traveler',
+                            email: dbUser.email,
+                            password: '',
+                            createdAt: dbUser.created_at || new Date().toISOString()
+                        };
+                        loggedIn.token = dbUser.token;
+                        // Clean out any stale local dummy users
+                        const users = this.getUsers().filter(u => u.email !== loggedIn.email);
+                        users.push(loggedIn);
+                        Storage.set(STORAGE_KEYS.USERS, users);
+                        this.createSession(loggedIn);
+                        try {
+                            if (typeof window.JadooDB !== 'undefined') {
+                                window.JadooDB.setCurrentUser({
+                                    id: dbUser.id,
+                                    full_name: dbUser.full_name,
+                                    email: dbUser.email,
+                                    token: dbUser.token
+                                });
+                            }
+                        }
+                        catch (_) { }
+                        window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { loggedIn: true, user: loggedIn } }));
+                        return { success: true, message: 'Logged in successfully via PostgreSQL!', user: loggedIn };
+                    }
+                }
+                else if (res.status === 401) {
+                    return { success: false, message: 'Invalid credentials. Please verify your email and password.' };
                 }
             }
-            catch (_) { }
-            return { success: true, message: 'Logged in successfully!', user };
+            catch (networkErr) {
+                console.warn('Backend login unreachable, falling back to local session:', networkErr);
+            }
+            // Local fallback only if backend was unreachable
+            const users = this.getUsers();
+            const localUser = users.find(u => (u.email === cleanId || u.id === cleanId || ((u.fullName || u.full_name || '').toLowerCase() === cleanId)) && u.password === password);
+            if (localUser) {
+                this.createSession(localUser);
+                return { success: true, message: 'Logged in from local session cache.', user: localUser };
+            }
+            return { success: false, message: 'Invalid credentials. Please verify your email and password.' };
         },
         createSession(user) {
             if (typeof localStorage !== 'undefined') {
                 localStorage.removeItem('jadoo_logged_out');
+                if (user.token) {
+                    localStorage.setItem('jadoo_auth_token', user.token);
+                    document.cookie = `jadoo_auth_token=${encodeURIComponent(user.token)}; path=/; max-age=604800; SameSite=Lax`;
+                }
             }
             const sessionUser = {
                 id: user.id,
@@ -223,6 +337,7 @@
                 full_name: user.fullName,
                 email: user.email,
                 avatar_url: user.avatar_url || './assets/testimonials-avatar-1.png',
+                token: user.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('jadoo_auth_token') : null),
                 loggedInAt: new Date().toISOString()
             };
             Storage.set(STORAGE_KEYS.CURRENT_USER, sessionUser);
@@ -237,6 +352,8 @@
             if (typeof localStorage !== 'undefined') {
                 localStorage.setItem('jadoo_logged_out', 'true');
                 localStorage.setItem('jadoo_sync_event', Date.now().toString());
+                localStorage.removeItem('jadoo_auth_token');
+                document.cookie = 'jadoo_auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
             }
             const current = this.getCurrentUser();
             if (current) {
@@ -264,113 +381,246 @@
     };
     const BookingService = {
         getAllBookings() {
-            return Storage.get(STORAGE_KEYS.BOOKINGS, []) ?? [];
+            try {
+                return Storage.get(STORAGE_KEYS.BOOKINGS, []) ?? [];
+            }
+            catch {
+                return [];
+            }
         },
         getUserBookings(emailOrId) {
             const all = this.getAllBookings();
             if (!emailOrId) {
                 const user = AuthService.getCurrentUser();
                 if (user) {
-                    return all.filter(b => b.userEmail.toLowerCase() === user.email.toLowerCase() || b.userId === user.id);
+                    const uEmail = (user.email || '').toLowerCase().trim();
+                    const uId = String(user.id || '').toLowerCase().trim();
+                    return all.filter(b => {
+                        const bEmail = (b.userEmail || b.user_email || b.email || '').toLowerCase().trim();
+                        const bId = String(b.userId || b.user_id || b.customer_id || b.id || '').toLowerCase().trim();
+                        return (uEmail && bEmail === uEmail) || (uId && bId === uId);
+                    });
                 }
                 return all;
             }
-            const clean = emailOrId.toLowerCase().trim();
-            return all.filter(b => b.userEmail.toLowerCase() === clean || b.userId === clean);
+            const clean = (emailOrId || '').toLowerCase().trim();
+            return all.filter(b => {
+                const bEmail = (b.userEmail || b.user_email || b.email || '').toLowerCase().trim();
+                const bId = String(b.userId || b.user_id || b.customer_id || b.id || '').toLowerCase().trim();
+                return (bEmail && bEmail === clean) || (bId && bId === clean);
+            });
         },
         createBooking(data) {
             const bookings = this.getAllBookings();
+            const tempId = 'BK-' + Math.floor(100000 + Math.random() * 900000);
             const newBooking = {
                 ...data,
-                id: 'BK-' + Math.floor(100000 + Math.random() * 900000),
+                id: tempId,
                 status: 'Confirmed',
                 createdAt: new Date().toISOString()
             };
             bookings.unshift(newBooking);
             Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
-            updateNavbarAuthState();
+            try {
+                updateNavbarAuthState();
+            }
+            catch (_) { }
             window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
+            // Save directly into PostgreSQL via Express API
+            try {
+                const token = getStoredAuthToken();
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                fetch(`${API_BASE}/api/bookings`, {
+                    method: 'POST',
+                    headers,
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        booking_ref: newBooking.id,
+                        user_name: data.userName,
+                        user_email: data.userEmail,
+                        phone_number: data.phone,
+                        destination_name: data.destination,
+                        attraction_name: data.placeName,
+                        travel_date: data.travelDate,
+                        guests_count: data.guests,
+                        package_type: data.packageType,
+                        price_per_person: data.pricePerPerson,
+                        total_price: data.totalPrice,
+                        special_request: data.specialRequests,
+                        status: 'confirmed',
+                        image_url: data.image
+                    })
+                }).then(async (r) => {
+                    if (r.ok) {
+                        const saved = await r.json();
+                        console.log('✅ Booking successfully stored in PostgreSQL:', saved);
+                    }
+                    else {
+                        console.error('Failed to store booking in PostgreSQL:', r.statusText);
+                    }
+                }).catch(err => {
+                    console.error('Error saving booking to PostgreSQL:', err);
+                });
+            }
+            catch (e) {
+                console.error(e);
+            }
             return newBooking;
         },
         cancelBooking(id) {
             const bookings = this.getAllBookings();
-            const target = bookings.find(b => b.id === id);
+            const target = bookings.find(b => b.id === id || b.booking_ref === id || b.bookingRef === id);
             if (target) {
                 target.status = 'Cancelled';
+                target.status = 'cancelled';
                 Storage.set(STORAGE_KEYS.BOOKINGS, bookings);
-                updateNavbarAuthState();
+                try {
+                    updateNavbarAuthState();
+                }
+                catch (_) { }
                 window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
+                // Sync cancellation to PostgreSQL
+                try {
+                    const token = getStoredAuthToken();
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    fetch(`${API_BASE}/api/bookings/${encodeURIComponent(id)}/status`, {
+                        method: 'PATCH',
+                        headers,
+                        credentials: 'include',
+                        body: JSON.stringify({ status: 'cancelled' })
+                    }).catch(console.error);
+                }
+                catch (_) { }
                 return true;
             }
             return false;
         },
         count(emailOrId) {
-            return this.getUserBookings(emailOrId).filter(b => b.status === 'Confirmed').length;
+            return this.getUserBookings(emailOrId).filter(b => {
+                const s = (b.status || '').toLowerCase();
+                return s === 'confirmed';
+            }).length;
         }
     };
     window.JadooStorage = Storage;
     window.JadooAuth = AuthService;
     window.JadooBooking = BookingService;
     document.addEventListener('DOMContentLoaded', () => {
-        // --- A. Mobile Drawer Navigation ---
-        const hamburger = document.getElementById('hamburger-btn');
-        const navMenu = document.getElementById('navitems');
-        const navLinks = document.querySelectorAll('.navlink, .navitems .signup');
-        if (hamburger && navMenu) {
-            hamburger.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const willBeActive = !navMenu.classList.contains('active');
-                hamburger.classList.toggle('active', willBeActive);
-                navMenu.classList.toggle('active', willBeActive);
-                hamburger.setAttribute('aria-expanded', willBeActive ? 'true' : 'false');
-            };
-            navLinks.forEach((link) => {
-                link.onclick = () => {
-                    hamburger.classList.remove('active');
-                    navMenu.classList.remove('active');
-                    hamburger.setAttribute('aria-expanded', 'false');
+        // --- A. Scroll Reveal Engine (run early so all sections animate and appear immediately) ---
+        try {
+            initScrollReveal();
+        }
+        catch (e) {
+            console.error('initScrollReveal error:', e);
+        }
+        // --- B. Mobile Drawer Navigation ---
+        try {
+            const hamburger = document.getElementById('hamburger-btn');
+            const navMenu = document.getElementById('navitems');
+            const navLinks = document.querySelectorAll('.navlink, .navitems .signup');
+            if (hamburger && navMenu) {
+                hamburger.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const willBeActive = !navMenu.classList.contains('active');
+                    hamburger.classList.toggle('active', willBeActive);
+                    navMenu.classList.toggle('active', willBeActive);
+                    hamburger.setAttribute('aria-expanded', willBeActive ? 'true' : 'false');
                 };
-            });
-            if (!window._scriptHamburgerDocClick) {
-                window._scriptHamburgerDocClick = true;
-                document.addEventListener('click', (e) => {
-                    const target = e.target;
-                    if (target && !navMenu.contains(target) && !hamburger.contains(target) && navMenu.classList.contains('active')) {
+                navLinks.forEach((link) => {
+                    link.onclick = () => {
                         hamburger.classList.remove('active');
                         navMenu.classList.remove('active');
                         hamburger.setAttribute('aria-expanded', 'false');
+                    };
+                });
+                if (!window._scriptHamburgerDocClick) {
+                    window._scriptHamburgerDocClick = true;
+                    document.addEventListener('click', (e) => {
+                        const target = e.target;
+                        if (target && !navMenu.contains(target) && !hamburger.contains(target) && navMenu.classList.contains('active')) {
+                            hamburger.classList.remove('active');
+                            navMenu.classList.remove('active');
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            console.error('Drawer init error:', e);
+        }
+        // --- C. Language Preference Persistence ---
+        try {
+            const langSelect = document.getElementById('lang');
+            if (langSelect) {
+                const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE);
+                if (savedLang) {
+                    langSelect.value = savedLang;
+                }
+                langSelect.addEventListener('change', (e) => {
+                    const target = e.target;
+                    if (target) {
+                        Storage.set(STORAGE_KEYS.LANGUAGE, target.value);
                     }
                 });
             }
         }
-        // --- B. Language Preference Persistence ---
-        const langSelect = document.getElementById('lang');
-        if (langSelect) {
-            const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE);
-            if (savedLang) {
-                langSelect.value = savedLang;
-            }
-            langSelect.addEventListener('change', (e) => {
-                const target = e.target;
-                if (target) {
-                    Storage.set(STORAGE_KEYS.LANGUAGE, target.value);
-                }
-            });
+        catch (e) {
+            console.error('Language select init error:', e);
         }
-        // --- C. Update Navbar for Logged-In User ---
-        updateNavbarAuthState();
-        // --- D. Form Handlers & Input Auto-Save/Restore ---
-        initAuthForms();
-        restoreFormDrafts();
-        // --- E. Newsletter Subscription & Demo Player ---
-        initNewsletter();
-        initDemoPlayer();
-        // --- F. Scroll Reveal Engine ---
-        initScrollReveal();
+        // --- D. Update Navbar for Logged-In User ---
+        try {
+            updateNavbarAuthState();
+        }
+        catch (e) {
+            console.error('updateNavbarAuthState error:', e);
+        }
+        // --- E. Form Handlers & Input Auto-Save/Restore ---
+        try {
+            initAuthForms();
+        }
+        catch (e) {
+            console.error('initAuthForms error:', e);
+        }
+        try {
+            restoreFormDrafts();
+        }
+        catch (e) {
+            console.error('restoreFormDrafts error:', e);
+        }
+        // --- F. Newsletter Subscription & Demo Player ---
+        try {
+            initNewsletter();
+        }
+        catch (e) {
+            console.error('initNewsletter error:', e);
+        }
+        try {
+            initDemoPlayer();
+        }
+        catch (e) {
+            console.error('initDemoPlayer error:', e);
+        }
         // --- G. Trip Booking System & Homepage Card Triggers ---
-        initBookingSystem();
-        initHomepageBookingTriggers();
+        try {
+            initBookingSystem();
+        }
+        catch (e) {
+            console.error('initBookingSystem error:', e);
+        }
+        try {
+            initHomepageBookingTriggers();
+        }
+        catch (e) {
+            console.error('initHomepageBookingTriggers error:', e);
+        }
     });
     let activeBookingDetails = {
         placeName: 'Colosseum & Historic Walking Tour',
@@ -424,13 +674,13 @@
         const destDropdownUserEmail = document.getElementById('destDropdownUserEmail');
         const destBookingBadge = document.getElementById('destNavBookingBadge');
         const isAuthenticated = Boolean(currentUser);
-        if (isAuthenticated) {
+        if (isAuthenticated && currentUser) {
             document.documentElement.classList.add('user-logged-in');
             if (document.body)
                 document.body.classList.add('user-logged-in');
-            const fullName = currentUser ? currentUser.fullName : 'Alex Johnson';
-            const userEmail = currentUser ? currentUser.email : 'alex.traveler@example.com';
-            const firstName = fullName.split(' ')[0] || 'Alex';
+            const fullName = currentUser.fullName || 'Traveler';
+            const userEmail = currentUser.email || '';
+            const firstName = fullName.split(' ')[0] || 'Traveler';
             // Index Navbar
             if (loginLi)
                 loginLi.style.setProperty('display', 'none', 'important');
@@ -444,12 +694,21 @@
                 dropdownUserName.textContent = fullName;
             if (dropdownUserEmail)
                 dropdownUserEmail.textContent = userEmail;
+            const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+            const avatarSrc = currentUser.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
             const navAvatarImg = document.getElementById('navUserAvatarImg');
             if (navAvatarImg) {
-                const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
-                navAvatarImg.src = isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png';
+                navAvatarImg.src = avatarSrc;
                 navAvatarImg.style.display = 'block';
             }
+            const dropdownAvatarImgs = document.querySelectorAll('#dropdownUserAvatarImg, #destDropdownUserAvatarImg, .dropdown-avatar-circle img');
+            dropdownAvatarImgs.forEach((img) => {
+                img.src = avatarSrc;
+                img.style.display = 'block';
+                if (img.nextElementSibling) {
+                    img.nextElementSibling.style.display = 'none';
+                }
+            });
             if (navBookingBadge) {
                 navBookingBadge.textContent = bookingCount.toString();
                 navBookingBadge.style.display = bookingCount > 0 ? 'inline-block' : 'none';
@@ -487,6 +746,12 @@
             if (destUserDropdown) {
                 destUserDropdown.style.setProperty('display', 'none', 'important');
             }
+            if (firstNameDisplay)
+                firstNameDisplay.textContent = '';
+            if (dropdownUserName)
+                dropdownUserName.textContent = '';
+            if (dropdownUserEmail)
+                dropdownUserEmail.textContent = '';
         }
         bindNavbarEvents();
     }
@@ -616,6 +881,16 @@
     }
     // Modal & Booking Functions
     function openBookingModal(details) {
+        const currentUser = AuthService.getCurrentUser();
+        if (!currentUser) {
+            const isComponent = window.location.pathname.toLowerCase().includes('components');
+            const authUrl = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
+            const proceed = confirm('You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.');
+            if (proceed) {
+                window.location.href = authUrl;
+            }
+            return;
+        }
         const modal = document.getElementById('bookingModalOverlay');
         if (!modal)
             return;
@@ -641,7 +916,6 @@
         if (previewRate)
             previewRate.textContent = `$${activeBookingDetails.pricePerPerson.toFixed(0)}`;
         // Populate Form Fields
-        const currentUser = AuthService.getCurrentUser();
         const fullNameInput = document.getElementById('bookingFullName');
         const emailInput = document.getElementById('bookingEmail');
         const dateInput = document.getElementById('bookingDate');
@@ -769,33 +1043,48 @@
             });
         }
         else {
-            list.innerHTML = bookings.map(b => `
+            list.innerHTML = bookings.map(b => {
+                const item = b;
+                const price = parseFloat(item.totalPrice || item.total_price || item.price || '0') || 0;
+                const place = item.placeName || item.place_name || item.attraction_name || item.destination_name || 'Sightseeing Tour';
+                const dest = item.destination || item.destination_name || '';
+                const travelDate = item.travelDate || item.travel_date || item.created_at;
+                const guests = item.guests || item.guests_count || 1;
+                const img = item.image || item.image_url || fallbackImg;
+                const status = item.status || 'confirmed';
+                const pkg = item.packageType || item.package_type || 'Standard';
+                return `
                 <div class="booking-item-card" data-id="${b.id}">
                     <div class="booking-item-img">
-                        <img src="${b.image || fallbackImg}" alt="${b.placeName}" onerror="this.src='${fallbackImg}'">
-                        <span class="booking-status-tag"><i class="fa-solid fa-circle-check"></i> ${b.status}</span>
+                        <img src="${img}" alt="${place}" onerror="this.src='${fallbackImg}'">
+                        <span class="booking-status-tag"><i class="fa-solid fa-circle-check"></i> ${status}</span>
                     </div>
                     <div class="booking-item-info">
                         <div class="booking-ref-row">
                             <span class="booking-ref-badge">${b.id}</span>
-                            <span class="booking-package-badge">${b.packageType || 'Standard'}</span>
+                            <span class="booking-package-badge">${pkg}</span>
                         </div>
-                        <h3 class="booking-place-title">${b.placeName}</h3>
-                        <p class="booking-destination-meta"><i class="fa-solid fa-location-dot"></i> ${b.destination}</p>
+                        <h3 class="booking-place-title">${place}</h3>
+                        <p class="booking-destination-meta"><i class="fa-solid fa-location-dot"></i> ${dest}</p>
                         <div class="booking-meta-row">
-                            <span><i class="fa-regular fa-calendar"></i> ${formatDateDisplay(b.travelDate)}</span>
-                            <span><i class="fa-solid fa-user-group"></i> ${b.guests} ${b.guests > 1 ? 'Guests' : 'Guest'}</span>
-                            <span class="booking-price-highlight">$${b.totalPrice.toFixed(2)}</span>
+                            <span><i class="fa-regular fa-calendar"></i> ${formatDateDisplay(travelDate)}</span>
+                            <span><i class="fa-solid fa-user-group"></i> ${guests} ${guests > 1 ? 'Guests' : 'Guest'}</span>
+                            <span class="booking-price-highlight">${price.toFixed(2)}</span>
                         </div>
                     </div>
                     <div class="booking-item-actions">
+                        <a href="${isComponent ? 'ticket.html' : 'components/ticket.html'}?id=${b.id}" class="btn-print-ticket btn-view-ticket" style="text-decoration: none;" title="Open Boarding Pass">
+                            <i class="fa-solid fa-ticket"></i>
+                            <span>E-Ticket</span>
+                        </a>
                         <button type="button" class="btn-cancel-trip" data-cancel-id="${b.id}" title="Cancel this booking">
                             <i class="fa-solid fa-trash-can"></i>
                             <span>Cancel</span>
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             // Attach cancel event handlers
             list.querySelectorAll('[data-cancel-id]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -884,6 +1173,13 @@
         // Booking Form Submission
         tripBookingForm?.addEventListener('submit', (e) => {
             e.preventDefault();
+            const currentUser = AuthService.getCurrentUser();
+            if (!currentUser) {
+                alert('You must be logged in to book a trip.');
+                const isComponent = window.location.pathname.toLowerCase().includes('components');
+                window.location.href = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
+                return;
+            }
             const fullNameInput = document.getElementById('bookingFullName');
             const emailInput = document.getElementById('bookingEmail');
             const phoneInput = document.getElementById('bookingPhone');
@@ -928,7 +1224,6 @@
             const guests = parseInt(guestsInput?.value || '1', 10);
             const packageVal = packageSelect?.value || 'Standard';
             const total = updateBookingPriceCalculation();
-            const currentUser = AuthService.getCurrentUser();
             const newBooking = BookingService.createBooking({
                 userId: currentUser?.id,
                 userEmail: emailVal,
@@ -1231,80 +1526,46 @@
         bindDestinationCardEvents(cards);
     }
     async function fetchAndSyncLiveDestinations() {
-        const cities = ['Rome', 'London', 'Paris', 'Santorini', 'Venice', 'Tokyo'];
-        let hasUpdates = false;
-        // Smart port detection: if running on port 3000/3001, use same-origin; otherwise try localhost:3000 then 3001
-        const isSameOriginNode = typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '3001');
-        const candidateBases = isSameOriginNode
-            ? ['', 'http://localhost:3000', 'http://localhost:3001']
-            : ['http://localhost:3000', 'http://localhost:3001'];
-        // Probe for an active API server before firing multiple requests
-        let activeBase = null;
-        for (const base of candidateBases) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 1200);
-                const probeRes = await fetch(`${base}/api/destination?name=Rome`, { signal: controller.signal }).catch(() => null);
-                clearTimeout(timeoutId);
-                if (probeRes && probeRes.ok) {
-                    activeBase = base;
-                    break;
+        // Pure client-side synchronization via JadooDB (no localhost or backend server needed)
+        try {
+            if (typeof window !== 'undefined' && window.JadooDB) {
+                const jadooDB = window.JadooDB;
+                const dbDestinations = jadooDB.getDestinations();
+                let hasUpdates = false;
+                if (Array.isArray(dbDestinations) && dbDestinations.length > 0) {
+                    destinationCardsData.forEach((card) => {
+                        const matchedDest = dbDestinations.find((d) => {
+                            const dName = (d && d.name) ? String(d.name).toLowerCase() : '';
+                            const cDest = card.destination ? String(card.destination).toLowerCase() : '';
+                            const cKey = card.cityKey ? String(card.cityKey).toLowerCase() : '';
+                            return (dName && cDest && cDest.includes(dName)) || (dName && cKey && dName.includes(cKey));
+                        });
+                        if (matchedDest) {
+                            const attractions = jadooDB.getAttractions(matchedDest.name);
+                            if (attractions && attractions.length > 0) {
+                                const topAttraction = attractions[0];
+                                card.placeName = topAttraction.name || card.placeName;
+                                card.destination = `${matchedDest.name}, ${matchedDest.country}`;
+                                card.price = topAttraction.price_amount || card.price;
+                                card.priceFormatted = `$${card.price}`;
+                                card.image = topAttraction.image_url || matchedDest.hero_img || card.image;
+                                card.rating = topAttraction.rating || card.rating;
+                                card.reviews = topAttraction.reviews_count || card.reviews;
+                                card.duration = topAttraction.duration || card.duration;
+                                card.description = topAttraction.description || card.description;
+                                hasUpdates = true;
+                            }
+                        }
+                    });
+                    if (hasUpdates) {
+                        Storage.set(STORAGE_KEYS.DESTINATIONS, destinationCardsData);
+                        renderDestinationCardsDOM(destinationCardsData);
+                    }
                 }
             }
-            catch {
-                // Next port
-            }
         }
-        if (activeBase === null) {
-            // Backend server is not running or unreachable; seamlessly rely on cached & JadooDB destinations without logging 404s
-            return;
-        }
-        for (let i = 0; i < cities.length; i++) {
-            const city = cities[i];
-            try {
-                const response = await fetch(`${activeBase}/api/destination?name=${encodeURIComponent(city)}`);
-                if (!response.ok)
-                    continue;
-                const data = await response.json();
-                if (data && Array.isArray(data.places) && data.places.length > 0) {
-                    const topPlace = data.places[0];
-                    const existing = destinationCardsData[i] || DEFAULT_CACHED_DESTINATIONS[i];
-                    const countryDisplay = data.country && data.country !== data.destination
-                        ? (data.country === 'IT' ? 'Italy' : data.country === 'GB' ? 'UK' : data.country === 'FR' ? 'France' : data.country === 'JP' ? 'Japan' : data.country)
-                        : (existing.destination.split(',')[1]?.trim() || city);
-                    const priceNum = typeof topPlace.amount === 'number' && topPlace.amount > 0
-                        ? topPlace.amount
-                        : existing.price;
-                    const priceStr = topPlace.price
-                        ? topPlace.price
-                        : (topPlace.amount ? `$${topPlace.amount}` : existing.priceFormatted);
-                    const cleanDesc = topPlace.description
-                        ? (topPlace.description.length > 130 ? topPlace.description.slice(0, 127) + '...' : topPlace.description)
-                        : existing.description;
-                    destinationCardsData[i] = {
-                        cityKey: city,
-                        placeName: topPlace.name || existing.placeName,
-                        destination: `${city}, ${countryDisplay}`,
-                        price: priceNum,
-                        priceFormatted: priceStr,
-                        image: topPlace.image || existing.image,
-                        badge: topPlace.badge || existing.badge,
-                        rating: topPlace.rating || existing.rating,
-                        reviews: topPlace.reviews || existing.reviews,
-                        duration: topPlace.duration || existing.duration,
-                        description: cleanDesc,
-                        url: topPlace.url || existing.url
-                    };
-                    hasUpdates = true;
-                }
-            }
-            catch {
-                // Silently keep cached data
-            }
-        }
-        if (hasUpdates) {
-            Storage.set(STORAGE_KEYS.DESTINATIONS, destinationCardsData);
-            renderDestinationCardsDOM(destinationCardsData);
+        catch (_) {
+            // Silently maintain existing destination cards
         }
     }
     function initHomepageBookingTriggers() {
@@ -1362,15 +1623,38 @@
         openPlaceModal,
         updateNavbar: updateNavbarAuthState
     };
-    // Persist & Restore Input Form Values across Restarts
+    // Persist & Restore Non-Sensitive Form Fields (Strictly Excluding Passwords for Security)
     function restoreFormDrafts() {
         const drafts = Storage.get(STORAGE_KEYS.DRAFTS, {}) ?? {};
+        // Security purge: instantly delete any passwords that were previously leaked in localStorage drafts
+        let draftsSanitized = false;
+        if (drafts['signup-password'] || drafts['signin-password']) {
+            delete drafts['signup-password'];
+            delete drafts['signin-password'];
+            draftsSanitized = true;
+        }
+        if (draftsSanitized) {
+            Storage.set(STORAGE_KEYS.DRAFTS, drafts);
+        }
+        // Security purge: ensure no passwords exist in jadoo_users in localStorage
+        const cachedUsers = Storage.get(STORAGE_KEYS.USERS, []);
+        if (Array.isArray(cachedUsers)) {
+            let usersSanitized = false;
+            cachedUsers.forEach(u => {
+                if (u && u.password) {
+                    delete u.password;
+                    usersSanitized = true;
+                }
+            });
+            if (usersSanitized) {
+                Storage.set(STORAGE_KEYS.USERS, cachedUsers);
+            }
+        }
+        // STRICT SECURITY RULE: Only track safe identifiers (Full Name, Email). NEVER passwords!
         const inputsToTrack = [
             'signup-fullname',
             'signup-email',
-            'signup-password',
-            'user-id',
-            'signin-password'
+            'user-id'
         ];
         inputsToTrack.forEach(id => {
             const inputEl = document.getElementById(id);
@@ -1379,10 +1663,13 @@
                 if (drafts[id] !== undefined && drafts[id] !== '') {
                     inputEl.value = drafts[id];
                 }
-                // Auto-save on every keystroke
+                // Auto-save safe non-sensitive fields
                 inputEl.addEventListener('input', () => {
                     const currentDrafts = Storage.get(STORAGE_KEYS.DRAFTS, {}) ?? {};
                     currentDrafts[id] = inputEl.value;
+                    // Double check password is never written
+                    delete currentDrafts['signup-password'];
+                    delete currentDrafts['signin-password'];
                     Storage.set(STORAGE_KEYS.DRAFTS, currentDrafts);
                 });
             }
@@ -1417,46 +1704,73 @@
         // 1. Sign Up
         const signupForm = (document.getElementById('signupForm') || document.querySelector('.signup-form form'));
         if (signupForm) {
-            signupForm.addEventListener('submit', (e) => {
+            signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const nameInput = (document.getElementById('signup-fullname') || signupForm.querySelector('input[type="text"]'));
                 const emailInput = (document.getElementById('signup-email') || signupForm.querySelector('input[type="email"]'));
                 const passwordInput = (document.getElementById('signup-password') || signupForm.querySelector('input[type="password"]'));
+                const submitBtn = signupForm.querySelector('button[type="submit"]');
                 const name = nameInput ? nameInput.value : '';
                 const email = emailInput ? emailInput.value : '';
                 const password = passwordInput ? passwordInput.value : '';
-                const result = AuthService.signUp(name, email, password);
-                if (result.success) {
-                    // Auto-fill signin input with email
-                    const drafts = Storage.get(STORAGE_KEYS.DRAFTS, {}) ?? {};
-                    drafts['user-id'] = email;
-                    Storage.set(STORAGE_KEYS.DRAFTS, drafts);
-                    alert(`Welcome, ${name}! Your account has been saved.`);
-                    const isComponent = window.location.pathname.toLowerCase().includes('components');
-                    window.location.href = isComponent ? '../index.html' : 'index.html';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.setAttribute('data-orig-text', submitBtn.textContent || '');
+                    submitBtn.textContent = 'Creating Account...';
                 }
-                else {
-                    alert(result.message);
+                try {
+                    const result = await AuthService.signUp(name, email, password);
+                    if (result.success) {
+                        const drafts = Storage.get(STORAGE_KEYS.DRAFTS, {}) ?? {};
+                        drafts['user-id'] = email;
+                        Storage.set(STORAGE_KEYS.DRAFTS, drafts);
+                        alert(`Welcome, ${name}! Your account has been saved in PostgreSQL.`);
+                        const isComponent = window.location.pathname.toLowerCase().includes('components');
+                        window.location.href = isComponent ? '../index.html' : 'index.html';
+                    }
+                    else {
+                        alert(result.message);
+                    }
+                }
+                finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = submitBtn.getAttribute('data-orig-text') || 'Sign Up';
+                    }
                 }
             });
         }
         // 2. Sign In
         const signinForm = (document.getElementById('signinForm') || document.querySelector('.signin-form form'));
         if (signinForm) {
-            signinForm.addEventListener('submit', (e) => {
+            signinForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const idInput = (document.getElementById('user-id') || signinForm.querySelector('input[type="text"], input[type="email"]'));
                 const passwordInput = (document.getElementById('signin-password') || signinForm.querySelector('input[type="password"]'));
+                const submitBtn = signinForm.querySelector('button[type="submit"]');
                 const identifier = idInput ? idInput.value : '';
                 const password = passwordInput ? passwordInput.value : '';
-                const result = AuthService.signIn(identifier, password);
-                if (result.success && result.user) {
-                    alert(`Welcome back, ${result.user.fullName}!`);
-                    const isComponent = window.location.pathname.toLowerCase().includes('components');
-                    window.location.href = isComponent ? '../index.html' : 'index.html';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.setAttribute('data-orig-text', submitBtn.textContent || '');
+                    submitBtn.textContent = 'Logging In...';
                 }
-                else {
-                    alert(result.message);
+                try {
+                    const result = await AuthService.signIn(identifier, password);
+                    if (result.success && result.user) {
+                        alert(`Welcome back, ${result.user.fullName}!`);
+                        const isComponent = window.location.pathname.toLowerCase().includes('components');
+                        window.location.href = isComponent ? '../index.html' : 'index.html';
+                    }
+                    else {
+                        alert(result.message);
+                    }
+                }
+                finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = submitBtn.getAttribute('data-orig-text') || 'Login';
+                    }
                 }
             });
         }
@@ -1587,6 +1901,15 @@
                 subscribers.push(email);
                 Storage.set('jadoo_newsletter_subscribers', subscribers);
             }
+            // Sync to PostgreSQL backend
+            try {
+                fetch(`${API_BASE}/api/newsletter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                }).catch(() => { });
+            }
+            catch (_) { }
             emailInput.value = '';
             alert(`Thank you for subscribing to Jadoo updates! (${email})`);
         });
@@ -1630,6 +1953,12 @@
                 revealObserver.observe(el);
             }
         });
+        // Failsafe: reveal any remaining hidden elements automatically
+        setTimeout(() => {
+            document.querySelectorAll('[data-reveal]:not(.is-revealed)').forEach(el => {
+                el.classList.add('is-revealed');
+            });
+        }, 1200);
     }
     // Helper to execute when DOM is ready safely
     function onReady(callback) {
@@ -1798,7 +2127,11 @@
             let dragStartTime = 0;
             let hasDragged = false;
             function getCardsVisible() {
-                return window.innerWidth <= 650 ? 1 : window.innerWidth <= 768 ? 2 : 3;
+                if (window.innerWidth <= 768)
+                    return 1;
+                if (window.innerWidth <= 1024)
+                    return 2;
+                return 3;
             }
             function maxIndex() {
                 return Math.max(0, TOTAL - getCardsVisible());
@@ -2104,12 +2437,12 @@
         onReady(() => {
             const dotsSvg = document.querySelector('.testimonial-dots-svg');
             const cardsContainer = document.querySelector('.coms');
-            const cards = Array.from(document.querySelectorAll('.coms .com'));
+            let cards = Array.from(document.querySelectorAll('.coms .com'));
             const arrowUp = document.getElementById('tArrowUp');
             const arrowDown = document.getElementById('tArrowDown');
             if (!cards.length)
                 return;
-            const circles = dotsSvg ? Array.from(dotsSvg.querySelectorAll('circle')) : [];
+            let circles = dotsSvg ? Array.from(dotsSvg.querySelectorAll('circle')) : [];
             let currentIndex = 0;
             let autoPlayTimer = null;
             function getOffsets() {
@@ -2256,6 +2589,45 @@
                     stopAuto();
                 else
                     startAuto();
+            });
+            function refreshStack() {
+                cards = Array.from(document.querySelectorAll('.coms .com'));
+                // Re-bind card click events
+                cards.forEach((card, idx) => {
+                    card.onclick = () => {
+                        if (idx !== currentIndex) {
+                            setTestimonial(idx);
+                            resetAuto();
+                        }
+                    };
+                });
+                if (dotsSvg) {
+                    dotsSvg.innerHTML = '';
+                    const total = cards.length;
+                    const spacing = total > 1 ? Math.min(36, Math.floor(96 / (total - 1))) : 36;
+                    const startX = Math.max(14, Math.floor((108 - (total - 1) * spacing) / 2));
+                    for (let i = 0; i < total; i++) {
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', String(startX + i * spacing));
+                        circle.setAttribute('cy', '14');
+                        circle.setAttribute('r', '6');
+                        circle.setAttribute('class', i === 0 ? 'dot-active' : 'dot-inactive');
+                        circle.style.cursor = 'pointer';
+                        const targetIdx = i;
+                        circle.addEventListener('click', () => {
+                            setTestimonial(targetIdx);
+                            resetAuto();
+                        });
+                        dotsSvg.appendChild(circle);
+                    }
+                    circles = Array.from(dotsSvg.querySelectorAll('circle'));
+                }
+                setTestimonial(0, true);
+            }
+            // Real-time update when user shares journey/trip review
+            window.addEventListener('jadoo:new_testimonial', () => {
+                refreshStack();
+                resetAuto();
             });
             // Window resize
             window.addEventListener('resize', () => {

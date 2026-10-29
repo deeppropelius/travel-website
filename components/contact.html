@@ -37,9 +37,57 @@
                     document.documentElement.removeAttribute('data-theme');
                 }
 
-                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
-                if (!loggedOut) {
-                    document.documentElement.classList.add('user-logged-in');
+                // Global instant theme toggle handler
+                window.toggleThemeGlobal = function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+                        return window.JadooTheme.toggle();
+                    }
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme') === 'dark';
+                    var next = !current;
+                    if (next) {
+                        html.setAttribute('data-theme', 'dark');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'true');
+                            localStorage.setItem('jadoo_theme', 'true');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    } else {
+                        html.removeAttribute('data-theme');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'false');
+                            localStorage.setItem('jadoo_theme', 'false');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    }
+                    var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+                    icons.forEach(function (ic) {
+                        ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    });
+                    var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+                    btns.forEach(function (btn) {
+                        btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.style.transform = 'scale(1.2) rotate(25deg)';
+                        setTimeout(function () { btn.style.transform = ''; }, 320);
+                    });
+                    return next;
+                };
+
+                var userRaw = localStorage.getItem('jadoo_current_user');
+                if (userRaw && localStorage.getItem('jadoo_logged_out') !== 'true') {
+                    try {
+                        var u = JSON.parse(userRaw);
+                        if (u && (u.email || u.id)) {
+                            document.documentElement.classList.add('user-logged-in');
+                        }
+                    } catch(e) {}
                 }
             } catch (e) { }
         })();
@@ -66,6 +114,7 @@
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
                         <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./services.html" class="navlink">Services</a></li>
                         <li><a href="./profile.html" class="navlink">My Profile</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
@@ -82,7 +131,8 @@
                                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
                                     <div class="dropdown-user-header">
                                         <div class="dropdown-avatar-circle">
-                                            <i class="fa-solid fa-user"></i>
+                                            <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
                                             <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
@@ -318,9 +368,9 @@
             </div>
             <div class="col fico">
                 <div class="footi">
-                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
-                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                    <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
                 </div>
                 <div class="fih">Discover our app</div>
                 <div class="store">
@@ -349,12 +399,24 @@
     </footer>
 
     <!-- Floating Dark Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
+
+        if (typeof window !== 'undefined') {
+            window.JadooTheme = JadooTheme;
+            window.toggleThemeGlobal = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                return JadooTheme.toggle();
+            };
+        }
 
         function initContactPage() {
             JadooTheme.init();
