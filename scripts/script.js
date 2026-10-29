@@ -534,11 +534,11 @@
                     hamburger.setAttribute('aria-expanded', willBeActive ? 'true' : 'false');
                 };
                 navLinks.forEach((link) => {
-                    link.onclick = () => {
+                    link.addEventListener('click', () => {
                         hamburger.classList.remove('active');
                         navMenu.classList.remove('active');
                         hamburger.setAttribute('aria-expanded', 'false');
-                    };
+                    });
                 });
                 if (!window._scriptHamburgerDocClick) {
                     window._scriptHamburgerDocClick = true;
@@ -552,6 +552,20 @@
                     });
                 }
             }
+            // Direct Sign Up navigation listener
+            const navSignupBtns = document.querySelectorAll('#nav-signup-btn, .navitems button.signup, .navitems .signup');
+            navSignupBtns.forEach((btn) => {
+                if (!btn._scriptNavSignupBound) {
+                    btn._scriptNavSignupBound = true;
+                    btn.addEventListener('click', (e) => {
+                        const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+                        const target = isComp ? './auth.html#signup' : './components/auth.html#signup';
+                        if (!window.location.href.includes('auth.html#signup')) {
+                            window.location.href = target;
+                        }
+                    });
+                }
+            });
         }
         catch (e) {
             console.error('Drawer init error:', e);

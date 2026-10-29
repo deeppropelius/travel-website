@@ -39,6 +39,12 @@
         flex: 1 1 100%;
         max-width: 480px;
     }
+
+    .image {
+        width: clamp(18rem, 52vw, 32rem);
+        max-width: 60vw;
+        opacity: 0.88;
+    }
   
     .navbar {
         height: 70px;
@@ -112,7 +118,9 @@
         color: #DF6951;
     }
 
-    .navitems .signup {
+    .navitems .signup,
+    .navitems button.signup,
+    .navitems a.signup {
         width: 100%;
         padding: 8px 24px;
         font-size: 1rem;
@@ -121,9 +129,16 @@
         background-color: transparent;
         cursor: pointer;
         transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
-    .navitems .signup:hover {
+    .navitems .signup:hover,
+    .navitems button.signup:hover,
+    .navitems a.signup:hover {
         background-color: #212832;
         color: #ffffff;
     }

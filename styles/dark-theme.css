@@ -79,13 +79,17 @@ html[data-theme="dark"],
   color: var(--accent-coral);
 }
 
-[data-theme="dark"] .navitems button.signup {
+[data-theme="dark"] .navitems button.signup,
+[data-theme="dark"] .navitems a.signup,
+[data-theme="dark"] .navitems .signup {
   border-color: rgba(255, 255, 255, 0.3);
   color: var(--text-primary);
   background-color: rgba(255, 255, 255, 0.04);
 }
 
-[data-theme="dark"] .navitems button.signup:hover {
+[data-theme="dark"] .navitems button.signup:hover,
+[data-theme="dark"] .navitems a.signup:hover,
+[data-theme="dark"] .navitems .signup:hover {
   background-color: var(--accent-coral);
   border-color: var(--accent-coral);
   color: #ffffff;
@@ -121,8 +125,8 @@ html[data-theme="dark"],
 }
 
 [data-theme="dark"] .image img.topdes {
-  opacity: 0.18;
-  filter: hue-rotate(220deg) saturate(0.8) brightness(0.9);
+  opacity: 0.32;
+  filter: hue-rotate(220deg) saturate(0.85) brightness(0.95);
 }
 
 [data-theme="dark"] .dtexts h4 {

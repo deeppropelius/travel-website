@@ -230,6 +230,7 @@
         // Check on initial load and when hash changes
         window.addEventListener('DOMContentLoaded', checkHash);
         window.addEventListener('hashchange', checkHash);
+        checkHash();
     </script>
     <!-- Dark Theme Toggle -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">

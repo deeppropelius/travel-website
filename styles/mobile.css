@@ -93,6 +93,12 @@
         object-fit: contain;
     }
 
+    .image {
+        width: clamp(14rem, 65vw, 22rem);
+        max-width: 80vw;
+        opacity: 0.75;
+    }
+
     /* Category / Services Cards */
     .cards {
         flex-direction: column;

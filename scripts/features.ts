@@ -2111,11 +2111,26 @@ export const JadooNavAuth = {
 
             // Close when clicking navlinks
             navMenu.querySelectorAll('.navlink, .signup').forEach(link => {
-                (link as HTMLElement).onclick = () => {
+                link.addEventListener('click', () => {
                     hamburgerBtn.classList.remove('active');
                     navMenu.classList.remove('active');
                     hamburgerBtn.setAttribute('aria-expanded', 'false');
-                };
+                });
+            });
+
+            // Resilient Sign Up navigation handler
+            const signupBtns = document.querySelectorAll<HTMLElement>('#nav-signup-btn, .navitems button.signup, .navitems .signup');
+            signupBtns.forEach(btn => {
+                if (!(btn as any)._featuresNavSignupBound) {
+                    (btn as any)._featuresNavSignupBound = true;
+                    btn.addEventListener('click', () => {
+                        const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+                        const target = isComp ? './auth.html#signup' : './components/auth.html#signup';
+                        if (!window.location.href.includes('auth.html#signup')) {
+                            window.location.href = target;
+                        }
+                    });
+                }
             });
         }
 

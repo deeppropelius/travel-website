@@ -633,11 +633,11 @@ interface Window {
                 };
 
                 navLinks.forEach((link: HTMLElement) => {
-                    link.onclick = () => {
+                    link.addEventListener('click', () => {
                         hamburger.classList.remove('active');
                         navMenu.classList.remove('active');
                         hamburger.setAttribute('aria-expanded', 'false');
-                    };
+                    });
                 });
 
                 if (!(window as any)._scriptHamburgerDocClick) {
@@ -652,6 +652,21 @@ interface Window {
                     });
                 }
             }
+
+            // Direct Sign Up navigation listener
+            const navSignupBtns = document.querySelectorAll<HTMLElement>('#nav-signup-btn, .navitems button.signup, .navitems .signup');
+            navSignupBtns.forEach((btn: HTMLElement) => {
+                if (!(btn as any)._scriptNavSignupBound) {
+                    (btn as any)._scriptNavSignupBound = true;
+                    btn.addEventListener('click', (e: MouseEvent) => {
+                        const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+                        const target = isComp ? './auth.html#signup' : './components/auth.html#signup';
+                        if (!window.location.href.includes('auth.html#signup')) {
+                            window.location.href = target;
+                        }
+                    });
+                }
+            });
         } catch (e) {
             console.error('Drawer init error:', e);
         }
