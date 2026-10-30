@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS booking (
 -- ── 5. Testimonials ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS testimonials (
   id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  costumer_id      UUID        REFERENCES customer(id) ON DELETE SET NULL,  -- FK (matches ER diagram spelling)
+  custumer_id      UUID        REFERENCES customer(id) ON DELETE SET NULL,  -- FK (matches ER diagram spelling)
   destination_id   UUID        REFERENCES destination(id) ON DELETE SET NULL,
   destination_name TEXT        NOT NULL,
   author_name      TEXT        NOT NULL,

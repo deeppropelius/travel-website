@@ -938,8 +938,8 @@ export const JadooTicketUtilities = {
 
         // Try dynamically loading local QRCode in background
         const scriptPath = typeof window !== 'undefined' && window.location.pathname.includes('/components/')
-            ? '../scripts/qrcode.min.js'
-            : './scripts/qrcode.min.js';
+            ? '../scripts/qrcode.js'
+            : './scripts/qrcode.js';
         this.ensureScript(scriptPath, 'QRCode').then(loaded => {
             if (loaded && typeof (window as any).QRCode !== 'undefined' && container) {
                 try {
