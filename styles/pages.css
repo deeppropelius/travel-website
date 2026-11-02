@@ -6736,3 +6736,176 @@ textarea:focus-visible {
     display: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TICKET ATTACHED SERVICES & CONCIERGE PERKS STRIP
+   ═══════════════════════════════════════════════════════════════ */
+.voucher-services-container {
+  margin-top: 0.85rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  transition: all 0.25s ease;
+}
+
+[data-theme="dark"] .voucher-services-container {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+.voucher-services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed rgba(197, 160, 89, 0.3);
+}
+
+.services-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: clamp(0.65rem, 0.85vw, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #B38738;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .services-header-title {
+  color: #F6C358;
+}
+
+.btn-ticket-add-services {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: clamp(0.62rem, 0.75vw, 0.68rem);
+  font-weight: 700;
+  color: #DF6951;
+  text-decoration: none;
+  background: rgba(223, 105, 81, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-ticket-add-services:hover {
+  background: #DF6951;
+  color: #FFFFFF;
+}
+
+.voucher-services-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ticket-service-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  gap: 0.6rem;
+}
+
+[data-theme="dark"] .ticket-service-card {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ticket-service-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(241, 165, 1, 0.15);
+  color: #F1A501;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.ticket-service-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.ticket-service-name {
+  font-size: clamp(0.68rem, 0.85vw, 0.75rem);
+  font-weight: 700;
+  color: #181E4B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .ticket-service-name {
+  color: #F8FAFC;
+}
+
+.ticket-service-badge {
+  font-size: clamp(0.55rem, 0.7vw, 0.62rem);
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.15rem 0.45rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ticket-service-cost {
+  font-size: clamp(0.65rem, 0.8vw, 0.72rem);
+  font-weight: 700;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .ticket-service-cost {
+  color: #94A3B8;
+}
+
+.ticket-services-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: clamp(0.64rem, 0.8vw, 0.7rem);
+  color: #64748B;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.2rem 0;
+}
+
+[data-theme="dark"] .ticket-services-empty {
+  color: #94A3B8;
+}
+
+.btn-empty-add-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #DF6951;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: clamp(0.62rem, 0.75vw, 0.68rem);
+}
+
+.btn-empty-add-service:hover {
+  text-decoration: underline;
+}

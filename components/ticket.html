@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Ticket & Tour Voucher - Jadoo Travel</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="alternate icon" href="../favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -380,6 +382,24 @@
                                 </div>
                             </div>
 
+                            
+                            <!-- Booked Services & Concierge Add-ons Section -->
+                            <div class="voucher-services-container" id="ticketServicesContainer">
+                                <div class="voucher-services-header">
+                                    <div class="services-header-title">
+                                        <i class="fa-solid fa-crown" style="color: #F1A501;"></i>
+                                        <span>ATTACHED TRAVEL SERVICES & PERKS</span>
+                                    </div>
+                                    <a href="./services.html" class="btn-ticket-add-services" id="ticketAddServicesBtn" title="Browse and book concierge services for this ticket">
+                                        <i class="fa-solid fa-plus-circle"></i>
+                                        <span>Add Services</span>
+                                    </a>
+                                </div>
+                                <div class="voucher-services-grid" id="ticketServicesList">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
                             <!-- Fine Disclaimers -->
                             <div class="voucher-disclaimer-note">
                                 * The premier paper voucher serves as verified admission across all authorized checkpoints. Valid photo identification is required at the meeting point.
@@ -731,12 +751,15 @@
             }
             if (!raw) return '#BK-92841';
 
-            // Strip leading hash symbols
+            // Clean leading hash
             raw = raw.replace(/^#+/, '').trim();
 
-            // Strip repeated BK- prefixes if any (e.g. BK-BK-928 -> BK-928)
-            while (/^BK-BK-/i.test(raw)) {
-                raw = raw.replace(/^BK-BK-/i, 'BK-');
+            // Strip any repeated 'BK-' or 'BK' prefixes (e.g. BK-BK-928 -> 928, BK-92841 -> 92841)
+            raw = raw.replace(/^(BK-?)+/i, '');
+
+            // Fix corrupted 3-digit remnant from old substring(0, 6) bug where BK-92841 became 928
+            if (raw === '928') {
+                raw = '92841';
             }
 
             // If raw is UUID format like 'b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c01'
@@ -744,31 +767,23 @@
                 if (typeof b === 'object' && b.booking_ref && b.booking_ref !== raw) {
                     return formatBookingRef(b.booking_ref);
                 }
-                return '#BK-' + raw.replace(/-/g, '').substring(0, 5).toUpperCase();
+                return '#BK-' + raw.replace(/[^0-9a-z]/gi, '').substring(0, 5).toUpperCase();
             }
 
-            // If it starts with BK-
-            if (/^BK-[A-Za-z0-9]+/i.test(raw)) {
-                return '#' + raw.toUpperCase();
-            }
-
-            // If it starts with BK without dash
-            if (/^BK[0-9]+/i.test(raw)) {
-                return '#BK-' + raw.substring(2).toUpperCase();
-            }
-
-            // Plain alphanumeric
+            // Normal alphanumeric ref: Always #BK-XXXXX
             return '#BK-' + raw.toUpperCase();
         }
 
         function populateSwitcher(list, current) {
             const switchSelect = document.getElementById('switchBookingSelect');
             if (!switchSelect || !list || !list.length) return;
+            const currentRef = current ? formatBookingRef(current).replace(/^#/, '') : '';
             const currentId = current ? (current.id || current.booking_ref) : '';
+
             switchSelect.innerHTML = list.map(b => {
                 const ref = formatBookingRef(b);
                 const bVal = b.id || b.booking_ref;
-                const isSelected = bVal === currentId || b.id === current?.id || b.booking_ref === current?.booking_ref;
+                const isSelected = bVal === currentId || b.id === current?.id || b.booking_ref === current?.booking_ref || formatBookingRef(b).replace(/^#/, '') === currentRef;
                 return `
                     <option value="${bVal}" ${isSelected ? 'selected' : ''}>
                         ${ref} - ${b.attraction_name || b.destination_name} (${b.destination_name || 'Voyage'})
@@ -779,13 +794,13 @@
             switchSelect.onchange = (e) => {
                 const newId = e.target.value;
                 if (newId) {
-                    const target = list.find(item => item.id === newId || item.booking_ref === newId);
+                    const target = list.find(item => item.id === newId || item.booking_ref === newId || formatBookingRef(item).replace(/^#/, '') === newId);
                     if (target) {
                         activeBooking = target;
-                        const activeRef = target.booking_ref || target.id;
+                        const canonicalRef = formatBookingRef(target).replace(/^#/, '');
                         try {
-                            localStorage.setItem('jadoo_current_ticket_id', activeRef);
-                            history.replaceState(null, '', '?id=' + encodeURIComponent(activeRef));
+                            localStorage.setItem('jadoo_current_ticket_id', canonicalRef);
+                            history.replaceState(null, '', '?id=' + encodeURIComponent(canonicalRef));
                         } catch (_) {}
                         renderTicket(activeBooking);
                     }
@@ -824,60 +839,64 @@
                 image_url: '../assets/destination-rome.png'
             };
 
+            function filterUserBookings(list) {
+                if (!Array.isArray(list)) return [];
+                const e = (currentUser?.email || '').trim().toLowerCase();
+                const uid = String(currentUser?.id || '').trim().toLowerCase();
+                return list.filter(b => {
+                    const bEmail = (b.user_email || b.userEmail || b.email || '').toLowerCase().trim();
+                    const bCust = String(b.customer_id || b.customerId || b.user_id || '').toLowerCase().trim();
+                    return (e && bEmail === e) || (uid && bCust === uid);
+                });
+            }
+
             function getLocalBookings() {
                 let list = [];
                 try {
                     list = JadooDB.getUserBookings(currentUser?.email) || [];
-                    if (!list.length) list = JadooDB.getBookings() || [];
                 } catch (_) {}
-                if (!list || !list.length) {
+                if (!list.length) {
                     try {
-                        const raw = localStorage.getItem('jadoo_schema_bookings');
-                        if (raw) list = JSON.parse(raw);
-                    } catch (_) {}
-                }
-                if (!Array.isArray(list) || !list.length) {
-                    list = [seedBooking];
-                    try {
-                        localStorage.setItem('jadoo_schema_bookings', JSON.stringify(list));
+                        const raw = localStorage.getItem('jadoo_bookings');
+                        if (raw) {
+                            list = filterUserBookings(JSON.parse(raw));
+                        }
                     } catch (_) {}
                 }
                 return list;
             }
 
-            allBookings = getLocalBookings();
-
-            // Resolve requested booking (URL param > localStorage > first booking)
-            const params = new URLSearchParams(window.location.search);
-            let requestedId = (params.get('id') || '').trim();
-            if (!requestedId) {
-                try {
-                    requestedId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
-                } catch (_) {}
-            }
-
             function matchBooking(search, list) {
                 if (!search || !list || !list.length) return null;
-                const clean = search.toLowerCase().replace(/^#+/, '').trim();
+                const clean = search.toLowerCase().replace(/^#+/, '').replace(/^(bk-?)+/i, '').trim();
                 return list.find(b => {
-                    const bId = (b.id || '').toLowerCase().replace(/^#+/, '').trim();
-                    const bRef = (b.booking_ref || b.bookingReference || b.bookingRef || '').toLowerCase().replace(/^#+/, '').trim();
-                    return bId === clean || bRef === clean || ('bk-' + bId) === clean || ('bk-' + bRef) === clean;
+                    const bId = (b.id || '').toLowerCase().replace(/^#+/, '').replace(/^(bk-?)+/i, '').trim();
+                    const bRef = (b.booking_ref || b.bookingReference || b.bookingRef || '').toLowerCase().replace(/^#+/, '').replace(/^(bk-?)+/i, '').trim();
+                    return bId === clean || bRef === clean || b.id === search || b.booking_ref === search;
                 });
             }
 
-            activeBooking = matchBooking(requestedId, allBookings) || allBookings[0] || seedBooking;
-
-            // Synchronize active ID to localStorage and clean URL
-            const activeId = activeBooking.booking_ref || activeBooking.id || 'BK-92841';
+            // Check URL param first, then localStorage
+            const params = new URLSearchParams(window.location.search);
+            const urlRequestedId = (params.get('id') || '').trim();
+            let storedTicketId = '';
             try {
-                localStorage.setItem('jadoo_current_ticket_id', activeId);
-                if (!params.get('id')) {
-                    history.replaceState(null, '', '?id=' + encodeURIComponent(activeId));
-                }
+                storedTicketId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
             } catch (_) {}
 
-            // Immediate 0ms synchronous render
+            const preferredId = urlRequestedId || storedTicketId;
+
+            // Load initial cached bookings
+            allBookings = getLocalBookings();
+
+            if (allBookings.length > 0) {
+                activeBooking = matchBooking(preferredId, allBookings) || allBookings[0];
+            } else {
+                activeBooking = seedBooking;
+                allBookings = [seedBooking];
+            }
+
+            // Render ticket immediately with zero flicker
             renderTicket(activeBooking);
             populateSwitcher(allBookings, activeBooking);
 
@@ -901,16 +920,24 @@
                 const fresh = JadooDB.getUserBookings(currentUser?.email);
                 if (Array.isArray(fresh) && fresh.length > 0) {
                     allBookings = fresh;
-                    const matched = matchBooking(requestedId || activeId, allBookings);
+                    const matched = matchBooking(preferredId, allBookings) || allBookings[0];
                     if (matched) {
-                        activeBooking = matched;
-                        renderTicket(activeBooking);
+                        const prevId = activeBooking ? (activeBooking.id || activeBooking.booking_ref) : '';
+                        const nextId = matched.id || matched.booking_ref;
+                        // ONLY re-render if the booking actually changed or was seed placeholder
+                        if (prevId !== nextId || activeBooking === seedBooking || !activeBooking.user_email) {
+                            activeBooking = matched;
+                            renderTicket(activeBooking);
+                        }
                         populateSwitcher(allBookings, activeBooking);
                     }
-                } else if (requestedId) {
+                } else if (urlRequestedId) {
                     try {
-                        const fetched = await JadooDB.getBookingAsync(requestedId);
-                        if (fetched) {
+                        const fetched = await JadooDB.getBookingAsync(urlRequestedId);
+                        if (fetched && (
+                            fetched.user_email?.toLowerCase() === currentUser?.email?.toLowerCase() ||
+                            String(fetched.customer_id) === String(currentUser?.id)
+                        )) {
                             activeBooking = fetched;
                             if (!allBookings.find(b => b.id === fetched.id)) {
                                 allBookings.unshift(fetched);
@@ -956,7 +983,7 @@
                     const target = allBookings.find(item => item.id === id || item.booking_ref === id);
                     if (target) {
                         activeBooking = target;
-                        const activeRef = target.booking_ref || target.id;
+                        const activeRef = formatBookingRef(target).replace(/^#/, '');
                         try {
                             localStorage.setItem('jadoo_current_ticket_id', activeRef);
                             history.replaceState(null, '', '?id=' + encodeURIComponent(activeRef));
@@ -1137,7 +1164,7 @@
                 const cleanRef = formatBookingRef(activeBooking);
                 if (bigQrRef) bigQrRef.textContent = cleanRef;
                 if (bigQrCanvas) {
-                    const targetId = activeBooking.booking_ref || activeBooking.id || 'BK-92841';
+                    const targetId = cleanRef.replace(/^#/, '');
                     const qrUrl = (window.location.origin && window.location.origin !== 'null')
                         ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(targetId)
                         : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(targetId);
@@ -1334,6 +1361,63 @@
             container.appendChild(fallbackImg);
         }
 
+        function renderAttachedServices(b) {
+            const list = document.getElementById('ticketServicesList');
+            const addBtn = document.getElementById('ticketAddServicesBtn');
+            if (!list) return;
+
+            const cleanRef = formatBookingRef(b).replace(/^#/, '');
+            if (addBtn) {
+                addBtn.href = `./services.html?booking_ref=${encodeURIComponent(cleanRef)}`;
+            }
+
+            let services = [];
+            if (Array.isArray(b.booked_services) && b.booked_services.length > 0) {
+                services = b.booked_services;
+            } else if (b.service_name) {
+                const names = b.service_name.split(',').map(s => s.trim()).filter(Boolean);
+                const ids = (b.service_id || '').split(',').map(s => s.trim()).filter(Boolean);
+                services = names.map((name, i) => ({
+                    title: name,
+                    id: ids[i] || 'srv-custom',
+                    category: 'Bespoke',
+                    icon: 'fa-solid fa-crown',
+                    starting_price: 'Included'
+                }));
+            }
+
+            if (services.length > 0) {
+                list.innerHTML = services.map(s => {
+                    const icon = s.icon || (
+                        s.title.toLowerCase().includes('flight') || s.title.toLowerCase().includes('air') ? 'fa-solid fa-plane-departure' :
+                        (s.title.toLowerCase().includes('stay') || s.title.toLowerCase().includes('hotel') || s.title.toLowerCase().includes('villa') ? 'fa-solid fa-hotel' :
+                        (s.title.toLowerCase().includes('yacht') || s.title.toLowerCase().includes('boat') ? 'fa-solid fa-sailboat' :
+                        (s.title.toLowerCase().includes('transfer') || s.title.toLowerCase().includes('car') ? 'fa-solid fa-car-side' : 'fa-solid fa-crown')))
+                    );
+                    const price = s.starting_price || s.price || 'Included';
+                    return `
+                        <div class="ticket-service-card">
+                            <div class="ticket-service-icon"><i class="${icon}"></i></div>
+                            <div class="ticket-service-info">
+                                <span class="ticket-service-name">${s.title}</span>
+                                <span class="ticket-service-badge"><i class="fa-solid fa-circle-check"></i> CONFIRMED ON PASS</span>
+                            </div>
+                            <div class="ticket-service-cost">${String(price)}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = `
+                    <div class="ticket-services-empty">
+                        <span><i class="fa-solid fa-bell-concierge" style="color: #F1A501; margin-right: 6px;"></i> No extra concierge services attached to this ticket yet.</span>
+                        <a href="./services.html?booking_ref=${encodeURIComponent(cleanRef)}" class="btn-empty-add-service">
+                            <i class="fa-solid fa-plus-circle"></i> Add Airport Transfer, Villa Stays, or Yacht
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
         function renderTicket(b) {
             if (!b) return;
 
@@ -1397,10 +1481,13 @@
             const priceNum = parseFloat(b.total_price) || 0;
             setTxt('ticketTotalPaid', '$' + priceNum.toFixed(2) + ' USD (Paid in Full)');
 
+            // Render Attached Services & Add-ons
+            renderAttachedServices(b);
+
             // Generate clean single QR code
             const qrCanvas = document.getElementById('stubQrCanvas');
             if (qrCanvas) {
-                const targetId = b.booking_ref || b.id || 'BK-92841';
+                const targetId = serialCode;
                 const qrUrl = (window.location.origin && window.location.origin !== 'null')
                     ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(targetId)
                     : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(targetId);

@@ -813,16 +813,13 @@ class JadooDatabase {
                 method: 'PATCH',
                 body: JSON.stringify({ id: current.id, email: current.email, ...updated })
             });
-            // Also update local session
+            // Update local session with confirmed PostgreSQL data
             this.setCurrentUser(result);
             return result;
         }
         catch (err) {
             console.error('updateProfileAsync error:', err);
-            // Fallback: update local session only
-            const merged = { ...current, ...updated, updated_at: new Date().toISOString() };
-            this.setCurrentUser(merged);
-            return merged;
+            throw err;
         }
     }
     updateProfile(updated) {
@@ -833,6 +830,30 @@ class JadooDatabase {
         this.setCurrentUser(merged);
         this.updateProfileAsync(updated).catch(console.error);
         return merged;
+    }
+    async updateSeatAsync(idOrRef, seatNumber) {
+        try {
+            return await apiFetch(`/api/bookings/${encodeURIComponent(idOrRef)}/seat`, {
+                method: 'PATCH',
+                body: JSON.stringify({ seat_number: seatNumber })
+            });
+        }
+        catch (err) {
+            console.warn('updateSeatAsync error:', err);
+            return null;
+        }
+    }
+    async updateBoardingAsync(idOrRef, isBoarded = true) {
+        try {
+            return await apiFetch(`/api/bookings/${encodeURIComponent(idOrRef)}/board`, {
+                method: 'PATCH',
+                body: JSON.stringify({ is_boarded: isBoarded })
+            });
+        }
+        catch (err) {
+            console.warn('updateBoardingAsync error:', err);
+            return null;
+        }
     }
     // Auth: register
     async registerAsync(data) {
@@ -870,6 +891,13 @@ class JadooDatabase {
             window.__jadoo_attractions_cache = attractions;
             const user = this.getCurrentUser();
             if (user?.email || user?.id) {
+                try {
+                    const freshUser = await this.getCustomerAsync(user.email || user.id);
+                    if (freshUser && freshUser.id) {
+                        this.setCurrentUser(freshUser);
+                    }
+                }
+                catch (_) { }
                 const bookings = await this.getBookingsAsync(user?.email || undefined, user?.id || undefined);
                 if (Array.isArray(bookings) && bookings.length > 0) {
                     window.__jadoo_bookings_cache = bookings;

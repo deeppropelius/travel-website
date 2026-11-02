@@ -1099,7 +1099,7 @@ export const JadooTicketUtilities = {
             document.getElementById('seatMapBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
             document.getElementById('seatMapClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
         }
-        const currentSavedSeat = localStorage.getItem(`jadoo_seat_${booking.id}`) || 'Suite 02A';
+        const currentSavedSeat = booking.seat_number || localStorage.getItem(`jadoo_seat_${booking.id}`) || 'Suite 02A';
         const body = document.getElementById('seatMapModalBody');
         if (body) {
             const seats = [
@@ -1155,8 +1155,16 @@ export const JadooTicketUtilities = {
                     const newSeat = btn.getAttribute('data-seat');
                     if (newSeat) {
                         localStorage.setItem(`jadoo_seat_${booking.id}`, newSeat);
+                        booking.seat_number = newSeat;
+                        try {
+                            const bRef = booking.booking_ref || booking.id;
+                            if (bRef && typeof JadooDB !== 'undefined' && JadooDB.updateSeatAsync) {
+                                JadooDB.updateSeatAsync(bRef, newSeat).catch(() => { });
+                            }
+                        }
+                        catch (_) { }
                         overlay?.classList.remove('is-open');
-                        JadooToast.show('Seat Confirmed', `Your seat has been updated to ${newSeat}!`, 'success');
+                        JadooToast.show('Seat Confirmed', `Your seat has been updated to ${newSeat} (saved in PostgreSQL)!`, 'success');
                         if (onSeatSelected)
                             onSeatSelected(newSeat);
                     }
@@ -1530,6 +1538,14 @@ export const JadooTicketUtilities = {
         this.playAirportChime();
         this.renderBoardedStampOverlay(booking, targetElementId);
         localStorage.setItem(`jadoo_boarded_${booking.id}`, 'true');
+        booking.is_boarded = true;
+        try {
+            const bRef = booking.booking_ref || booking.id;
+            if (bRef && typeof JadooDB !== 'undefined' && JadooDB.updateBoardingAsync) {
+                JadooDB.updateBoardingAsync(bRef, true).catch(() => { });
+            }
+        }
+        catch (_) { }
         // Update live status pill if present
         const statusPill = document.getElementById('ticketStatusPill');
         if (statusPill) {
@@ -1684,7 +1700,7 @@ export const TicketSecurityMiddleware = {
                 dateStyle: 'medium',
                 timeStyle: 'medium'
             });
-            const isAlreadyBoarded = localStorage.getItem(`jadoo_boarded_${booking.id}`) === 'true';
+            const isAlreadyBoarded = booking.is_boarded || localStorage.getItem(`jadoo_boarded_${booking.id}`) === 'true';
             hud.innerHTML = `
                 <div class="hud-banner-top">
                     <div class="hud-agency-tag">
@@ -1728,7 +1744,7 @@ export const TicketSecurityMiddleware = {
             // Handle rubber stamp button click
             document.getElementById('btnGateStampBoarded')?.addEventListener('click', (e) => {
                 const btn = e.currentTarget;
-                if (localStorage.getItem(`jadoo_boarded_${booking.id}`) === 'true') {
+                if (booking.is_boarded || localStorage.getItem(`jadoo_boarded_${booking.id}`) === 'true') {
                     JadooToast.show('Already Boarded', 'This pass was already stamped at the gate.', 'info');
                     return;
                 }

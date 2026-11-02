@@ -6,15 +6,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'node:http';
-import { testConnection } from './services/db.js';
-import { serveStaticFile } from './services/fileService.js';
-import { authRouter } from './services/authService.js';
-import { bookingRouter } from './services/bookingService.js';
-import { destinationRouter } from './services/destinationService.js';
-import { serviceRouter } from './services/serviceService.js';
-import { testimonialRouter } from './services/testimonialService.js';
-import { ticketRouter } from './services/ticketService.js';
-import { newsletterRouter } from './services/newsletterService.js';
+import crypto from 'node:crypto';
+dotenv.config();
 export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 // Global Middleware
@@ -26,14 +19,863 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Health Check
 app.get('/api/health', async (_req, res) => {
-    const dbOk = await testConnection();
-    res.json({
-        status: 'ok',
-        database: dbOk ? 'connected' : 'disconnected',
-        timestamp: new Date().toISOString(),
-        version: '2.0.0',
-        env: process.env.NODE_ENV || 'development'
-    });
+    const ok = await testConnection();
+    res.json({ status: ok ? 'ok' : 'error', db: ok ? 'connected' : 'unreachable', ts: new Date().toISOString() });
+});
+// ══════════════════════════════════════════════════════════════
+// DESTINATIONS
+// ══════════════════════════════════════════════════════════════
+app.get('/api/destinations', async (_req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM destination ORDER BY name');
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/destinations error:', err);
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
+    }
+});
+app.get('/api/destinations/:id', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM destination WHERE id = $1 OR name ILIKE $2 LIMIT 1', [req.params.id, req.params.id]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Destination not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('GET /api/destinations/:id error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// ATTRACTIONS
+// ══════════════════════════════════════════════════════════════
+app.get('/api/attractions', async (req, res) => {
+    try {
+        const { destination, category } = req.query;
+        let query = 'SELECT * FROM attraction';
+        const params = [];
+        const conditions = [];
+        if (destination) {
+            params.push(`%${destination}%`);
+            conditions.push(`destination_name ILIKE $${params.length}`);
+        }
+        if (category && category !== 'All') {
+            params.push(category);
+            conditions.push(`category = $${params.length}`);
+        }
+        if (conditions.length)
+            query += ' WHERE ' + conditions.join(' AND ');
+        query += ' ORDER BY rating DESC';
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/attractions error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// BOOKINGS
+// ══════════════════════════════════════════════════════════════
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const { email, customer_id, status } = req.query;
+        let query = 'SELECT * FROM booking';
+        const params = [];
+        const conditions = [];
+        if (email && customer_id) {
+            params.push(email);
+            params.push(customer_id);
+            conditions.push(`(user_email ILIKE $${params.length - 1} OR customer_id = $${params.length})`);
+        }
+        else if (email) {
+            params.push(email);
+            conditions.push(`user_email ILIKE $${params.length}`);
+        }
+        else if (customer_id) {
+            params.push(customer_id);
+            conditions.push(`customer_id = $${params.length}`);
+        }
+        if (status && status !== 'all') {
+            params.push(status.toLowerCase());
+            conditions.push(`LOWER(status) = $${params.length}`);
+        }
+        if (conditions.length)
+            query += ' WHERE ' + conditions.join(' AND ');
+        query += ' ORDER BY created_at DESC';
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/bookings error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.get('/api/bookings/:id', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $2 LIMIT 1', [req.params.id, req.params.id]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('GET /api/bookings/:id error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+function isUUID(str) {
+    if (typeof str !== 'string')
+        return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
+}
+app.post('/api/bookings', optionalAuth, async (req, res) => {
+    try {
+        const b = req.body;
+        const id = generateUUID();
+        const booking_ref = b.booking_ref || b.bookingReference || b.bookingRef || generateBookingRef();
+        const userEmail = (req.user?.email || b.user_email || b.userEmail || '').trim().toLowerCase();
+        const userName = (req.user?.full_name || b.user_name || b.userName || '').trim() || 'Traveler';
+        let customerId = req.user?.id || b.customer_id || b.userId || null;
+        if (!userEmail) {
+            return res.status(400).json({ error: 'User email is required to book a trip.' });
+        }
+        const phoneNumber = (b.phone_number || b.phone || b.phoneNumber || '').trim();
+        const destName = (b.destination_name || b.destination || '').trim() || 'Rome';
+        const attrName = (b.attraction_name || b.placeName || b.attraction || '').trim() || (destName + ' Tour');
+        const travelDate = b.travel_date || b.travelDate || new Date().toISOString().split('T')[0];
+        const guestsCount = parseInt(b.guests_count || b.guests || '1', 10) || 1;
+        const seatNumber = (b.seat_number || b.seat || 'Suite 02A').trim();
+        // Normalize package_type
+        const rawPkg = (b.package_type || b.packageType || 'standard').toString().toLowerCase();
+        const packageType = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
+        // Normalize status
+        const rawStatus = (b.status || 'confirmed').toString().toLowerCase();
+        const status = rawStatus === 'pending' ? 'pending' : rawStatus === 'cancelled' ? 'cancelled' : 'confirmed';
+        const pricePerPerson = parseFloat(b.price_per_person || b.pricePerPerson || '0') || 0;
+        const totalPrice = parseFloat(b.total_price || b.totalPrice || '0') || (pricePerPerson * guestsCount);
+        const specialRequest = b.special_request || b.specialRequests || '';
+        const imageUrl = b.image_url || b.image || null;
+        // Verify or auto-create user in PostgreSQL so user data is ALWAYS saved in PostgreSQL
+        if (!customerId || !isUUID(customerId)) {
+            const custCheck = await pool.query('SELECT id FROM users WHERE email ILIKE $1 LIMIT 1', [userEmail]);
+            if (custCheck.rows.length) {
+                customerId = custCheck.rows[0].id;
+            }
+            else {
+                const newCustId = generateUUID();
+                await pool.query(`INSERT INTO users (id, full_name, email, phone, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, NOW(), NOW())`, [newCustId, userName, userEmail, phoneNumber || null]);
+                customerId = newCustId;
+            }
+        }
+        // Resolve destination in PostgreSQL
+        let destinationId = b.destination_id || b.destinationId || null;
+        if (!destinationId || !isUUID(destinationId)) {
+            const destCheck = await pool.query('SELECT id FROM destination WHERE name ILIKE $1 LIMIT 1', [destName]);
+            if (destCheck.rows.length) {
+                destinationId = destCheck.rows[0].id;
+            }
+            else {
+                const firstDest = await pool.query('SELECT id, name FROM destination LIMIT 1');
+                if (firstDest.rows.length) {
+                    destinationId = firstDest.rows[0].id;
+                }
+                else {
+                    const newDestId = generateUUID();
+                    await pool.query('INSERT INTO destination (id, name, country, latitude, longitude) VALUES ($1, $2, $3, $4, $5)', [newDestId, destName, 'International', 0, 0]);
+                    destinationId = newDestId;
+                }
+            }
+        }
+        const { rows } = await pool.query(`
+      INSERT INTO booking
+        (id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
+         user_name, user_email, phone_number, travel_date, guests_count, package_type,
+         price_per_person, total_price, special_request, status, image_url, seat_number, is_boarded)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,FALSE)
+      RETURNING *`, [id, booking_ref, attrName, customerId, destinationId, destName, attrName,
+            userName, userEmail, phoneNumber, travelDate,
+            guestsCount, packageType, pricePerPerson, totalPrice,
+            specialRequest, status, imageUrl, seatNumber]);
+        res.status(201).json(rows[0]);
+    }
+    catch (err) {
+        console.error('POST /api/bookings error:', err);
+        res.status(500).json({ error: 'Database error', details: String(err) });
+    }
+});
+app.patch('/api/bookings/:id/seat', optionalAuth, async (req, res) => {
+    try {
+        const idOrRef = req.params.id;
+        const { seat_number } = req.body;
+        if (!seat_number)
+            return res.status(400).json({ error: 'seat_number is required' });
+        const { rows } = await pool.query(`UPDATE booking SET seat_number = $1, updated_at = NOW()
+       WHERE id::text = $2 OR booking_ref ILIKE $3
+       RETURNING id, booking_ref, seat_number, updated_at`, [seat_number, idOrRef, idOrRef]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/bookings/:id/seat error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.patch('/api/bookings/:id/board', optionalAuth, async (req, res) => {
+    try {
+        const idOrRef = req.params.id;
+        const isBoarded = req.body.is_boarded !== undefined ? Boolean(req.body.is_boarded) : true;
+        const { rows } = await pool.query(`UPDATE booking SET is_boarded = $1, updated_at = NOW()
+       WHERE id::text = $2 OR booking_ref ILIKE $3
+       RETURNING id, booking_ref, is_boarded, updated_at`, [isBoarded, idOrRef, idOrRef]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/bookings/:id/board error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.patch('/api/bookings/:id/status', async (req, res) => {
+    try {
+        const rawStatus = (req.body.status || '').toLowerCase();
+        const status = rawStatus === 'pending' ? 'pending' : rawStatus === 'cancelled' ? 'cancelled' : rawStatus === 'confirmed' ? 'confirmed' : null;
+        if (!status) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        const { rows } = await pool.query('UPDATE booking SET status=$1 WHERE id::text=$2 OR booking_ref ILIKE $3 RETURNING *', [status, req.params.id, req.params.id]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/bookings/:id/status error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// SERVICES
+// ══════════════════════════════════════════════════════════════
+app.get('/api/services', async (_req, res) => {
+    try {
+        const category = _req.query.category;
+        const services = await ServiceService.getAllServicesFromDB();
+        if (category && category.toLowerCase() !== 'all') {
+            return res.json(services.filter(s => s.category.toLowerCase() === category.toLowerCase()));
+        }
+        res.json(services);
+    }
+    catch (err) {
+        console.warn('GET /api/services error, fallback to memory:', err);
+        res.json(ServiceService.getAllServices());
+    }
+});
+app.get('/api/services/:slug', async (req, res) => {
+    try {
+        const service = await ServiceService.getServiceBySlugFromDB(req.params.slug);
+        if (!service)
+            return res.status(404).json({ error: 'Service not found' });
+        res.json(service);
+    }
+    catch (err) {
+        const fallback = ServiceService.getServiceBySlug(req.params.slug);
+        if (!fallback)
+            return res.status(404).json({ error: 'Service not found' });
+        res.json(fallback);
+    }
+});
+app.post('/api/services/inquire', authenticateToken, async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: 'Authentication required. Please sign in to book travel services.' });
+        }
+        let { service_id, service_title, booking_ref, booking_id, customer_name, customer_email, customer_phone, travel_destination, destinations, travel_date, guests_count, package_type, message } = req.body;
+        const custId = req.user.id;
+        const custEmail = (req.user.email || customer_email || '').trim().toLowerCase();
+        const custName = (req.user.full_name || customer_name || 'Traveler').trim();
+        if (!service_id) {
+            return res.status(400).json({ error: 'service_id is required' });
+        }
+        // 1. Resolve service
+        const service = await ServiceService.getServiceBySlugFromDB(service_id);
+        const resolvedTitle = service_title || service?.title || 'Jadoo Travel Service';
+        // Pricing calculation
+        const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
+        const pricePerPerson = rawPrice > 0 ? rawPrice : 45.00;
+        const guests = parseInt(String(guests_count || '1'), 10) || 1;
+        const totalPrice = pricePerPerson * guests;
+        const serviceItem = {
+            id: service?.id || service_id,
+            slug: service?.slug || service_id,
+            title: resolvedTitle,
+            category: service?.category || 'Bespoke',
+            starting_price: service?.starting_price || `$${pricePerPerson}`,
+            unit: service?.unit || 'per booking',
+            icon: service?.icon || 'fa-solid fa-crown',
+            badge: service?.badge || 'VIP Bespoke',
+            features: service?.features || [],
+            booked_at: new Date().toISOString()
+        };
+        // 2. Check if attaching to an existing booked ticket
+        const targetRef = (booking_ref || booking_id || '').trim();
+        const isAttachingToExisting = targetRef && targetRef !== 'NEW_BOOKING' && targetRef !== 'null' && targetRef !== 'undefined';
+        if (isAttachingToExisting) {
+            const existingRes = await pool.query(`SELECT * FROM booking 
+         WHERE (id::text = $1 OR booking_ref ILIKE $2) 
+           AND (customer_id::text = $3 OR user_email ILIKE $4) 
+         LIMIT 1`, [targetRef, targetRef, custId, custEmail]);
+            if (!existingRes.rows.length) {
+                return res.status(404).json({
+                    error: `Ticket #${targetRef} was not found or does not belong to your account. You can only add services to your own booked tickets.`
+                });
+            }
+            const targetBooking = existingRes.rows[0];
+            // Merge service names
+            const existingNames = targetBooking.service_name
+                ? targetBooking.service_name.split(',').map((s) => s.trim()).filter(Boolean)
+                : [];
+            if (!existingNames.includes(resolvedTitle)) {
+                existingNames.push(resolvedTitle);
+            }
+            const updatedServiceName = existingNames.join(', ');
+            // Merge service IDs
+            const existingIds = targetBooking.service_id
+                ? targetBooking.service_id.split(',').map((s) => s.trim()).filter(Boolean)
+                : [];
+            if (!existingIds.includes(service_id)) {
+                existingIds.push(service_id);
+            }
+            const updatedServiceId = existingIds.join(', ');
+            const updatedTotalPrice = parseFloat(targetBooking.total_price || '0') + totalPrice;
+            const updatedSpecial = message
+                ? (targetBooking.special_request ? `${targetBooking.special_request} | [Service: ${resolvedTitle}] ${message.trim()}` : `[Service: ${resolvedTitle}] ${message.trim()}`)
+                : targetBooking.special_request;
+            const updateRes = await pool.query(`
+        UPDATE booking 
+        SET service_name = $1,
+            service_id = $2,
+            booked_services = COALESCE(booked_services, '[]'::jsonb) || $3::jsonb,
+            total_price = $4,
+            special_request = $5,
+            updated_at = NOW()
+        WHERE id = $6
+        RETURNING *
+      `, [
+                updatedServiceName,
+                updatedServiceId,
+                JSON.stringify([serviceItem]),
+                updatedTotalPrice,
+                updatedSpecial,
+                targetBooking.id
+            ]);
+            const updatedBooking = updateRes.rows[0];
+            ServiceService.recordInquiry({
+                customer_id: custId,
+                service_id,
+                service_title: resolvedTitle,
+                customer_name: custName,
+                customer_email: custEmail,
+                customer_phone,
+                travel_destination: updatedBooking.destination_name,
+                travel_date: updatedBooking.travel_date,
+                message: `Attached to Ticket #${updatedBooking.booking_ref || updatedBooking.id}: ${message || ''}`
+            });
+            return res.status(200).json({
+                success: true,
+                message: `Service "${resolvedTitle}" successfully attached to Ticket #${updatedBooking.booking_ref || updatedBooking.id}!`,
+                booking: updatedBooking,
+                bookings: [updatedBooking],
+                count: 1,
+                destinations: [updatedBooking.destination_name]
+            });
+        }
+        // 3. Otherwise: User is booking a new trip with this service
+        let destList = [];
+        if (Array.isArray(destinations) && destinations.length > 0) {
+            destList = destinations.map((d) => String(d).trim()).filter(Boolean);
+        }
+        else if (typeof travel_destination === 'string' && travel_destination.trim()) {
+            destList = travel_destination
+                .split(/[,;&\/]|\s+and\s+/i)
+                .map((s) => s.trim())
+                .filter(Boolean);
+        }
+        if (destList.length === 0) {
+            destList = ['Rome']; // default destination fallback
+        }
+        const rawPkg = String(package_type || 'VIP').toLowerCase();
+        const pkg = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
+        const validDate = travel_date && /^\d{4}-\d{2}-\d{2}$/.test(travel_date)
+            ? travel_date
+            : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const createdBookings = [];
+        for (const destName of destList) {
+            let destId;
+            let resolvedDestName = destName;
+            let destHeroImg = service?.banner_image || './assets/destination-rome.png';
+            const destCheck = await pool.query('SELECT id, name, country, hero_img FROM destination WHERE name ILIKE $1 LIMIT 1', [destName.trim()]);
+            if (destCheck.rows.length > 0) {
+                destId = destCheck.rows[0].id;
+                resolvedDestName = destCheck.rows[0].name;
+                if (destCheck.rows[0].hero_img)
+                    destHeroImg = destCheck.rows[0].hero_img;
+            }
+            else {
+                destId = generateUUID();
+                const insDest = await pool.query('INSERT INTO destination (id, name, country, latitude, longitude, hero_img) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id, hero_img', [destId, destName.trim(), 'International', 0, 0, destHeroImg]);
+                if (insDest.rows.length) {
+                    destId = insDest.rows[0].id;
+                    if (insDest.rows[0].hero_img)
+                        destHeroImg = insDest.rows[0].hero_img;
+                }
+            }
+            const bookingId = generateUUID();
+            const bookingRef = generateBookingRef();
+            const attractionName = `Service: ${resolvedTitle}`;
+            const bookingResult = await pool.query(`
+        INSERT INTO booking (
+          id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
+          user_name, user_email, phone_number, travel_date, guests_count, package_type,
+          price_per_person, total_price, special_request, status, image_url,
+          service_id, service_name, booked_services
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+        RETURNING *
+      `, [
+                bookingId,
+                bookingRef,
+                attractionName,
+                custId,
+                destId,
+                resolvedDestName,
+                attractionName,
+                custName,
+                custEmail,
+                customer_phone ? customer_phone.trim() : null,
+                validDate,
+                guests,
+                pkg,
+                pricePerPerson,
+                totalPrice,
+                message ? `[Service Booking: ${resolvedTitle}] ${message.trim()}` : `Service booking for ${resolvedDestName}`,
+                'confirmed',
+                destHeroImg,
+                service_id,
+                resolvedTitle,
+                JSON.stringify([serviceItem])
+            ]);
+            createdBookings.push(bookingResult.rows[0]);
+        }
+        const record = ServiceService.recordInquiry({
+            customer_id: custId,
+            service_id,
+            service_title: resolvedTitle,
+            customer_name: custName,
+            customer_email: custEmail,
+            customer_phone,
+            travel_destination: destList.join(', '),
+            travel_date: validDate,
+            message
+        });
+        res.status(201).json({
+            message: `Confirmed ${createdBookings.length} separate destination booking(s) for ${resolvedTitle}`,
+            inquiry: record,
+            bookings: createdBookings,
+            count: createdBookings.length,
+            destinations: destList
+        });
+    }
+    catch (err) {
+        console.error('POST /api/services/inquire error:', err);
+        res.status(500).json({ error: 'Server error processing service inquiry and bookings' });
+    }
+});
+app.post('/api/services', authenticateToken, async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: 'Authentication required. Please sign in to create custom services.' });
+        }
+        const serviceData = req.body;
+        if (!serviceData || !serviceData.title) {
+            return res.status(400).json({ error: 'Service title is required' });
+        }
+        serviceData.author_id = req.user.id;
+        serviceData.author_name = req.user.full_name;
+        if (serviceData.destination_name) {
+            const destCheck = await pool.query('SELECT id, name FROM destination WHERE name ILIKE $1 LIMIT 1', [serviceData.destination_name.trim()]);
+            if (destCheck.rows.length) {
+                serviceData.destination_id = destCheck.rows[0].id;
+                serviceData.destination_name = destCheck.rows[0].name;
+            }
+        }
+        const created = await ServiceService.createServiceInDB(serviceData);
+        res.status(201).json(created);
+    }
+    catch (err) {
+        console.error('POST /api/services error:', err);
+        res.status(500).json({ error: 'Server error creating service' });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// TESTIMONIALS
+// ══════════════════════════════════════════════════════════════
+app.get('/api/testimonials', async (req, res) => {
+    try {
+        const { user_id, customer_id, email, author_email } = req.query;
+        if (user_id || customer_id) {
+            const cid = String(user_id || customer_id);
+            if (isUUID(cid)) {
+                const { rows } = await pool.query('SELECT * FROM testimonials WHERE costumer_id = $1 ORDER BY created_at DESC', [cid]);
+                return res.json(rows);
+            }
+            return res.json([]);
+        }
+        if (email || author_email) {
+            const em = String(email || author_email);
+            const { rows } = await pool.query(`
+        SELECT t.* FROM testimonials t 
+        LEFT JOIN users c ON t.costumer_id = c.id 
+        WHERE c.email ILIKE $1 
+        ORDER BY t.created_at DESC
+      `, [em]);
+            return res.json(rows);
+        }
+        const { rows } = await pool.query('SELECT * FROM testimonials ORDER BY created_at DESC');
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/testimonials error:', err);
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
+    }
+});
+app.post('/api/testimonials', async (req, res) => {
+    try {
+        const t = req.body;
+        const id = generateUUID();
+        // Resolve customer_id
+        let customerId = t.customer_id || t.costumer_id || t.user_id || null;
+        if (customerId && !isUUID(customerId))
+            customerId = null;
+        if (!customerId && (t.author_email || t.email)) {
+            const email = t.author_email || t.email;
+            const custRes = await pool.query('SELECT id FROM users WHERE email ILIKE $1 LIMIT 1', [email]);
+            if (custRes.rows.length)
+                customerId = custRes.rows[0].id;
+        }
+        // Check JWT from cookie or authorization header if not provided
+        if (!customerId) {
+            const token = req.cookies?.token || (req.headers.authorization ? req.headers.authorization.replace(/^Bearer\s+/i, '') : null);
+            if (token) {
+                try {
+                    const decoded = jwt.verify(token, JWT_SECRET);
+                    if (decoded && decoded.id && isUUID(decoded.id)) {
+                        customerId = decoded.id;
+                    }
+                }
+                catch (_) { }
+            }
+        }
+        // If customerId resolved, auto-fill author name from user if omitted or default
+        if (customerId && (!t.author_name || t.author_name === 'Traveler')) {
+            try {
+                const cust = await pool.query('SELECT full_name, email, avatar_url FROM users WHERE id = $1', [customerId]);
+                if (cust.rows.length) {
+                    if (!t.author_name || t.author_name === 'Traveler')
+                        t.author_name = cust.rows[0].full_name;
+                    if (!t.avatar_url && cust.rows[0].avatar_url)
+                        t.avatar_url = cust.rows[0].avatar_url;
+                }
+            }
+            catch (_) { }
+        }
+        // Resolve destination_id
+        let destinationId = t.destination_id || null;
+        if (destinationId && !isUUID(destinationId))
+            destinationId = null;
+        const destName = t.destination_name || t.destination || 'Rome';
+        if (!destinationId) {
+            const destRes = await pool.query('SELECT id FROM destination WHERE name ILIKE $1 LIMIT 1', [destName]);
+            if (destRes.rows.length)
+                destinationId = destRes.rows[0].id;
+        }
+        const { rows } = await pool.query(`
+      INSERT INTO testimonials
+        (id, costumer_id, destination_id, destination_name, author_name, author_location,
+         role_title, quote, rating, avatar_url, trip_tag)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *`, [id, customerId, destinationId, destName,
+            t.author_name || 'Traveler',
+            t.author_location || 'Global Explorer',
+            t.role_title || 'Verified Traveler',
+            t.quote || '',
+            parseFloat(t.rating) || 5.0,
+            t.avatar_url || './assets/testimonials-avatar-1.png',
+            t.trip_tag || (destName + ' Tour')]);
+        res.status(201).json(rows[0]);
+    }
+    catch (err) {
+        console.error('POST /api/testimonials error:', err);
+        res.status(500).json({ error: 'Database error', details: String(err) });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// AUTH – Register / Login / Profile / Session (Bcrypt + JWT)
+// ══════════════════════════════════════════════════════════════
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { full_name, email, password, phone, avatar_url } = req.body;
+        if (!email || !full_name)
+            return res.status(400).json({ error: 'full_name and email are required' });
+        // Check duplicate in users table
+        const exists = await pool.query('SELECT id FROM users WHERE email ILIKE $1', [email]);
+        if (exists.rows.length)
+            return res.status(409).json({ error: 'Email already registered' });
+        // Hash password securely with bcrypt
+        let hashedPassword = null;
+        if (password && typeof password === 'string' && password.trim().length > 0) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+        const id = generateUUID();
+        const { rows } = await pool.query(`
+      INSERT INTO users (id, full_name, email, password, phone, avatar_url, logged_in_at)
+      VALUES ($1,$2,$3,$4,$5,$6,NOW())
+      RETURNING id, full_name, email, phone, avatar_url, created_at, updated_at`, [id, full_name, email, hashedPassword, phone || null, avatar_url || null]);
+        const safeUser = rows[0];
+        const token = generateToken(safeUser);
+        // Set secure HTTP-only cookie for session storage
+        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`);
+        res.status(201).json({
+            ...safeUser,
+            token,
+            user: safeUser
+        });
+    }
+    catch (err) {
+        console.error('POST /api/auth/register error:', err);
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
+    }
+});
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password, username, id } = req.body;
+        const identifier = (email || username || id || '').toString().trim();
+        if (!identifier)
+            return res.status(400).json({ error: 'Email, username, or ID is required' });
+        let query = 'SELECT * FROM users WHERE email ILIKE $1 OR full_name ILIKE $1';
+        const params = [identifier];
+        if (isUUID(identifier)) {
+            query += ` OR id = $${params.length + 1}`;
+            params.push(identifier);
+        }
+        query += ' LIMIT 1';
+        const { rows } = await pool.query(query, params);
+        if (!rows.length)
+            return res.status(401).json({ error: 'Invalid credentials' });
+        const user = rows[0];
+        // Password verification with bcrypt & transparent legacy plaintext upgrade
+        let isValidPassword = false;
+        if (user.password) {
+            if (!password) {
+                return res.status(401).json({ error: 'Password is required' });
+            }
+            // Check if stored password is a bcrypt hash ($2a$, $2b$, or $2y$)
+            if (/^\$2[aby]\$\d{2}\$/.test(user.password)) {
+                isValidPassword = await bcrypt.compare(password, user.password);
+            }
+            else {
+                // Plain text legacy fallback
+                if (user.password === password) {
+                    isValidPassword = true;
+                    // Auto-upgrade legacy plaintext password to strong bcrypt hash in PostgreSQL
+                    try {
+                        const upgradedHash = await bcrypt.hash(password, 10);
+                        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
+                    }
+                    catch (upgradeErr) {
+                        console.warn('Failed to upgrade password hash:', upgradeErr);
+                    }
+                }
+            }
+        }
+        else {
+            // Demo accounts without a password
+            isValidPassword = true;
+        }
+        if (!isValidPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        // Update logged_in_at in users table
+        await pool.query('UPDATE users SET logged_in_at=NOW() WHERE id=$1', [user.id]);
+        // Return user without password + signed JWT
+        const { password: _pw, ...safeUser } = user;
+        const token = generateToken(safeUser);
+        // Set secure HTTP-only cookie for session storage
+        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`);
+        res.json({
+            ...safeUser,
+            token,
+            user: safeUser
+        });
+    }
+    catch (err) {
+        console.error('POST /api/auth/login error:', err);
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
+    }
+});
+// Authenticated current user endpoint (validates JWT)
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM users WHERE id::text = $1 LIMIT 1', [userId]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'User not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('GET /api/auth/me error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.get('/api/auth/profile', optionalAuth, async (req, res) => {
+    try {
+        let { email, id } = req.query;
+        if (!email && !id && req.user) {
+            id = req.user.id;
+            email = req.user.email;
+        }
+        if (!email && !id)
+            return res.status(400).json({ error: 'email or id is required (or Authorization token)' });
+        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM users WHERE email ILIKE $1 OR id::text = $2 LIMIT 1', [email || '', id || '']);
+        if (!rows.length)
+            return res.status(404).json({ error: 'User not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('GET /api/auth/profile error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.patch('/api/auth/profile', optionalAuth, async (req, res) => {
+    try {
+        let { id, email, full_name, phone, avatar_url, password } = req.body;
+        // Enforce authenticated identity if logged in (IDOR prevention)
+        if (req.user) {
+            id = req.user.id;
+            email = req.user.email;
+        }
+        if (!id && !email)
+            return res.status(400).json({ error: 'id or email is required' });
+        const sets = [];
+        const params = [];
+        if (full_name) {
+            params.push(full_name);
+            sets.push(`full_name=$${params.length}`);
+        }
+        if (phone !== undefined) {
+            params.push(phone);
+            sets.push(`phone=$${params.length}`);
+        }
+        if (avatar_url !== undefined) {
+            params.push(avatar_url);
+            sets.push(`avatar_url=$${params.length}`);
+        }
+        if (password && typeof password === 'string' && password.trim().length > 0) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            params.push(hashedPassword);
+            sets.push(`password=$${params.length}`);
+        }
+        if (!sets.length)
+            return res.status(400).json({ error: 'No fields to update' });
+        params.push(id || '');
+        params.push(email || '');
+        const { rows } = await pool.query(`UPDATE users SET ${sets.join(',')}, updated_at=NOW()
+       WHERE (id::text=$${params.length - 1} OR email ILIKE $${params.length})
+       RETURNING id, full_name, email, phone, avatar_url, updated_at`, params);
+        if (!rows.length)
+            return res.status(404).json({ error: 'User not found in PostgreSQL' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/auth/profile error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// Logout endpoint (clears HTTP-only session cookie)
+app.post('/api/auth/logout', (_req, res) => {
+    res.setHeader('Set-Cookie', 'jadoo_auth_token=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+// ══════════════════════════════════════════════════════════════
+// LEGACY: OpenTripMap proxy  (existing functionality)
+// ══════════════════════════════════════════════════════════════
+app.get('/api/destination', async (req, res) => {
+    const destination = req.query.name;
+    const API_KEY = process.env.Open_Trip_Map;
+    if (!destination)
+        return res.status(400).json({ error: 'Destination name is required' });
+    if (!API_KEY)
+        return res.status(500).json({ error: 'OpenTripMap API key is missing in .env' });
+    try {
+        const data = await fetchDestinationDetails(destination);
+        if (!data)
+            return res.status(404).json({ error: `Destination "${destination}" not found` });
+        res.json(data);
+    }
+    catch (err) {
+        console.error('OpenTripMap proxy error:', err);
+        res.status(502).json({ error: 'Failed to fetch destination data' });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// TICKET VERIFY (existing)
+// ══════════════════════════════════════════════════════════════
+app.get('/api/ticket/verify', async (req, res) => {
+    const { id, token } = req.query;
+    if (!id)
+        return res.status(400).json({ error: 'Booking reference is required', verified: false });
+    // Lookup in DB
+    try {
+        const { rows } = await pool.query('SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $2 LIMIT 1', [id, id]);
+        const booking = rows[0] || null;
+        res.json({
+            verified: Boolean(booking && booking.status !== 'cancelled'),
+            bookingId: id.toUpperCase(),
+            token: token || 'VALID-TICKET',
+            clearance: booking ? 'GRANTED' : 'DENIED',
+            status: booking ? booking.status.toUpperCase() : 'NOT_FOUND',
+            scannedAt: new Date().toISOString(),
+            agency: 'Jadoo Travel Agency'
+        });
+    }
+    catch {
+        res.json({ verified: true, bookingId: id.toUpperCase(), clearance: 'GRANTED', scannedAt: new Date().toISOString() });
+    }
+});
+// ══════════════════════════════════════════════════════════════
+// NEWSLETTER SUBSCRIPTION
+// ══════════════════════════════════════════════════════════════
+app.post('/api/newsletter', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email || typeof email !== 'string' || !email.includes('@')) {
+            return res.status(400).json({ error: 'Valid email is required' });
+        }
+        await pool.query(`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+        await pool.query('INSERT INTO newsletter_subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING', [email.trim().toLowerCase()]);
+        res.json({ success: true, message: 'Subscribed successfully to Jadoo updates!' });
+    }
+    catch (err) {
+        console.error('POST /api/newsletter error:', err);
+        res.status(500).json({ error: 'Failed to subscribe' });
+    }
 });
 // Mount Modular Service Routers
 app.use('/api/auth', authRouter);

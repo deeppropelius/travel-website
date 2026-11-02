@@ -2,8 +2,8 @@
 -- ── Extensions ───────────────────────────────────────────────
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- gen_random_uuid()
 
--- ── 1. Customer ──────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS customer (
+-- ── 1. Users ─────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name   TEXT        NOT NULL,
   email       TEXT        NOT NULL UNIQUE,
@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS customer (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Backwards-compatible view alias
+CREATE OR REPLACE VIEW customer AS SELECT * FROM users;
 
 -- ── 2. Destination ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS destination (
@@ -75,6 +78,9 @@ CREATE TABLE IF NOT EXISTS booking (
   image_url       TEXT,
   service_id      TEXT,
   service_name    TEXT,
+  booked_services JSONB         DEFAULT '[]'::jsonb,
+  seat_number     TEXT,
+  is_boarded      BOOLEAN       NOT NULL DEFAULT FALSE,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
