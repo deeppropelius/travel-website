@@ -1,4 +1,6 @@
+import express from "express";
 import { createRequire } from "node:module";
+import { pool } from "./db.js";
 const require = createRequire(import.meta.url);
 // Load cities.json dataset (around 130,000+ cities worldwide)
 const citiesData = require("cities.json");
@@ -285,3 +287,79 @@ export async function fetchDestinationDetails(destinationName) {
         places: places,
     };
 }
+// ══════════════════════════════════════════════════════════════
+// DESTINATION ROUTER
+// ══════════════════════════════════════════════════════════════
+export const destinationRouter = express.Router();
+// GET /api/destinations
+destinationRouter.get('/destinations', async (_req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM destination ORDER BY name');
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/destinations error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// GET /api/destinations/:id
+destinationRouter.get('/destinations/:id', async (req, res) => {
+    try {
+        const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id);
+        const { rows } = isGuid
+            ? await pool.query('SELECT * FROM destination WHERE id = $1 LIMIT 1', [req.params.id])
+            : await pool.query('SELECT * FROM destination WHERE name ILIKE $1 LIMIT 1', [req.params.id]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Destination not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('GET /api/destinations/:id error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// GET /api/attractions
+destinationRouter.get('/attractions', async (req, res) => {
+    try {
+        const { destination, category } = req.query;
+        let query = 'SELECT * FROM attraction';
+        const params = [];
+        const conditions = [];
+        if (destination) {
+            params.push(`%${destination}%`);
+            conditions.push(`destination_name ILIKE $${params.length}`);
+        }
+        if (category && category !== 'All') {
+            params.push(category);
+            conditions.push(`category = $${params.length}`);
+        }
+        if (conditions.length)
+            query += ' WHERE ' + conditions.join(' AND ');
+        query += ' ORDER BY rating DESC';
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    }
+    catch (err) {
+        console.error('GET /api/attractions error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// GET /api/destination (live OpenTripMap / Wikipedia geosearch)
+destinationRouter.get('/destination', async (req, res) => {
+    const destination = req.query.name;
+    const API_KEY = process.env.Open_Trip_Map;
+    if (!destination)
+        return res.status(400).json({ error: 'Destination name is required' });
+    if (!API_KEY)
+        return res.status(500).json({ error: 'OpenTripMap API key is missing in .env' });
+    try {
+        const data = await fetchDestinationDetails(destination);
+        if (!data)
+            return res.status(404).json({ error: `Destination "${destination}" not found` });
+        res.json(data);
+    }
+    catch (err) {
+        console.error('OpenTripMap proxy error:', err);
+        res.status(502).json({ error: 'Failed to fetch destination data' });
+    }
+});

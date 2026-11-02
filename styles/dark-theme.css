@@ -702,6 +702,7 @@ html[data-theme="dark"],
 .navitems.active ~ .theme-toggle,
 header:has(.navitems.active) ~ .theme-toggle,
 body.mobile-nav-open .theme-toggle {
+  display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;

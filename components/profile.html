@@ -1017,6 +1017,21 @@
             if (badgeReviews) badgeReviews.textContent = String(userReviews.length);
         }
 
+        function formatBookingRef(b) {
+            if (!b) return '#BK-92841';
+            let raw = (typeof b === 'string' ? b : (b.booking_ref || b.bookingReference || b.bookingRef || b.id || '')).toString().trim();
+            if (!raw) return '#BK-92841';
+            raw = raw.replace(/^#+/, '').trim();
+            while (/^BK-BK-/i.test(raw)) raw = raw.replace(/^BK-BK-/i, 'BK-');
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(raw)) {
+                if (typeof b === 'object' && b.booking_ref && b.booking_ref !== raw) return formatBookingRef(b.booking_ref);
+                return '#BK-' + raw.replace(/-/g, '').substring(0, 5).toUpperCase();
+            }
+            if (/^BK-[A-Za-z0-9]+/i.test(raw)) return '#' + raw.toUpperCase();
+            if (/^BK[0-9]+/i.test(raw)) return '#BK-' + raw.substring(2).toUpperCase();
+            return '#BK-' + raw.toUpperCase();
+        }
+
         function renderTickets(user) {
             const listEl = document.getElementById('profileTicketsList');
             if (!listEl) return;
@@ -1040,7 +1055,7 @@
             }
 
             listEl.innerHTML = bookings.map(b => {
-                const bookingRef = b.booking_ref ? (b.booking_ref.startsWith('#') ? b.booking_ref : '#' + b.booking_ref) : ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'));
+                const bookingRef = formatBookingRef(b);
                 const formattedDate = formatBookingDate(b.travel_date);
                 const status = (b.status || 'confirmed').toLowerCase();
                 const statusIcon = status === 'confirmed' ? 'fa-circle-check' : (status === 'cancelled' ? 'fa-circle-xmark' : 'fa-clock');
