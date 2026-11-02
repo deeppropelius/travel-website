@@ -246,6 +246,8 @@ body {
     width: 50%;
     height: 100%;
     border: none;
+    outline: none;
+    border-radius: 20px;
     background: transparent;
     font-family: "Poppins", sans-serif;
     font-size: 0.86rem;
@@ -256,6 +258,15 @@ body {
     justify-content: center;
     gap: 7px;
     transition: color 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sign-in:focus,
+.sign-up:focus,
+.sign-in:focus-visible,
+.sign-up:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .sign-in i,
@@ -1154,10 +1165,22 @@ body {
 
 [data-theme="dark"] .sign-up {
     color: #94A3B8;
+    outline: none;
+    border-radius: 20px;
 }
 
 [data-theme="dark"] .sign-in {
     color: #F8FAFC;
+    outline: none;
+    border-radius: 20px;
+}
+
+[data-theme="dark"] .sign-in:focus,
+[data-theme="dark"] .sign-up:focus,
+[data-theme="dark"] .sign-in:focus-visible,
+[data-theme="dark"] .sign-up:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 [data-theme="dark"] .toggle.signup-active .sign-in {

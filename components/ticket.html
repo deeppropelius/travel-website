@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Volkhov:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Volkhov:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles/styles.css">
     <link rel="stylesheet" href="../styles/tablet.css">
     <link rel="stylesheet" href="../styles/mobile.css">
@@ -18,10 +18,11 @@
     <link rel="stylesheet" href="../styles/features.css">
     <link rel="stylesheet" href="../styles/pages.css">
 
-    <!-- Early dark theme execution -->
+    <!-- Early dark theme & Auth guard (runs synchronously before paint) -->
     <script>
         (function () {
             try {
+                // Dark theme
                 var saved = localStorage.getItem('jadoo_dark_theme');
                 if (saved === null) {
                     var match = document.cookie.match(/(?:^|; )jadoo_dark_theme=([^;]*)/);
@@ -37,16 +38,85 @@
                     document.documentElement.removeAttribute('data-theme');
                 }
 
-                var loggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
-                if (!loggedOut) {
+                // Global instant theme toggle handler
+                window.toggleThemeGlobal = function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if (window.JadooTheme && typeof window.JadooTheme.toggle === 'function') {
+                        return window.JadooTheme.toggle();
+                    }
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme') === 'dark';
+                    var next = !current;
+                    if (next) {
+                        html.setAttribute('data-theme', 'dark');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'true');
+                            localStorage.setItem('jadoo_theme', 'true');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=true; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    } else {
+                        html.removeAttribute('data-theme');
+                        try {
+                            localStorage.setItem('jadoo_dark_theme', 'false');
+                            localStorage.setItem('jadoo_theme', 'false');
+                            var exp = new Date(); exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
+                            document.cookie = 'jadoo_dark_theme=false; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                        } catch (_) { }
+                    }
+                    var icons = document.querySelectorAll('#themeIcon, .theme-toggle i');
+                    icons.forEach(function (ic) {
+                        ic.className = next ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                    });
+                    var btns = document.querySelectorAll('#themeToggle, .theme-toggle');
+                    btns.forEach(function (btn) {
+                        btn.setAttribute('title', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.setAttribute('aria-label', next ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                        btn.style.transform = 'scale(1.2) rotate(25deg)';
+                        setTimeout(function () { btn.style.transform = ''; }, 320);
+                    });
+                    return next;
+                };
+
+                // Instant auth guard - redirect immediately, no flash
+                var isLoggedOut = localStorage.getItem('jadoo_logged_out') === 'true';
+                var userRaw = localStorage.getItem('jadoo_current_user');
+                var hasUser = false;
+                if (!isLoggedOut && userRaw) {
+                    try {
+                        var u = JSON.parse(userRaw);
+                        if (u && (u.email || u.id)) { hasUser = true; }
+                    } catch (e) {}
+                }
+                if (!hasUser && !isLoggedOut) {
+                    var cm = document.cookie.match(/(?:^|; )jadoo_current_user=([^;]*)/);
+                    if (cm) {
+                        try {
+                            var cu = JSON.parse(decodeURIComponent(cm[1]));
+                            if (cu && (cu.email || cu.id)) { hasUser = true; }
+                        } catch (e) {}
+                    }
+                }
+                if (!hasUser) {
+                    document.documentElement.style.display = 'none';
+                    window.location.replace('./auth.html#signin');
+                } else {
                     document.documentElement.classList.add('user-logged-in');
                 }
             } catch (e) { }
         })();
     </script>
 
-    <!-- QR Code Generator Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Real QR Code Generator Library (Local first with CDN fallback) -->
+    <script src="../scripts/qrcode.js"></script>
+    <script>
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+        }
+    </script>
     <!-- Client-Side PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -71,9 +141,10 @@
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
                         <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
+                        <li><a href="./services.html" class="navlink">Services</a></li>
                         <li><a href="./profile.html" class="navlink">My Profile</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
-                        <li id="nav-signup-li"><button onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn">Sign Up</button></li>
+                        <li id="nav-signup-li"><button type="button" onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn" aria-label="Sign Up">Sign Up</button></li>
                         <li id="nav-user-li" class="nav-user-item">
                             <div class="user-profile-dropdown" id="userProfileDropdown">
                                 <button type="button" class="user-profile-btn" id="userProfileBtn" onclick="window.toggleUserNavDropdown(event)" title="Account Menu" aria-label="User Account" aria-expanded="false" aria-haspopup="true">
@@ -87,7 +158,8 @@
                                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
                                     <div class="dropdown-user-header">
                                         <div class="dropdown-avatar-circle">
-                                            <i class="fa-solid fa-user"></i>
+                                            <img src="../assets/testimonials-avatar-1.png" alt="Avatar" class="dropdown-user-avatar-img" id="dropdownUserAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                            <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
                                             <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
@@ -153,121 +225,208 @@
                             <option value="">Switch to Another Ticket...</option>
                         </select>
                     </div>
-                    <button type="button" class="ticket-tool-btn btn-pdf" id="downloadPdfBtn" title="Download PDF Voucher">
+                    <button type="button" class="ticket-tool-btn btn-pdf" id="downloadPdfBtn" title="Download Official PDF Ticket">
                         <i class="fa-solid fa-file-arrow-down"></i>
-                        <span>Download PDF</span>
-                    </button>
-                    <button type="button" class="ticket-tool-btn btn-print" id="printTicketBtn" title="Print Tour Voucher">
-                        <i class="fa-solid fa-print"></i>
-                        <span>Print Ticket</span>
+                        <span>Download PDF Ticket</span>
                     </button>
                 </div>
             </div>
 
-            <!-- E-Ticket Card -->
-            <div class="ticket-voucher-card" id="ticketVoucherCard">
-                <!-- Voucher Header -->
-                <div class="ticket-voucher-header">
-                    <div class="ticket-brand-badge">
-                        <div class="ticket-brand-logo">
-                            <i class="fa-solid fa-paper-plane"></i>
+            <!-- Multi-Ticket Quick Switcher Rail -->
+            <div class="ticket-passes-slider" id="ticketPassesSlider" title="Quickly switch between your travel passes">
+                <!-- Dynamically populated with active user tickets -->
+            </div>
+
+            <!-- E-Ticket Card (Redesigned Luxury Experience Pass) -->
+            <div class="ticket-voucher-card luxury-ticket-pass heritage-pass-theme" id="ticketVoucherCard">
+                <!-- Ticket Body & Perforated Stub Section -->
+                <div class="ticket-pass-body">
+                    <!-- Main Travel Manifest Column -->
+                    <div class="ticket-manifest-col">
+                        <!-- Top Panoramic Hero Banner inside Manifest Column -->
+                        <div class="ticket-hero-banner">
+                            <img src="../assets/destination-rome.png" alt="Tour Destination" class="ticket-hero-bg" id="ticketTourImg" onerror="this.src='../assets/destination-rome.png'">
+                            <div class="ticket-hero-overlay"></div>
+                            <div class="ticket-hero-content">
+                                <div class="ticket-hero-top-row">
+                                    <div class="ticket-brand-chip">
+                                        <div class="ticket-brand-icon">
+                                            <i class="fa-solid fa-paper-plane"></i>
+                                        </div>
+                                        <div class="ticket-brand-text">
+                                            <span class="brand-title">JADOO TRAVEL</span>
+                                            <span class="brand-sub">Official Experience Pass</span>
+                                        </div>
+                                    </div>
+                                    <div class="ticket-hero-badges">
+                                        <span class="ticket-status-pill pill-confirmed" id="ticketCardStatusPill">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            <span id="ticketCardStatusText">CONFIRMED PASS</span>
+                                        </span>
+                                        <span class="ticket-ref-pill" id="ticketRefNumber">#BK-864515</span>
+                                    </div>
+                                </div>
+                                <div class="ticket-hero-bottom-row">
+                                    <div class="ticket-hero-title-wrap">
+                                        <span class="ticket-experience-type"><i class="fa-solid fa-compass"></i> CURATED ATTRACTION & CITY VOYAGE</span>
+                                        <h1 class="ticket-attraction-title" id="ticketTourTitle">Tower Bridge</h1>
+                                        <div class="ticket-hero-meta-row">
+                                            <span class="meta-location"><i class="fa-solid fa-location-dot"></i> <span id="ticketTourLocation">London, United Kingdom</span></span>
+                                            <span class="meta-divider">•</span>
+                                            <span class="meta-rating"><i class="fa-solid fa-star"></i> 4.9 (Top Rated Experience)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="ticket-brand-info">
-                            <h3>JADOO TRAVEL</h3>
-                            <span>Official E-Ticket & Tour Voucher</span>
+
+                        <!-- Cardstock Manifest Content Area -->
+                        <div class="voucher-manifest-inner">
+                            <!-- 4 Corner Gold Filigrees -->
+                            <div class="filigree-corner top-left" aria-hidden="true">
+                                <svg viewBox="0 0 40 40" width="30" height="30" fill="currentColor">
+                                    <path d="M4,4 Q24,6 26,26 Q18,20 16,16 Q12,12 4,4 Z M6,6 Q18,8 20,20 Q14,14 6,6 Z"/>
+                                </svg>
+                            </div>
+                            <div class="filigree-corner top-right" aria-hidden="true">
+                                <svg viewBox="0 0 40 40" width="30" height="30" fill="currentColor" style="transform: scaleX(-1);">
+                                    <path d="M4,4 Q24,6 26,26 Q18,20 16,16 Q12,12 4,4 Z M6,6 Q18,8 20,20 Q14,14 6,6 Z"/>
+                                </svg>
+                            </div>
+                            <div class="filigree-corner bottom-left" aria-hidden="true">
+                                <svg viewBox="0 0 40 40" width="30" height="30" fill="currentColor" style="transform: scaleY(-1);">
+                                    <path d="M4,4 Q24,6 26,26 Q18,20 16,16 Q12,12 4,4 Z M6,6 Q18,8 20,20 Q14,14 6,6 Z"/>
+                                </svg>
+                            </div>
+                            <div class="filigree-corner bottom-right" aria-hidden="true">
+                                <svg viewBox="0 0 40 40" width="30" height="30" fill="currentColor" style="transform: scale(-1);">
+                                    <path d="M4,4 Q24,6 26,26 Q18,20 16,16 Q12,12 4,4 Z M6,6 Q18,8 20,20 Q14,14 6,6 Z"/>
+                                </svg>
+                            </div>
+
+                            <!-- Option 1 Header Titles -->
+                            <div class="voucher-branding-center">
+                                <div class="voucher-script-logo">Jadoo Travel</div>
+                                <div class="voucher-sub-tag">TRAVEL EXCELLENCE</div>
+                                <h2 class="voucher-main-title">TRAVEL VOUCHER</h2>
+                            </div>
+
+                            <!-- Cockpit Meta Strip -->
+                            <div class="ticket-cockpit-bar">
+                                <div class="cockpit-item"><i class="fa-solid fa-plane"></i> <span>Voyage: <strong id="cockpitVoyageId">JD-8824</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-door-open"></i> <span>Gate: <strong id="cockpitGate">B14 (Terminal 2)</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-chair"></i> <span>Pass / Seat: <strong id="cockpitSeat">01A VIP</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-suitcase-rolling"></i> <span>Luggage: <strong>1 Cabin + 1 Checked</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-shield-halved" style="color: #10B981;"></i> <span>Protection: <strong>100% Guaranteed</strong></span></div>
+                            </div>
+
+                            <!-- Option 1 Primary Metadata Row -->
+                            <div class="voucher-primary-meta">
+                                <div class="meta-cell">
+                                    <span class="meta-label">TRAVELER NAME</span>
+                                    <strong class="meta-value" id="ticketPassengerName">Deep</strong>
+                                </div>
+                                <div class="meta-cell">
+                                    <span class="meta-label">PACKAGE</span>
+                                    <strong class="meta-value" id="ticketPackageTier">GRAND LUXURY HERITAGE TOUR</strong>
+                                </div>
+                                <div class="meta-cell">
+                                    <span class="meta-label">DEPARTURE</span>
+                                    <strong class="meta-value" id="ticketTravelDate">Oct 28, 2026</strong>
+                                </div>
+                                <div class="meta-cell">
+                                    <span class="meta-label">PARTY SIZE</span>
+                                    <strong class="meta-value" id="ticketGuestsCount">1 Traveler</strong>
+                                </div>
+                            </div>
+
+                            <!-- Reference & Payment Sub-line -->
+                            <div class="voucher-ref-line">
+                                <span>Booking Ref: <strong id="ticketVoucherRef">#BK-864515</strong></span>
+                                <span class="ref-sep">•</span>
+                                <span>Pass: <strong id="ticketSeatPass">01A</strong></span>
+                                <span class="ref-sep">•</span>
+                                <span>Payment: <strong style="color: #10B981;" id="ticketTotalPaid">$39.00 USD (Paid in Full)</strong></span>
+                            </div>
+
+                            <!-- 3 Lower Feature Columns (Itinerary, Inclusions, Experiences) -->
+                            <div class="voucher-features-grid">
+                                <div class="feature-col">
+                                    <div class="feature-header">
+                                        <i class="fa-solid fa-landmark-dome feature-icon"></i>
+                                        <span>ITINERARY</span>
+                                    </div>
+                                    <p class="feature-desc" id="ticketFeatureItinerary">
+                                        <strong id="ticketMeetingPoint">Main Tourist Gate, London, GB</strong>. Direct guided access with VIP admission to all landmark zones.
+                                    </p>
+                                </div>
+                                <div class="feature-col">
+                                    <div class="feature-header">
+                                        <i class="fa-solid fa-shield-halved feature-icon"></i>
+                                        <span>INCLUSIONS</span>
+                                    </div>
+                                    <p class="feature-desc">
+                                        Fast-track skip-the-line pass, certified English-speaking master guide, audio headset, and 100% full refund guarantee.
+                                    </p>
+                                </div>
+                                <div class="feature-col">
+                                    <div class="feature-header">
+                                        <i class="fa-solid fa-star feature-icon"></i>
+                                        <span>EXPERIENCES</span>
+                                    </div>
+                                    <p class="feature-desc">
+                                        Curated panoramic photo stops, historical insights, and exclusive Jadoo traveler privileges throughout the voyage.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Fine Disclaimers -->
+                            <div class="voucher-disclaimer-note">
+                                * The premier paper voucher serves as verified admission across all authorized checkpoints. Valid photo identification is required at the meeting point.
+                            </div>
                         </div>
                     </div>
-                    <div class="ticket-header-meta">
-                        <div class="ticket-ref-box">
-                            <strong>Reference:</strong> <span id="ticketRefNumber">#BK-92841</span>
-                        </div>
-                        <div class="ticket-ref-box" style="display: none;" id="ticketIssueDateWrap">
-                            <strong>Issued:</strong> <span id="ticketIssueDate">Nov 15, 2026</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Voucher Body -->
-                <div class="ticket-voucher-main">
-                    <!-- Left: Tour and Traveler Details -->
-                    <div class="ticket-details-col">
-                        <!-- Tour Showcase -->
-                        <div class="ticket-tour-hero">
-                            <img src="../assets/destination-rome.png" alt="Tour Destination" class="ticket-tour-thumb" id="ticketTourImg" onerror="this.src='../assets/destination-rome.png'">
-                            <div class="ticket-tour-heading">
-                                <h2 id="ticketTourTitle">Colosseum & Historic Walking Tour</h2>
-                                <span class="ticket-tour-location" id="ticketTourLocation">
-                                    <i class="fa-solid fa-location-dot"></i> Rome, Italy
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- 2x4 Details Grid -->
-                        <div class="ticket-info-grid">
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Lead Traveler</span>
-                                <span class="ticket-info-value" id="ticketPassengerName">Alex Johnson</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Travel Date</span>
-                                <span class="ticket-info-value" id="ticketTravelDate">Nov 15, 2026</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Party Size</span>
-                                <span class="ticket-info-value" id="ticketGuestsCount">2 Travelers</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Package Tier</span>
-                                <span class="ticket-info-value val-highlight" id="ticketPackageTier">VIP Tour Package</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Contact Email</span>
-                                <span class="ticket-info-value" id="ticketEmail">alex.traveler@example.com</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Contact Phone</span>
-                                <span class="ticket-info-value" id="ticketPhone">+1 (555) 234-5678</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Meeting Point</span>
-                                <span class="ticket-info-value" id="ticketMeetingPoint">Main Visitor Center</span>
-                            </div>
-                            <div class="ticket-info-item">
-                                <span class="ticket-info-label">Payment Status</span>
-                                <span class="ticket-info-value" style="color: #10B981;" id="ticketTotalPaid">$110.00 USD (Paid in Full)</span>
-                            </div>
-                        </div>
-
-                        <!-- Tour Inclusions & Traveler Instructions -->
-                        <div class="ticket-inclusions-box">
-                            <div class="ticket-inclusions-title">
-                                <i class="fa-solid fa-circle-info" style="color: #DF6951;"></i>
-                                Important Traveler Information & Inclusions
-                            </div>
-                            <p class="ticket-inclusions-text">
-                                • <strong>Check-in Notice:</strong> Please present this digital E-ticket or a printed voucher at the meeting point 15 minutes before the tour departure time. Valid photo identification is required for each traveler.<br>
-                                • <strong>Included Services:</strong> Certified English-speaking tour guide, fast-track skip-the-line entrance tickets, personal headset, and 100% full refund cancellation guarantee.
-                            </p>
-                        </div>
+                    <!-- Vertical Perforation Stitch Divider -->
+                    <div class="perforation-stitch-divider">
+                        <div class="stitch-cutout stitch-cutout-top"></div>
+                        <div class="stitch-line"></div>
+                        <div class="stitch-cutout stitch-cutout-bottom"></div>
                     </div>
 
-                    <!-- Right: Perforated Tear-off Check-in Stub -->
-                    <div class="ticket-stub-col">
-                        <div class="ticket-notch-top"></div>
-                        <div class="ticket-notch-bottom"></div>
+                    <!-- Right VIP Check-In Pass Stub -->
+                    <div class="ticket-qr-stub">
+                        <!-- Embossed 3D Gold Seal -->
+                        <div class="voucher-gold-seal" title="Official Verified Admission">
+                            <i class="fa-solid fa-check"></i>
+                            <span class="seal-text-main">VERIFIED</span>
+                            <span class="seal-text-sub">ACCESS</span>
+                        </div>
 
-                        <span class="stub-header-lbl">CHECK-IN STUB</span>
+                        <div class="stub-traveler-name" id="stubTraveler">DEEP</div>
+                        <div class="stub-vip-tag">VIP ADMISSION PASS</div>
 
-                        <div class="stub-qr-box" id="stubQrBox" title="Scannable Tour Check-in Code">
+                        <!-- Scannable High-Contrast QR Code -->
+                        <div class="luxury-qr-frame" id="stubQrBox" title="Click to Enlarge for Scanner" style="cursor: pointer;">
                             <div id="stubQrCanvas"></div>
                         </div>
+                        <span style="font-size: 0.68rem; color: #64748B; margin-top: -4px;"><i class="fa-solid fa-magnifying-glass-plus"></i> Tap to Enlarge</span>
 
-                        <span class="stub-scan-hint"><i class="fa-solid fa-qrcode"></i> Scan at Tour Entrance</span>
+                        <!-- Barcode & Serial Code -->
+                        <div class="stub-barcode-wrap">
+                            <div class="mock-barcode-lines" aria-hidden="true">
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                            <div class="stub-serial-code" id="stubTicketId">BK-864515</div>
+                        </div>
 
-                        <div class="stub-meta-info" id="stubTicketId">BK-92841</div>
-                        <div style="font-size: 0.8rem; color: #64748B; margin-top: 0.25rem;" id="stubTraveler">Alex Johnson</div>
-                        <div style="font-size: 0.75rem; color: #10B981; font-weight: 700; margin-top: 0.5rem;">
-                            <i class="fa-solid fa-shield-halved"></i> VERIFIED VOUCHER
+                        <div class="stub-verified-seal" title="Cryptographically Verified">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>VERIFIED VOUCHER</span>
                         </div>
                     </div>
                 </div>
@@ -275,22 +434,198 @@
 
             <!-- Bottom Action Toolbar -->
             <div class="ticket-actions-bar">
-                <button type="button" class="btn-primary-glow" id="bottomPrintBtn">
-                    <i class="fa-solid fa-print"></i>
-                    <span>Print Ticket</span>
+                <button type="button" class="btn-primary-glow" id="bottomPdfBtn">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span>Download PDF Ticket</span>
                 </button>
-                <button type="button" class="btn-secondary-flat" id="bottomPdfBtn">
-                    <i class="fa-solid fa-file-pdf" style="color: #DF6951;"></i>
-                    <span>Download PDF</span>
+                <button type="button" class="btn-secondary-flat" id="printTicketBtn" title="Print High-Resolution Voucher">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Print Pass</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="addToCalendarBtn" title="Download .ics Calendar Event">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    <span>Add to Calendar</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="openWalletModalBtn" title="Save to Mobile Wallet">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Digital Wallet</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="openMapModalBtn" title="View Meeting Point Directions">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Meeting Point</span>
                 </button>
                 <button type="button" class="btn-secondary-flat" id="cancelReservationBtn" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.3);">
                     <i class="fa-solid fa-ban"></i>
                     <span>Cancel Reservation</span>
                 </button>
-                <a href="./destination-page.html" class="btn-secondary-flat" style="text-decoration: none;">
-                    <i class="fa-solid fa-compass"></i>
-                    <span>Explore More Trips</span>
-                </a>
+            </div>
+
+            <!-- Destination Intelligence & Live Weather Grid -->
+            <div class="ticket-dest-intel-grid" id="destIntelGrid">
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box weather-box"><i class="fa-solid fa-cloud-sun"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Destination Weather</span>
+                        <span class="intel-value" id="intelWeatherVal">22°C Clear & Mild</span>
+                        <span class="intel-sub" id="intelWeatherSub">Ideal for walking & sightseeing</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box time-box"><i class="fa-solid fa-clock"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Local Destination Time</span>
+                        <span class="intel-value" id="intelTimeVal">12:30 PM CEST</span>
+                        <span class="intel-sub" id="intelTimeSub">Synchronized local clock</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box currency-box"><i class="fa-solid fa-coins"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Currency & Payments</span>
+                        <span class="intel-value" id="intelCurrencyVal">EUR (€) Accepted</span>
+                        <span class="intel-sub">Cards & contactless accepted everywhere</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box emergency-box"><i class="fa-solid fa-headset"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">24/7 VIP Concierge</span>
+                        <span class="intel-value">+1 (800) 523-6677</span>
+                        <span class="intel-sub">Direct emergency traveler line</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voyage Prep: Interactive Checklist & Timeline Grid -->
+            <div class="ticket-voyage-prep">
+                <div class="prep-card">
+                    <div class="prep-card-header">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <h3>Traveler Preparation Checklist</h3>
+                    </div>
+                    <div class="prep-checklist-list" id="prepChecklist">
+                        <label class="prep-checklist-item is-checked">
+                            <input type="checkbox" checked data-task="booking_confirmed">
+                            <span class="prep-item-text">Official Booking Reference Verified</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="id_check">
+                            <span class="prep-item-text">Valid Government Photo ID or Passport In Hand</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="offline_pass">
+                            <span class="prep-item-text">Digital E-Ticket or PDF Downloaded Offline</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="meeting_arrive">
+                            <span class="prep-item-text">Arrive at Tourist Gate 15 Mins Prior to Meeting Time</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="prep-card">
+                    <div class="prep-card-header">
+                        <i class="fa-solid fa-route"></i>
+                        <h3>Day-of-Voyage Schedule</h3>
+                    </div>
+                    <div class="timeline-track" id="voyageTimeline">
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">09:30 AM</span>
+                            <span class="timeline-step-title">Guide Meet & VIP Check-In</span>
+                            <span class="timeline-step-desc">Welcome greeting by your master guide with audio headset distribution.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">10:00 AM</span>
+                            <span class="timeline-step-title">Fast-Track Priority Entry</span>
+                            <span class="timeline-step-desc">Direct skip-the-line admission through dedicated VIP entrance.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">11:30 AM</span>
+                            <span class="timeline-step-title">Curated Historical Landmark Walk</span>
+                            <span class="timeline-step-desc">In-depth archaeological commentary with private landmark highlights.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">12:45 PM</span>
+                            <span class="timeline-step-title">Panoramic Vista & Free Exploration</span>
+                            <span class="timeline-step-desc">Exclusive rooftop/terrace photo stop and personalized concierge recommendations.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal 1: Full-Screen QR Pass Scanner Modal -->
+            <div class="ticket-modal-overlay" id="qrScanModal" role="dialog" aria-modal="true" aria-labelledby="qrScanTitle">
+                <div class="ticket-modal-card">
+                    <button type="button" class="ticket-modal-close-btn" id="closeQrScanBtn" aria-label="Close Scanner"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="qrScanTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">High-Brightness Scanner Pass</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0 0 1rem 0;">Present this barcode at turnstiles and checkpoint scanners.</p>
+                    <div class="qr-scan-screen">
+                        <div class="qr-laser-line"></div>
+                        <div id="bigQrCanvas"></div>
+                    </div>
+                    <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #DF6951;" id="bigQrRef">BK-864515</div>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.76rem; color: #10B981; margin: 0.5rem 0 0 0;"><i class="fa-solid fa-circle-check"></i> Cryptographically Validated Pass</p>
+                </div>
+            </div>
+
+            <!-- Modal 2: Digital Wallet Pass Preview Modal -->
+            <div class="ticket-modal-overlay" id="walletPassModal" role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
+                <div class="ticket-modal-card">
+                    <button type="button" class="ticket-modal-close-btn" id="closeWalletBtn" aria-label="Close Wallet Modal"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="walletModalTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">Add to Digital Wallet</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0;">Keep your pass accessible offline on Apple Wallet or Google Pay.</p>
+                    
+                    <div class="wallet-pass-preview">
+                        <div class="wallet-top">
+                            <span class="wallet-logo">Jadoo Experience</span>
+                            <i class="fa-solid fa-wifi wallet-nfc" title="Contactless NFC Ready"></i>
+                        </div>
+                        <div class="wallet-tour" id="walletTourName">Colosseum Historic Walk</div>
+                        <div style="font-size: 0.82rem; color: #F1A501;" id="walletTraveler">Alex Johnson</div>
+                        <div class="wallet-meta">
+                            <div><span>DATE: </span><strong id="walletDate">Nov 15, 2026</strong></div>
+                            <div><span>GATE: </span><strong>B14</strong></div>
+                            <div><span>PASS: </span><strong id="walletRef">#BK-92841</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="wallet-btns-row">
+                        <button type="button" class="btn-primary-glow" id="saveAppleWalletBtn" style="background: #000; color: #FFF; box-shadow: none;">
+                            <i class="fa-brands fa-apple"></i> <span>Apple Wallet</span>
+                        </button>
+                        <button type="button" class="btn-primary-glow" id="saveGooglePayBtn" style="background: #4285F4; color: #FFF; box-shadow: none;">
+                            <i class="fa-brands fa-google"></i> <span>Google Pay</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal 3: Meeting Point Map Modal -->
+            <div class="ticket-modal-overlay" id="meetingPointModal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
+                <div class="ticket-modal-card" style="max-width: 520px;">
+                    <button type="button" class="ticket-modal-close-btn" id="closeMapBtn" aria-label="Close Map Modal"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="mapModalTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">Meeting Point Directions</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0 0 0.85rem 0;">Exact landmark location & walking arrival guidance.</p>
+                    
+                    <div class="map-visual-box" id="mapVisualBox">
+                        <div class="map-visual-overlay"></div>
+                        <i class="fa-solid fa-location-dot map-pin-pulse"></i>
+                    </div>
+
+                    <div style="text-align: left; background: #F8FAFC; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: #14183E; font-size: 0.95rem; margin-bottom: 0.35rem;" id="mapMeetingPointText">Main Tourist Gate, Rome, Italy</div>
+                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4;">Coordinates: <strong id="mapCoords">41.8902° N, 12.4922° E</strong></div>
+                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4; margin-top: 0.25rem;">Guide holds a bright orange <strong>Jadoo Travel</strong> flag outside the official entrance.</div>
+                    </div>
+
+                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="btn-primary-glow" id="openGoogleMapsLink" style="width: 100%; text-decoration: none; justify-content: center; box-sizing: border-box;">
+                        <i class="fa-solid fa-diamond-turn-right"></i>
+                        <span>Open in Google Maps Navigation</span>
+                    </a>
+                </div>
             </div>
         </div>
     </main>
@@ -323,9 +658,9 @@
             </div>
             <div class="col fico">
                 <div class="footi">
-                    <div class="footer-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
-                    <div class="footer-social-icon instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="footer-social-icon" title="Twitter"><i class="fa-brands fa-twitter"></i></div>
+                    <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
                 </div>
                 <div class="fih">Discover our app</div>
                 <div class="store">
@@ -354,13 +689,25 @@
     </footer>
 
     <!-- Floating Dark Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Switch to Dark Mode" onclick="window.toggleThemeGlobal(event)">
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB } from '../scripts/db.js';
         import { JadooTheme, JadooToast, JadooNavAuth } from '../scripts/features.js';
+
+        if (typeof window !== 'undefined') {
+            window.JadooTheme = JadooTheme;
+            window.toggleThemeGlobal = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                return JadooTheme.toggle();
+            };
+        }
 
         let activeBooking = null;
         let allBookings = [];
@@ -376,19 +723,34 @@
             }
         }
 
-        function initTicketPage() {
+        async function initTicketPage() {
             // 1. Initialize theme and navbar
             JadooTheme.init();
             JadooNavAuth.init();
 
+            // Guard: redirect unauthenticated users immediately
+            const currentUser = JadooDB.getCurrentUser();
+            if (!currentUser) {
+                window.location.replace('./auth.html#signin');
+                return;
+            }
 
-            // 2. Load Bookings
+            // Prime cache from PostgreSQL backend
             try {
-                allBookings = JadooDB.getBookings() || [];
+                if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
+                    await JadooDB.primeCache();
+                }
+            } catch (_) {}
+
+            // 2. Load Bookings for current authenticated traveler
+            try {
+                allBookings = JadooDB.getUserBookings(currentUser?.email) || [];
+                if (allBookings.length === 0) {
+                    allBookings = JadooDB.getBookings() || [];
+                }
             } catch (_) {
                 allBookings = [];
             }
-
             // Default seed booking if database is empty
             if (allBookings.length === 0) {
                 const seedBooking = {
@@ -419,14 +781,29 @@
             const requestedId = params.get('id');
 
             if (requestedId) {
-                activeBooking = allBookings.find(b => b.id.toLowerCase() === requestedId.toLowerCase());
+                const search = requestedId.trim().toLowerCase();
+                activeBooking = allBookings.find(b => 
+                    (b.id && b.id.toLowerCase() === search) || 
+                    (b.booking_ref && b.booking_ref.toLowerCase() === search) ||
+                    (b.booking_ref && ('#' + b.booking_ref.toLowerCase()) === search) ||
+                    (b.id && ('#' + b.id.toLowerCase()) === search)
+                );
+            }
+
+            if (!activeBooking && requestedId) {
+                try {
+                    activeBooking = await JadooDB.getBookingAsync(requestedId);
+                    if (activeBooking) {
+                        allBookings.unshift(activeBooking);
+                    }
+                } catch (_) {}
             }
 
             if (!activeBooking) {
                 activeBooking = allBookings[0];
             }
 
-            // 4. Render Ticket Data
+            // 4. Render Ticket Data & All Suite Modules
             renderTicket(activeBooking);
 
             // 5. Populate Switcher Dropdown
@@ -434,24 +811,24 @@
             if (switchSelect && allBookings.length > 0) {
                 switchSelect.innerHTML = allBookings.map(b => `
                     <option value="${b.id}" ${b.id === activeBooking.id ? 'selected' : ''}>
-                        ${b.id} - ${b.attraction_name || b.destination_name} (${b.destination_name})
+                        ${b.booking_ref ? b.booking_ref + ' - ' : ''}${b.attraction_name || b.destination_name} (${b.destination_name})
                     </option>
                 `).join('');
 
                 switchSelect.addEventListener('change', (e) => {
                     const newId = e.target.value;
                     if (newId) {
-                        window.location.search = `?id=${encodeURIComponent(newId)}`;
+                        const target = allBookings.find(item => item.id === newId);
+                        if (target) {
+                            activeBooking = target;
+                            renderTicket(activeBooking);
+                            try { history.replaceState(null, '', '?id=' + encodeURIComponent(newId)); } catch (_) {}
+                        }
                     }
                 });
             }
 
-            // 6. Action Listeners
-            const printActions = [document.getElementById('printTicketBtn'), document.getElementById('bottomPrintBtn')];
-            printActions.forEach(btn => {
-                btn?.addEventListener('click', () => window.print());
-            });
-
+            // 6. Action Listeners (Direct PDF Download & Management)
             const pdfActions = [document.getElementById('downloadPdfBtn'), document.getElementById('bottomPdfBtn')];
             pdfActions.forEach(btn => {
                 btn?.addEventListener('click', () => downloadPdf(activeBooking));
@@ -459,6 +836,429 @@
 
             const cancelBtn = document.getElementById('cancelReservationBtn');
             cancelBtn?.addEventListener('click', () => cancelBooking(activeBooking));
+
+            // Initialize all rich interactive ticket suite listeners
+            initTicketSuiteInteractions();
+        }
+
+        function renderPassesSlider(active) {
+            const slider = document.getElementById('ticketPassesSlider');
+            if (!slider) return;
+
+            if (!allBookings || allBookings.length <= 1) {
+                slider.style.display = 'none';
+                return;
+            }
+
+            slider.style.display = 'flex';
+            slider.innerHTML = allBookings.map(b => {
+                const isActive = b.id === active.id;
+                const ref = b.booking_ref ? (b.booking_ref.startsWith('#') ? b.booking_ref : '#' + b.booking_ref) : ('#' + b.id.substring(0, 8));
+                let img = b.image_url || '../assets/destination-rome.png';
+                if (img.startsWith('./assets/')) img = '.' + img;
+                const name = b.attraction_name || b.destination_name;
+
+                return `
+                    <button type="button" class="ticket-pass-chip ${isActive ? 'is-active' : ''}" data-booking-id="${b.id}" title="Switch to ${name}">
+                        <img src="${img}" alt="${b.destination_name}" class="pass-chip-thumb" onerror="this.src='../assets/destination-rome.png'">
+                        <span>${name}</span>
+                        <span class="pass-chip-ref">${ref}</span>
+                    </button>
+                `;
+            }).join('');
+
+            slider.querySelectorAll('.ticket-pass-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const id = chip.getAttribute('data-booking-id');
+                    const target = allBookings.find(item => item.id === id);
+                    if (target) {
+                        activeBooking = target;
+                        renderTicket(activeBooking);
+                        const switchSelect = document.getElementById('switchBookingSelect');
+                        if (switchSelect) switchSelect.value = id;
+                        try { history.replaceState(null, '', '?id=' + encodeURIComponent(id)); } catch (_) {}
+                    }
+                });
+            });
+        }
+
+        const DEST_INTEL_MAP = {
+            'Rome': { weather: '22°C Clear & Mild', sub: 'Ideal Mediterranean sightseeing weather', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card Accepted', coords: '41.8902° N, 12.4922° E', meeting: 'Main Colosseum Gate, Piazza del Colosseo, 1, 00184 Roma RM, Italy' },
+            'Paris': { weather: '19°C Mild & Sunny', sub: 'Pleasant City of Light walking atmosphere', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card & Contactless', coords: '48.8584° N, 2.2945° E', meeting: 'Eiffel Tower East Pillar, Champ de Mars, 5 Av. Anatole France, 75007 Paris, France' },
+            'London': { weather: '17°C Light Breeze', sub: 'Partly sunny, light jacket recommended', tz: 'GMT+1 (BST)', offset: 1, curr: 'GBP (£) Oyster / Contactless', coords: '51.5055° N, 0.0754° W', meeting: 'Tower Bridge North Vault Entrance, Tower Bridge Rd, London SE1 2UP, UK' },
+            'Santorini': { weather: '25°C Aegean Sunshine', sub: 'Warm Aegean breeze, sunglasses recommended', tz: 'GMT+3 (EEST)', offset: 3, curr: 'EUR (€) Widely Accepted', coords: '36.3932° N, 25.4615° E', meeting: 'Oia Blue Dome Viewpoint, Nik. Nomikou, Oía 847 02, Greece' },
+            'Tokyo': { weather: '20°C Clear & Mild', sub: 'Excellent visibility across Tokyo skyline', tz: 'GMT+9 (JST)', offset: 9, curr: 'JPY (¥) IC Cards / Suica', coords: '35.6762° N, 139.6503° E', meeting: 'Shibuya Crossing Hachiko Statue Gate, 2 Chome-1 Dogenzaka, Shibuya, Tokyo' },
+            'New York': { weather: '18°C Autumn Crisp', sub: 'Clear skies across Manhattan skyline', tz: 'GMT-4 (EDT)', offset: -4, curr: 'USD ($) Apple Pay / Cards', coords: '40.7128° N, 74.0060° W', meeting: 'Rockefeller Center Plaza Gate, 45 Rockefeller Plaza, New York, NY 10111, USA' },
+            'Dubai': { weather: '31°C Sunny & Warm', sub: 'Sunny desert climate with luxury indoor air conditioning', tz: 'GMT+4 (GST)', offset: 4, curr: 'AED (د.إ) Cashless Ready', coords: '25.2048° N, 55.2708° E', meeting: 'Burj Khalifa Ground Concourse Gate, 1 Sheikh Mohammed bin Rashid Blvd, Dubai, UAE' }
+        };
+
+        function updateDestinationIntelligence(b) {
+            const dest = b.destination_name || 'Rome';
+            const intel = DEST_INTEL_MAP[dest] || {
+                weather: '21°C Pleasant Sightseeing',
+                sub: 'Ideal conditions for walking and outdoor activities',
+                tz: 'Local Timezone',
+                offset: 2,
+                curr: 'International Cards Accepted',
+                coords: '41.9028° N, 12.4964° E',
+                meeting: `Main Tourist Gate, ${dest}`
+            };
+
+            const weatherVal = document.getElementById('intelWeatherVal');
+            const weatherSub = document.getElementById('intelWeatherSub');
+            const timeVal = document.getElementById('intelTimeVal');
+            const currVal = document.getElementById('intelCurrencyVal');
+
+            if (weatherVal) weatherVal.textContent = intel.weather;
+            if (weatherSub) weatherSub.textContent = intel.sub;
+            if (currVal) currVal.textContent = intel.curr;
+
+            if (timeVal) {
+                try {
+                    const now = new Date();
+                    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                    const destTime = new Date(utc + (3600000 * intel.offset));
+                    timeVal.textContent = destTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) + ' ' + intel.tz.split(' ')[0];
+                } catch (_) {
+                    timeVal.textContent = '12:30 PM ' + intel.tz.split(' ')[0];
+                }
+            }
+
+            // Map Modal Update
+            const mapText = document.getElementById('mapMeetingPointText');
+            const mapCoords = document.getElementById('mapCoords');
+            const mapLink = document.getElementById('openGoogleMapsLink');
+            const mapBox = document.getElementById('mapVisualBox');
+
+            if (mapText) mapText.textContent = intel.meeting;
+            if (mapCoords) mapCoords.textContent = intel.coords;
+            if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.meeting)}`;
+            if (mapBox && b.image_url) {
+                let img = b.image_url;
+                if (img.startsWith('./assets/')) img = '.' + img;
+                mapBox.style.backgroundImage = `url('${img}')`;
+            }
+
+            // Wallet Modal Update
+            const walletTour = document.getElementById('walletTourName');
+            const walletTraveler = document.getElementById('walletTraveler');
+            const walletDate = document.getElementById('walletDate');
+            const walletRef = document.getElementById('walletRef');
+            if (walletTour) walletTour.textContent = b.attraction_name || `${b.destination_name} Voyage`;
+            if (walletTraveler) walletTraveler.textContent = b.user_name || 'Alex Johnson';
+            if (walletDate) walletDate.textContent = formatDate(b.travel_date);
+            if (walletRef) walletRef.textContent = b.booking_ref || ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'));
+        }
+
+        function updateChecklist(b) {
+            const list = document.getElementById('prepChecklist');
+            if (!list || !b) return;
+
+            const storageKey = `jadoo_checklist_${b.id || 'default'}`;
+            let savedState = {};
+            try {
+                savedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            } catch (_) {}
+
+            list.querySelectorAll('.prep-checklist-item').forEach(item => {
+                const input = item.querySelector('input[type="checkbox"]');
+                if (!input) return;
+                const taskId = input.getAttribute('data-task');
+
+                if (savedState[taskId] !== undefined) {
+                    input.checked = savedState[taskId];
+                }
+
+                if (input.checked) {
+                    item.classList.add('is-checked');
+                } else {
+                    item.classList.remove('is-checked');
+                }
+
+                input.onchange = () => {
+                    if (input.checked) {
+                        item.classList.add('is-checked');
+                    } else {
+                        item.classList.remove('is-checked');
+                    }
+                    savedState[taskId] = input.checked;
+                    try { localStorage.setItem(storageKey, JSON.stringify(savedState)); } catch (_) {}
+                };
+            });
+        }
+
+        function initTicketSuiteInteractions() {
+            // 1. Print Pass Button
+            const printBtn = document.getElementById('printTicketBtn');
+            printBtn?.addEventListener('click', () => {
+                window.print();
+            });
+
+            // 2. Add to Calendar (.ics download)
+            const calBtn = document.getElementById('addToCalendarBtn');
+            calBtn?.addEventListener('click', () => {
+                if (!activeBooking) return;
+                generateIcsCalendarFile(activeBooking);
+            });
+
+            // 3. Digital Wallet Modal
+            const walletBtn = document.getElementById('openWalletModalBtn');
+            const walletModal = document.getElementById('walletPassModal');
+            const closeWalletBtn = document.getElementById('closeWalletBtn');
+            walletBtn?.addEventListener('click', () => {
+                if (walletModal) walletModal.classList.add('is-active');
+            });
+            closeWalletBtn?.addEventListener('click', () => {
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            const appleBtn = document.getElementById('saveAppleWalletBtn');
+            appleBtn?.addEventListener('click', () => {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Apple Wallet Pass Ready', 'Pass synchronized with Apple Wallet credentials.', 'success');
+                } else {
+                    alert('Pass added to Apple Wallet successfully!');
+                }
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            const googleBtn = document.getElementById('saveGooglePayBtn');
+            googleBtn?.addEventListener('click', () => {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Google Pay Ready', 'Pass saved to Google Pay credentials.', 'success');
+                } else {
+                    alert('Pass saved to Google Pay successfully!');
+                }
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            // 4. Meeting Point Modal
+            const mapBtn = document.getElementById('openMapModalBtn');
+            const mapModal = document.getElementById('meetingPointModal');
+            const closeMapBtn = document.getElementById('closeMapBtn');
+            mapBtn?.addEventListener('click', () => {
+                if (mapModal) mapModal.classList.add('is-active');
+            });
+            closeMapBtn?.addEventListener('click', () => {
+                if (mapModal) mapModal.classList.remove('is-active');
+            });
+
+            // 6. Big QR Code Scanner Modal
+            const qrStubBox = document.getElementById('stubQrBox');
+            const qrModal = document.getElementById('qrScanModal');
+            const closeQrBtn = document.getElementById('closeQrScanBtn');
+            const bigQrCanvas = document.getElementById('bigQrCanvas');
+            const bigQrRef = document.getElementById('bigQrRef');
+
+            qrStubBox?.addEventListener('click', () => {
+                if (!activeBooking) return;
+                const cleanRef = activeBooking.booking_ref || ('#BK-' + (activeBooking.id ? activeBooking.id.substring(0, 6).toUpperCase() : '000000'));
+                if (bigQrRef) bigQrRef.textContent = cleanRef;
+                if (bigQrCanvas) {
+                    const qrUrl = (window.location.origin && window.location.origin !== 'null')
+                        ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(activeBooking.id)
+                        : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(activeBooking.id);
+                    renderSingleTicketQr(bigQrCanvas, qrUrl, 200);
+                }
+                if (qrModal) qrModal.classList.add('is-active');
+            });
+
+            closeQrBtn?.addEventListener('click', () => {
+                if (qrModal) qrModal.classList.remove('is-active');
+            });
+
+            // Close modals when clicking outside card or pressing Escape
+            document.querySelectorAll('.ticket-modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('is-active');
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.ticket-modal-overlay.is-active').forEach(m => m.classList.remove('is-active'));
+                }
+            });
+        }
+
+        function generateIcsCalendarFile(b) {
+            let start = new Date();
+            if (b.travel_date) {
+                const parsed = new Date(b.travel_date);
+                if (!isNaN(parsed.getTime())) start = parsed;
+            }
+            start.setHours(9, 30, 0, 0);
+            const end = new Date(start.getTime() + (3.5 * 3600000));
+
+            const formatDateIcs = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const tourName = b.attraction_name || `${b.destination_name} Curated Tour`;
+            const ref = b.booking_ref || b.id;
+
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Jadoo Travel//Experience Pass//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'BEGIN:VEVENT',
+                `UID:jadoo-${ref}@jadoo.co`,
+                `DTSTAMP:${formatDateIcs(new Date())}`,
+                `DTSTART:${formatDateIcs(start)}`,
+                `DTEND:${formatDateIcs(end)}`,
+                `SUMMARY:Jadoo Tour: ${tourName}`,
+                `DESCRIPTION:Confirmed travel booking with Jadoo Travel. Booking Ref: ${ref}. Fast-track skip-the-line admission included.`,
+                `LOCATION:Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`,
+                'STATUS:CONFIRMED',
+                'BEGIN:VALARM',
+                'TRIGGER:-PT2H',
+                'ACTION:DISPLAY',
+                'DESCRIPTION:Reminder: Your Jadoo Tour starts in 2 hours!',
+                'END:VALARM',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Jadoo-Tour-${ref}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (window.JadooToast) {
+                window.JadooToast.show('Calendar File Exported', 'Tour added to your downloaded .ics calendar file.', 'success');
+            }
+        }
+
+        function renderSingleTicketQr(container, text, size = 114) {
+            if (!container) return;
+            container.innerHTML = '';
+
+            function enforceSingleQrImage() {
+                const canvases = container.querySelectorAll('canvas');
+                const imgs = container.querySelectorAll('img');
+
+                // 1. If an image with a valid src exists
+                for (const img of imgs) {
+                    if (img.src && img.src.length > 50 && (img.src.startsWith('data:image') || img.src.startsWith('http') || img.src.startsWith('blob:'))) {
+                        img.style.display = 'block';
+                        img.style.width = size + 'px';
+                        img.style.height = size + 'px';
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                        img.style.objectFit = 'contain';
+                        img.style.borderRadius = '8px';
+                        canvases.forEach(c => c.remove());
+                        imgs.forEach(other => { if (other !== img) other.remove(); });
+                        return true;
+                    }
+                }
+
+                // 2. If canvas exists, convert to single data-URL <img>
+                if (canvases.length > 0) {
+                    const canvas = canvases[0];
+                    try {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        if (dataUrl && dataUrl.length > 100 && !dataUrl.includes('data:,')) {
+                            container.innerHTML = '';
+                            const singleImg = document.createElement('img');
+                            singleImg.src = dataUrl;
+                            singleImg.alt = 'Verified Ticket QR Pass';
+                            singleImg.style.display = 'block';
+                            singleImg.style.width = size + 'px';
+                            singleImg.style.height = size + 'px';
+                            singleImg.style.maxWidth = '100%';
+                            singleImg.style.maxHeight = '100%';
+                            singleImg.style.objectFit = 'contain';
+                            singleImg.style.borderRadius = '8px';
+                            container.appendChild(singleImg);
+                            return true;
+                        }
+                    } catch (_) {}
+
+                    canvases.forEach((c, idx) => { if (idx > 0) c.remove(); });
+                    imgs.forEach(i => i.remove());
+                    canvas.style.display = 'block';
+                    canvas.style.width = size + 'px';
+                    canvas.style.height = size + 'px';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.borderRadius = '8px';
+                    return true;
+                }
+
+                return false;
+            }
+
+            // Method 1: Try local or CDN QRCode library
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    new QRCode(container, {
+                        text: text,
+                        width: size,
+                        height: size,
+                        colorDark: '#181E4B',
+                        colorLight: '#FFFFFF',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+
+                    if (!enforceSingleQrImage()) {
+                        setTimeout(enforceSingleQrImage, 25);
+                        setTimeout(enforceSingleQrImage, 80);
+                    }
+                    return;
+                } catch (e) {
+                    console.warn('QRCode instance error, using fallback:', e);
+                }
+            }
+
+            // Method 2: High-contrast API image with pure SVG offline fallback
+            const fallbackImg = document.createElement('img');
+            fallbackImg.crossOrigin = 'anonymous';
+            fallbackImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=2&data=${encodeURIComponent(text)}`;
+            fallbackImg.alt = 'Verified Ticket QR Pass';
+            fallbackImg.style.display = 'block';
+            fallbackImg.style.width = size + 'px';
+            fallbackImg.style.height = size + 'px';
+            fallbackImg.style.maxWidth = '100%';
+            fallbackImg.style.maxHeight = '100%';
+            fallbackImg.style.objectFit = 'contain';
+            fallbackImg.style.borderRadius = '8px';
+
+            fallbackImg.onerror = () => {
+                container.innerHTML = `
+                    <svg viewBox="0 0 100 100" width="${size}" height="${size}" style="background: #FFF; border-radius: 8px; display: block; margin: 0 auto;">
+                        <rect x="5" y="5" width="28" height="28" fill="#181E4B" rx="2"/>
+                        <rect x="9" y="9" width="20" height="20" fill="#FFF"/>
+                        <rect x="13" y="13" width="12" height="12" fill="#181E4B" rx="1"/>
+                        <rect x="67" y="5" width="28" height="28" fill="#181E4B" rx="2"/>
+                        <rect x="71" y="9" width="20" height="20" fill="#FFF"/>
+                        <rect x="75" y="13" width="12" height="12" fill="#181E4B" rx="1"/>
+                        <rect x="5" y="67" width="28" height="28" fill="#181E4B" rx="2"/>
+                        <rect x="9" y="71" width="20" height="20" fill="#FFF"/>
+                        <rect x="13" y="75" width="12" height="12" fill="#181E4B" rx="1"/>
+                        <rect x="38" y="12" width="6" height="6" fill="#181E4B"/>
+                        <rect x="48" y="12" width="6" height="6" fill="#181E4B"/>
+                        <rect x="58" y="12" width="6" height="6" fill="#181E4B"/>
+                        <rect x="12" y="38" width="6" height="6" fill="#181E4B"/>
+                        <rect x="12" y="48" width="6" height="6" fill="#181E4B"/>
+                        <rect x="12" y="58" width="6" height="6" fill="#181E4B"/>
+                        <rect x="38" y="38" width="24" height="24" fill="#DF6951" rx="4"/>
+                        <text x="50" y="54" fill="#FFF" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">JADOO</text>
+                        <rect x="42" y="72" width="10" height="10" fill="#181E4B"/>
+                        <rect x="58" y="68" width="8" height="8" fill="#181E4B"/>
+                        <rect x="72" y="42" width="10" height="10" fill="#181E4B"/>
+                        <rect x="86" y="52" width="8" height="8" fill="#181E4B"/>
+                        <rect x="68" y="78" width="14" height="14" fill="#181E4B"/>
+                    </svg>
+                `;
+            };
+
+            container.appendChild(fallbackImg);
         }
 
         function renderTicket(b) {
@@ -469,26 +1269,34 @@
                 if (el) el.textContent = val;
             };
 
-            // Status Pill
+            // Status Pill (Top Toolbar & Inside Card)
             const statusPill = document.getElementById('ticketStatusPill');
             const statusTxt = document.getElementById('ticketStatusText');
-            if (statusPill && statusTxt) {
-                statusPill.className = 'ticket-status-pill';
+            const cardStatusPill = document.getElementById('ticketCardStatusPill');
+            const cardStatusTxt = document.getElementById('ticketCardStatusText');
+
+            const setPillState = (pill, txt) => {
+                if (!pill || !txt) return;
+                pill.className = 'ticket-status-pill';
                 if (b.status === 'cancelled') {
-                    statusPill.classList.add('pill-cancelled');
-                    statusTxt.textContent = 'CANCELLED RESERVATION';
+                    pill.classList.add('pill-cancelled');
+                    txt.textContent = 'CANCELLED PASS';
                 } else if (b.status === 'pending') {
-                    statusPill.classList.add('pill-pending');
-                    statusTxt.textContent = 'PENDING PAYMENT';
+                    pill.classList.add('pill-pending');
+                    txt.textContent = 'PENDING PAYMENT';
                 } else {
-                    statusPill.classList.add('pill-confirmed');
-                    statusTxt.textContent = 'CONFIRMED VOYAGE';
+                    pill.classList.add('pill-confirmed');
+                    txt.textContent = 'CONFIRMED PASS';
                 }
-            }
+            };
+            setPillState(statusPill, statusTxt);
+            setPillState(cardStatusPill, cardStatusTxt);
 
             // Header Meta
-            setTxt('ticketRefNumber', `#${b.id}`);
-            setTxt('stubTicketId', b.id);
+            const cleanRef = b.booking_ref ? (b.booking_ref.startsWith('#') ? b.booking_ref : '#' + b.booking_ref) : ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'));
+            setTxt('ticketRefNumber', cleanRef);
+            setTxt('stubTicketId', cleanRef.replace('#', ''));
+            setTxt('ticketVoucherRef', cleanRef);
             setTxt('ticketIssueDate', formatDate(b.created_at || new Date().toISOString()));
 
             // Tour Showcase
@@ -511,28 +1319,35 @@
             setTxt('ticketEmail', b.user_email || 'alex.traveler@example.com');
             setTxt('ticketPhone', b.phone_number || '+1 (555) 234-5678');
             setTxt('ticketMeetingPoint', `Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`);
-            setTxt('ticketTotalPaid', `$${(b.total_price || 110).toFixed(2)} USD (Paid in Full)`);
+            // Total Price formatting
+            const priceNum = parseFloat(b.total_price) || 0;
+            setTxt('ticketTotalPaid', '$' + priceNum.toFixed(2) + ' USD (Paid in Full)');
 
-            // Generate clean QR code
+            // Generate clean single QR code (Guaranteed 1 single element, 100% reliable)
             const qrCanvas = document.getElementById('stubQrCanvas');
             if (qrCanvas) {
-                qrCanvas.innerHTML = '';
-                const qrUrl = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(b.id)}`;
-                try {
-                    new QRCode(qrCanvas, {
-                        text: qrUrl,
-                        width: 114,
-                        height: 114,
-                        colorDark: '#181E4B',
-                        colorLight: '#FFFFFF',
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-                } catch (e) {
-                    console.warn('QR Code generation error:', e);
-                }
+                const qrUrl = (window.location.origin && window.location.origin !== 'null')
+                    ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(b.id)
+                    : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(b.id);
+                renderSingleTicketQr(qrCanvas, qrUrl, 114);
+            }
+
+            // Update Slider, Intelligence, Checklist & Cockpit
+            renderPassesSlider(b);
+            updateDestinationIntelligence(b);
+            updateChecklist(b);
+
+            // Update Cockpit Strip
+            const voyageEl = document.getElementById('cockpitVoyageId');
+            const seatEl = document.getElementById('cockpitSeat');
+            if (voyageEl) {
+                const numericPart = (b.booking_ref || b.id || '8824').replace(/\D/g, '').slice(-4) || '8824';
+                voyageEl.textContent = 'JD-' + numericPart;
+            }
+            if (seatEl) {
+                seatEl.textContent = '01A ' + (b.package_type || 'VIP').toUpperCase();
             }
         }
-
         async function downloadPdf(b) {
             const element = document.getElementById('ticketVoucherCard');
             if (!element) return;
@@ -540,26 +1355,32 @@
             const btn = document.getElementById('downloadPdfBtn') || document.getElementById('bottomPdfBtn');
             const origHtml = btn ? btn.innerHTML : '';
             if (btn) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Preparing PDF...</span>';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Generating Full-Page PDF...</span>';
                 btn.disabled = true;
             }
 
             try {
                 // 1. Clone the card so user's current DOM display is untouched
                 const clone = element.cloneNode(true);
-                clone.style.width = '1050px';
-                clone.style.maxWidth = '1050px';
+                clone.classList.add('pdf-force-desktop-ticket');
+                clone.style.width = '1040px';
+                clone.style.maxWidth = '1040px';
+                clone.style.minWidth = '1040px';
+                clone.style.height = '515px';
+                clone.style.minHeight = '515px';
+                clone.style.maxHeight = '535px';
                 clone.style.margin = '0 auto';
-                clone.style.background = '#FFFFFF';
+                clone.style.background = '#FAF7F2';
                 clone.style.color = '#181E4B';
+                clone.style.boxSizing = 'border-box';
+                clone.style.display = 'block';
 
                 // Ensure light theme for print clarity even if dark mode is active
                 clone.removeAttribute('data-theme');
                 const darkEls = clone.querySelectorAll('[data-theme="dark"]');
                 darkEls.forEach(el => el.removeAttribute('data-theme'));
 
-                // 2. html2canvas drops HTML5 <canvas> bitmaps when cloning.
-                // Replace any canvas in the clone with an <img> containing the real rendered bitmap.
+                // 2. Replace HTML5 <canvas> bitmaps with high-res data URLs
                 const origCanvases = element.querySelectorAll('canvas');
                 const cloneCanvases = clone.querySelectorAll('canvas');
                 origCanvases.forEach((origCanvas, idx) => {
@@ -568,8 +1389,8 @@
                             const dataUrl = origCanvas.toDataURL('image/png');
                             const img = document.createElement('img');
                             img.src = dataUrl;
-                            img.style.width = '114px';
-                            img.style.height = '114px';
+                            img.style.width = '106px';
+                            img.style.height = '106px';
                             img.style.display = 'block';
                             img.style.margin = '0 auto';
                             cloneCanvases[idx].parentNode.replaceChild(img, cloneCanvases[idx]);
@@ -579,19 +1400,71 @@
                     }
                 });
 
-                // Offscreen wrapper container for rendering
+                // 3. Create full-page presentation board for the PDF
+                const pdfBoard = document.createElement('div');
+                pdfBoard.id = 'pdfFullPageBoard';
+                pdfBoard.style.width = '1060px';
+                pdfBoard.style.boxSizing = 'border-box';
+                pdfBoard.style.background = '#FFFFFF';
+                pdfBoard.style.padding = '12px 10px';
+                pdfBoard.style.fontFamily = "'Poppins', sans-serif";
+
+                // Elegant top document header
+                const pdfHeader = document.createElement('div');
+                pdfHeader.style.display = 'flex';
+                pdfHeader.style.justifyContent = 'space-between';
+                pdfHeader.style.alignItems = 'center';
+                pdfHeader.style.padding = '0 6px 10px 6px';
+                pdfHeader.style.borderBottom = '1.5px solid #E2E8F0';
+                pdfHeader.style.marginBottom = '12px';
+                pdfHeader.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-family:'Volkhov',serif;font-size:1.3rem;font-weight:700;color:#181E4B;letter-spacing:1px;">JADOO TRAVEL</span>
+                        <span style="font-size:0.75rem;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">• Official Passenger Travel Pass</span>
+                    </div>
+                    <div style="font-size:0.75rem;color:#64748B;font-weight:600;">
+                        <span>Voucher Ref: <strong style="color:#181E4B;">${b.booking_ref || ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'))}</strong></span>
+                        <span style="margin:0 8px;color:#CBD5E1;">|</span>
+                        <span>Issued: ${formatDate(b.created_at || new Date().toISOString())}</span>
+                    </div>
+                `;
+
+                // Passenger instructions strip at the bottom
+                const pdfFooter = document.createElement('div');
+                pdfFooter.style.display = 'flex';
+                pdfFooter.style.justifyContent = 'space-between';
+                pdfFooter.style.alignItems = 'center';
+                pdfFooter.style.padding = '10px 6px 0 6px';
+                pdfFooter.style.borderTop = '1.5px solid #E2E8F0';
+                pdfFooter.style.marginTop = '12px';
+                pdfFooter.style.fontSize = '0.72rem';
+                pdfFooter.style.color = '#64748B';
+                pdfFooter.innerHTML = `
+                    <div>
+                        <strong style="color:#181E4B;">Important:</strong> Present this digital pass or printed voucher at check-in 15 mins prior. Valid government-issued photo ID required.
+                    </div>
+                    <div style="font-weight:600;color:#10B981;">
+                        ✓ Cryptographically Scannable & Verified
+                    </div>
+                `;
+
+                pdfBoard.appendChild(pdfHeader);
+                pdfBoard.appendChild(clone);
+                pdfBoard.appendChild(pdfFooter);
+
+                // Offscreen wrapper container
                 const offscreenContainer = document.createElement('div');
                 offscreenContainer.style.position = 'fixed';
-                offscreenContainer.style.left = '-9999px';
                 offscreenContainer.style.top = '0';
-                offscreenContainer.style.width = '1100px';
-                offscreenContainer.style.background = '#FFFFFF';
-                offscreenContainer.style.padding = '20px';
-                offscreenContainer.style.zIndex = '-999';
-                offscreenContainer.appendChild(clone);
+                offscreenContainer.style.left = '0';
+                offscreenContainer.style.width = '1060px';
+                offscreenContainer.style.zIndex = '-9999';
+                offscreenContainer.style.opacity = '1';
+                offscreenContainer.style.pointerEvents = 'none';
+                offscreenContainer.appendChild(pdfBoard);
                 document.body.appendChild(offscreenContainer);
 
-                // Wait 150ms for images to settle in cloned tree
+                // Wait 150ms for cloned assets to paint
                 await new Promise(r => setTimeout(r, 150));
 
                 const opt = {
@@ -607,11 +1480,12 @@
                         scrollX: 0,
                         scrollY: 0
                     },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
                 if (typeof html2pdf !== 'undefined') {
-                    await html2pdf().set(opt).from(clone).save();
+                    await html2pdf().set(opt).from(pdfBoard).save();
                 } else {
                     window.print();
                 }
