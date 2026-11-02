@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadoo Services - Premium Travel Solutions</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="alternate icon" href="../favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -283,6 +285,17 @@
                         <form id="serviceInquiryForm" class="service-inquiry-form">
                             <input type="hidden" id="inquiryServiceId">
                             <input type="hidden" id="inquiryServiceTitle">
+
+                            <div class="inquiry-field">
+                                <label for="inqBookingRef">Attach to Your Ticket / Booking <span class="req">*</span></label>
+                                <div class="booking-input-wrap select-wrap" style="position: relative;">
+                                    <i class="fa-solid fa-ticket input-icon" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #F1A501; pointer-events: none;"></i>
+                                    <select id="inqBookingRef" style="width: 100%; padding: 10px 12px 10px 36px; border-radius: 8px; border: 1.5px solid #CBD5E1; font-family: inherit; font-size: 0.88rem; background: #FFF; outline: none;" required>
+                                        <option value="" disabled selected>-- Select your booked ticket --</option>
+                                    </select>
+                                </div>
+                                <span class="inq-badge-info" id="inqTicketNotice"><i class="fa-solid fa-circle-check"></i> Choose which booked ticket to attach this service to.</span>
+                            </div>
 
                             <div class="inquiry-field">
                                 <label for="inqName">Your Name <span class="req">*</span></label>
@@ -848,7 +861,37 @@
         const modalClose = document.getElementById('serviceModalClose');
         const modalBackdrop = document.getElementById('serviceModalBackdrop');
 
+        function formatBookingRef(b) {
+            if (!b) return '#BK-92841';
+            let raw = (typeof b === 'string' ? b : (b.booking_ref || b.bookingReference || b.bookingRef || b.id || '')).toString().trim();
+            if (!raw) return '#BK-92841';
+            raw = raw.replace(/^#+/, '').trim();
+            raw = raw.replace(/^(BK-?)+/i, '');
+            if (raw === '928') raw = '92841';
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}/i.test(raw)) {
+                if (typeof b === 'object' && b.booking_ref && b.booking_ref !== raw) return formatBookingRef(b.booking_ref);
+                return '#BK-' + raw.replace(/[^0-9a-z]/gi, '').substring(0, 5).toUpperCase();
+            }
+            if (/^BK-[A-Za-z0-9]+/i.test(raw)) return '#' + raw.toUpperCase();
+            if (/^BK[0-9]+/i.test(raw)) return '#BK-' + raw.substring(2).toUpperCase();
+            return '#BK-' + raw.toUpperCase();
+        }
+
         function openServiceModal(slug) {
+            // Guard: user must be authenticated to book services
+            const currentUser = JadooDB.getCurrentUser();
+            if (!currentUser) {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Authentication Required', 'Please sign in or create an account to book travel services for your tickets.', 'warning');
+                } else {
+                    alert('Please log in to book travel services for your tickets.');
+                }
+                setTimeout(() => {
+                    window.location.href = './auth.html#signin';
+                }, 800);
+                return;
+            }
+
             const service = currentServices.find(s => s.slug === slug || s.id === slug);
             if (!service || !modal) return;
 
@@ -875,12 +918,101 @@
                 perksBox.innerHTML = service.included_perks.map(p => `<span class="service-perk-pill"><i class="fa-solid fa-sparkle"></i> ${escapeHTML(p)}</span>`).join('');
             }
 
-            // Autofill user name and email if logged in
+            // Autofill user name and email
             syncUserAuthToForms();
+
+            // Populate user's booked tickets
+            populateTicketSelect(currentUser);
 
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+        }
+
+        function populateTicketSelect(currentUser) {
+            const bookingSelect = document.getElementById('inqBookingRef');
+            const notice = document.getElementById('inqTicketNotice');
+            const destInput = document.getElementById('inqDestination');
+            const destChipsWrap = document.getElementById('inqDestChips');
+            if (!bookingSelect) return;
+
+            // Load user's active bookings from JadooDB
+            let userBookings = [];
+            try {
+                userBookings = (JadooDB.getUserBookings(currentUser?.email) || []).filter(b => (b.status || '').toLowerCase() !== 'cancelled');
+            } catch (_) {
+                userBookings = [];
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectedRef = (urlParams.get('booking_ref') || urlParams.get('id') || '').trim();
+
+            if (userBookings.length > 0) {
+                let opts = '<option value="" disabled>-- Select Your Booked Ticket --</option>';
+                userBookings.forEach(b => {
+                    const clean = formatBookingRef(b);
+                    const val = b.booking_ref || b.id;
+                    const isSel = Boolean(preselectedRef && (clean.toLowerCase().includes(preselectedRef.toLowerCase()) || val.toLowerCase() === preselectedRef.toLowerCase()));
+                    opts += `<option value="${escapeAttr(val)}" ${isSel ? 'selected' : ''}>Ticket ${clean} - ${escapeHTML(b.destination_name)} (${escapeHTML(b.attraction_name)})</option>`;
+                });
+                opts += `<option value="NEW_BOOKING" ${(!preselectedRef && userBookings.length === 0) ? 'selected' : ''}>+ Book a New Trip with this Service</option>`;
+                bookingSelect.innerHTML = opts;
+
+                if (!preselectedRef) {
+                    bookingSelect.selectedIndex = 1; // Default to their first booked pass
+                }
+            } else {
+                bookingSelect.innerHTML = `<option value="NEW_BOOKING" selected>+ Book a New Trip with this Service</option>`;
+                if (notice) {
+                    notice.innerHTML = '<i class="fa-solid fa-info-circle"></i> You have no booked tickets yet. Booking this service will create your new destination pass.';
+                }
+            }
+
+            function syncSelectedTicket() {
+                const val = bookingSelect.value;
+                if (val && val !== 'NEW_BOOKING') {
+                    const matched = userBookings.find(b => (b.booking_ref && b.booking_ref === val) || (b.id && b.id === val));
+                    if (matched) {
+                        if (destInput) {
+                            destInput.value = matched.destination_name;
+                            destInput.readOnly = true;
+                            destInput.style.background = '#F8FAFC';
+                        }
+                        const dateInput = document.getElementById('inqTravelDate');
+                        if (dateInput && matched.travel_date) {
+                            const d = new Date(matched.travel_date);
+                            dateInput.value = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : matched.travel_date;
+                            dateInput.readOnly = true;
+                            dateInput.style.background = '#F8FAFC';
+                        }
+                        const guestsInput = document.getElementById('inqGuests');
+                        if (guestsInput) guestsInput.value = matched.guests_count || 1;
+                        if (destChipsWrap) destChipsWrap.style.display = 'none';
+                        if (notice) {
+                            notice.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Service will be added directly to <strong>Ticket ${formatBookingRef(matched)}</strong> (${matched.destination_name}).`;
+                        }
+                        return;
+                    }
+                }
+                // New Booking fallback
+                if (destInput) {
+                    destInput.readOnly = false;
+                    destInput.style.background = '#FFF';
+                    if (destInput.value === userBookings[0]?.destination_name) destInput.value = '';
+                }
+                const dateInput = document.getElementById('inqTravelDate');
+                if (dateInput) {
+                    dateInput.readOnly = false;
+                    dateInput.style.background = '#FFF';
+                }
+                if (destChipsWrap) destChipsWrap.style.display = 'flex';
+                if (notice) {
+                    notice.innerHTML = '<i class="fa-solid fa-plane-departure" style="color: #DF6951;"></i> Will create a new trip pass with this service attached.';
+                }
+            }
+
+            bookingSelect.onchange = syncSelectedTicket;
+            syncSelectedTicket();
         }
 
         function syncUserAuthToForms() {
@@ -920,7 +1052,7 @@
                 chip.classList.toggle('is-selected');
                 const selected = Array.from(document.querySelectorAll('.dest-chip-mini.is-selected'))
                     .map(c => c.getAttribute('data-dest'));
-                if (destInput) {
+                if (destInput && !destInput.readOnly) {
                     destInput.value = selected.join(', ');
                 }
             });
@@ -936,22 +1068,36 @@
             });
         }
 
-        // Submit Service Booking
+        // Submit Service Booking Form
         const form = document.getElementById('serviceInquiryForm');
         if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                const currentUser = JadooDB.getCurrentUser();
+                if (!currentUser) {
+                    if (window.JadooToast) {
+                        window.JadooToast.show('Sign-in Required', 'Please log in to attach travel services to your tickets.', 'warning');
+                    } else {
+                        alert('Please log in to attach travel services to your tickets.');
+                    }
+                    setTimeout(() => { window.location.href = './auth.html#signin'; }, 800);
+                    return;
+                }
+
+                const bookingSelect = document.getElementById('inqBookingRef');
+                const selectedBookingRef = bookingSelect ? bookingSelect.value : '';
+
                 const service_id = document.getElementById('inquiryServiceId').value;
                 const service_title = document.getElementById('inquiryServiceTitle').value;
-                const customer_name = document.getElementById('inqName').value.trim();
-                const customer_email = document.getElementById('inqEmail').value.trim();
+                const customer_name = document.getElementById('inqName').value.trim() || currentUser.full_name;
+                const customer_email = document.getElementById('inqEmail').value.trim() || currentUser.email;
                 const travel_destination = document.getElementById('inqDestination').value.trim();
                 const travel_date = document.getElementById('inqTravelDate')?.value || '';
                 const guests_count = parseInt(document.getElementById('inqGuests')?.value || '1', 10) || 1;
                 const message = document.getElementById('inqMessage').value.trim();
 
-                const currentUser = JadooDB.getCurrentUser();
-                const token = currentUser ? (currentUser.token || localStorage.getItem('jadoo_auth_token')) : localStorage.getItem('jadoo_auth_token');
+                const token = currentUser.token || localStorage.getItem('jadoo_auth_token');
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -963,45 +1109,66 @@
                         body: JSON.stringify({
                             service_id,
                             service_title,
+                            booking_ref: selectedBookingRef,
                             customer_name,
                             customer_email,
                             travel_destination,
                             travel_date,
                             guests_count,
                             message,
-                            customer_id: currentUser ? currentUser.id : undefined
+                            customer_id: currentUser.id
                         })
                     });
+
                     if (res.ok) {
                         const data = await res.json();
                         closeServiceModal();
                         form.reset();
                         destChips.forEach(c => c.classList.remove('is-selected'));
 
-                        // Sync newly generated bookings to local cache for instant UI refresh
+                        // Sync newly generated or updated bookings to local cache
                         if (Array.isArray(data.bookings) && data.bookings.length > 0) {
                             try {
                                 const currentLocal = JSON.parse(localStorage.getItem('jadoo_bookings') || '[]');
                                 data.bookings.forEach(b => {
-                                    if (!currentLocal.some(x => x.id === b.id || x.booking_ref === b.booking_ref)) {
-                                        currentLocal.unshift(b);
+                                    const idx = currentLocal.findIndex(x => x.id === b.id || (b.booking_ref && x.booking_ref === b.booking_ref));
+                                    if (idx >= 0) {
+                                        currentLocal[idx] = b; // Update existing booking with service!
+                                    } else {
+                                        currentLocal.unshift(b); // Add newly created booking
                                     }
                                 });
                                 localStorage.setItem('jadoo_bookings', JSON.stringify(currentLocal));
+                                localStorage.setItem('jadoo_schema_bookings', JSON.stringify(currentLocal));
                                 window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
                             } catch (_) {}
                         }
 
-                        const count = data.count || (data.bookings ? data.bookings.length : 1);
-                        const dests = (data.destinations || []).join(', ') || travel_destination;
+                        const targetTicketId = (data.booking && (data.booking.booking_ref || data.booking.id)) 
+                            || (data.bookings && data.bookings[0] && (data.bookings[0].booking_ref || data.bookings[0].id))
+                            || selectedBookingRef;
+
+                        const cleanRefText = targetTicketId && targetTicketId !== 'NEW_BOOKING' ? formatBookingRef(targetTicketId) : '';
+
                         if (window.JadooToast) {
                             window.JadooToast.show(
-                                'Service Booked!',
-                                `Created ${count} separate destination booking(s) for ${dests}. View your passes under Traveler Profile.`,
+                                'Service Attached!',
+                                cleanRefText 
+                                    ? `Service "${service_title}" has been successfully added to ${cleanRefText}.`
+                                    : `Service "${service_title}" booked successfully!`,
                                 'success'
                             );
                         } else {
-                            alert(`Confirmed ${count} booking(s) for ${dests}!`);
+                            alert(`Confirmed service "${service_title}" for ${cleanRefText || 'your booking'}!`);
+                        }
+
+                        // If user booked for an existing ticket, offer instant transition to ticket
+                        if (cleanRefText && targetTicketId !== 'NEW_BOOKING') {
+                            setTimeout(() => {
+                                if (confirm(`Service added! Would you like to view your updated ticket ${cleanRefText} now?`)) {
+                                    window.location.href = `./ticket.html?id=${encodeURIComponent(targetTicketId)}`;
+                                }
+                            }, 500);
                         }
                     } else {
                         const errData = await res.json().catch(() => ({}));
@@ -1020,7 +1187,7 @@
                 }
             });
         }
-
+        
         // Create Custom Service Modal Logic
         const createModal = document.getElementById('createServiceModalOverlay');
         const createModalClose = document.getElementById('createServiceModalClose');
@@ -1093,7 +1260,12 @@
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
                 try {
-                    const res = await fetch(`${API_BASE}/api/services`, {
+                    const token = currentUser.token || localStorage.getItem('jadoo_auth_token');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch(`${API_BASE}/api/services`, {
+                    headers,
                         method: 'POST',
                         headers,
                         credentials: 'include',

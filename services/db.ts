@@ -19,7 +19,9 @@ export const pool = new Pool(
         ssl: useSsl ? { rejectUnauthorized: false } : false,
         max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
+        connectionTimeoutMillis: 15000,
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
       }
     : {
         host:     process.env.DB_HOST     || 'localhost',
@@ -30,13 +32,40 @@ export const pool = new Pool(
         ssl:      useSsl ? { rejectUnauthorized: false } : false,
         max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
+        connectionTimeoutMillis: 15000,
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
       }
 );
 
-pool.on('error', (err) => {
-  console.error('PostgreSQL pool error:', err);
+pool.on('error', (err: any) => {
+  console.warn('PostgreSQL idle client error (socket will be refreshed):', err?.message || err);
 });
+
+// Automatic retry for transient cloud connection drops (e.g. Render idle disconnects)
+const originalQuery = pool.query.bind(pool);
+(pool as any).query = async function (text: any, params?: any) {
+  try {
+    return await (originalQuery as any)(text, params);
+  } catch (err: any) {
+    const isTransient = err && (
+      err.code === 'ECONNRESET' ||
+      err.code === 'ETIMEDOUT' ||
+      err.code === '57P01' ||
+      err.code === '08006' ||
+      err.code === '08001' ||
+      err.message?.includes('Connection terminated') ||
+      err.message?.includes('connection timeout') ||
+      err.message?.includes('closed unexpectedly')
+    );
+    if (isTransient) {
+      console.warn('Transient PostgreSQL connection dropped, auto-reconnecting and retrying query...');
+      await new Promise(r => setTimeout(r, 200));
+      return await (originalQuery as any)(text, params);
+    }
+    throw err;
+  }
+};
 
 /**
  * Test the database connection.

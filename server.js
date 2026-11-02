@@ -30,7 +30,7 @@ import { ServiceService } from './services/serviceService.js';
 import { createServer } from 'node:http';
 import crypto from 'node:crypto';
 dotenv.config();
-const app = express();
+export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const JWT_SECRET = process.env.JWT_SECRET || 'jadoo_super_secret_jwt_key_2026_travel_platform';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -112,7 +112,7 @@ app.get('/api/destinations', async (_req, res) => {
     }
     catch (err) {
         console.error('GET /api/destinations error:', err);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
     }
 });
 app.get('/api/destinations/:id', async (req, res) => {
@@ -194,7 +194,7 @@ app.get('/api/bookings', async (req, res) => {
 });
 app.get('/api/bookings/:id', async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM booking WHERE id = $1 OR booking_ref ILIKE $2 LIMIT 1', [req.params.id, req.params.id]);
+        const { rows } = await pool.query('SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $2 LIMIT 1', [req.params.id, req.params.id]);
         if (!rows.length)
             return res.status(404).json({ error: 'Booking not found' });
         res.json(rows[0]);
@@ -209,7 +209,7 @@ function isUUID(str) {
         return false;
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
 }
-app.post('/api/bookings', authenticateToken, async (req, res) => {
+app.post('/api/bookings', optionalAuth, async (req, res) => {
     try {
         const b = req.body;
         const id = generateUUID();
@@ -217,14 +217,15 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
         const userEmail = (req.user?.email || b.user_email || b.userEmail || '').trim().toLowerCase();
         const userName = (req.user?.full_name || b.user_name || b.userName || '').trim() || 'Traveler';
         let customerId = req.user?.id || b.customer_id || b.userId || null;
-        if (!userEmail || !customerId) {
-            return res.status(401).json({ error: 'Authentication required. Please log in to book a trip.' });
+        if (!userEmail) {
+            return res.status(400).json({ error: 'User email is required to book a trip.' });
         }
         const phoneNumber = (b.phone_number || b.phone || b.phoneNumber || '').trim();
         const destName = (b.destination_name || b.destination || '').trim() || 'Rome';
         const attrName = (b.attraction_name || b.placeName || b.attraction || '').trim() || (destName + ' Tour');
         const travelDate = b.travel_date || b.travelDate || new Date().toISOString().split('T')[0];
         const guestsCount = parseInt(b.guests_count || b.guests || '1', 10) || 1;
+        const seatNumber = (b.seat_number || b.seat || 'Suite 02A').trim();
         // Normalize package_type
         const rawPkg = (b.package_type || b.packageType || 'standard').toString().toLowerCase();
         const packageType = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
@@ -235,14 +236,17 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
         const totalPrice = parseFloat(b.total_price || b.totalPrice || '0') || (pricePerPerson * guestsCount);
         const specialRequest = b.special_request || b.specialRequests || '';
         const imageUrl = b.image_url || b.image || null;
-        // Verify customer exists in PostgreSQL
-        if (!isUUID(customerId)) {
-            const custCheck = await pool.query('SELECT id FROM customer WHERE email ILIKE $1 LIMIT 1', [userEmail]);
+        // Verify or auto-create user in PostgreSQL so user data is ALWAYS saved in PostgreSQL
+        if (!customerId || !isUUID(customerId)) {
+            const custCheck = await pool.query('SELECT id FROM users WHERE email ILIKE $1 LIMIT 1', [userEmail]);
             if (custCheck.rows.length) {
                 customerId = custCheck.rows[0].id;
             }
             else {
-                return res.status(401).json({ error: 'Customer account not found. Please log in.' });
+                const newCustId = generateUUID();
+                await pool.query(`INSERT INTO users (id, full_name, email, phone, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, NOW(), NOW())`, [newCustId, userName, userEmail, phoneNumber || null]);
+                customerId = newCustId;
             }
         }
         // Resolve destination in PostgreSQL
@@ -268,17 +272,51 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
       INSERT INTO booking
         (id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
          user_name, user_email, phone_number, travel_date, guests_count, package_type,
-         price_per_person, total_price, special_request, status, image_url)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+         price_per_person, total_price, special_request, status, image_url, seat_number, is_boarded)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,FALSE)
       RETURNING *`, [id, booking_ref, attrName, customerId, destinationId, destName, attrName,
             userName, userEmail, phoneNumber, travelDate,
             guestsCount, packageType, pricePerPerson, totalPrice,
-            specialRequest, status, imageUrl]);
+            specialRequest, status, imageUrl, seatNumber]);
         res.status(201).json(rows[0]);
     }
     catch (err) {
         console.error('POST /api/bookings error:', err);
         res.status(500).json({ error: 'Database error', details: String(err) });
+    }
+});
+app.patch('/api/bookings/:id/seat', optionalAuth, async (req, res) => {
+    try {
+        const idOrRef = req.params.id;
+        const { seat_number } = req.body;
+        if (!seat_number)
+            return res.status(400).json({ error: 'seat_number is required' });
+        const { rows } = await pool.query(`UPDATE booking SET seat_number = $1, updated_at = NOW()
+       WHERE id::text = $2 OR booking_ref ILIKE $3
+       RETURNING id, booking_ref, seat_number, updated_at`, [seat_number, idOrRef, idOrRef]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/bookings/:id/seat error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+app.patch('/api/bookings/:id/board', optionalAuth, async (req, res) => {
+    try {
+        const idOrRef = req.params.id;
+        const isBoarded = req.body.is_boarded !== undefined ? Boolean(req.body.is_boarded) : true;
+        const { rows } = await pool.query(`UPDATE booking SET is_boarded = $1, updated_at = NOW()
+       WHERE id::text = $2 OR booking_ref ILIKE $3
+       RETURNING id, booking_ref, is_boarded, updated_at`, [isBoarded, idOrRef, idOrRef]);
+        if (!rows.length)
+            return res.status(404).json({ error: 'Booking not found' });
+        res.json(rows[0]);
+    }
+    catch (err) {
+        console.error('PATCH /api/bookings/:id/board error:', err);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 app.patch('/api/bookings/:id/status', async (req, res) => {
@@ -329,59 +367,130 @@ app.get('/api/services/:slug', async (req, res) => {
         res.json(fallback);
     }
 });
-app.post('/api/services/inquire', optionalAuth, async (req, res) => {
+app.post('/api/services/inquire', authenticateToken, async (req, res) => {
     try {
-        let { service_id, service_title, customer_name, customer_email, customer_phone, travel_destination, destinations, travel_date, guests_count, package_type, message, customer_id } = req.body;
-        if (req.user) {
-            customer_id = customer_id || req.user.id;
-            customer_email = customer_email || req.user.email;
-            customer_name = customer_name || req.user.full_name;
+        if (!req.user) {
+            return res.status(401).json({ error: 'Authentication required. Please sign in to book travel services.' });
         }
-        if (!service_id || !customer_name || !customer_email) {
-            return res.status(400).json({ error: 'service_id, customer_name, and customer_email are required' });
+        let { service_id, service_title, booking_ref, booking_id, customer_name, customer_email, customer_phone, travel_destination, destinations, travel_date, guests_count, package_type, message } = req.body;
+        const custId = req.user.id;
+        const custEmail = (req.user.email || customer_email || '').trim().toLowerCase();
+        const custName = (req.user.full_name || customer_name || 'Traveler').trim();
+        if (!service_id) {
+            return res.status(400).json({ error: 'service_id is required' });
         }
         // 1. Resolve service
         const service = await ServiceService.getServiceBySlugFromDB(service_id);
         const resolvedTitle = service_title || service?.title || 'Jadoo Travel Service';
-        // 2. Extract destinations list - every destination gets a separate booking
+        // Pricing calculation
+        const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
+        const pricePerPerson = rawPrice > 0 ? rawPrice : 45.00;
+        const guests = parseInt(String(guests_count || '1'), 10) || 1;
+        const totalPrice = pricePerPerson * guests;
+        const serviceItem = {
+            id: service?.id || service_id,
+            slug: service?.slug || service_id,
+            title: resolvedTitle,
+            category: service?.category || 'Bespoke',
+            starting_price: service?.starting_price || `$${pricePerPerson}`,
+            unit: service?.unit || 'per booking',
+            icon: service?.icon || 'fa-solid fa-crown',
+            badge: service?.badge || 'VIP Bespoke',
+            features: service?.features || [],
+            booked_at: new Date().toISOString()
+        };
+        // 2. Check if attaching to an existing booked ticket
+        const targetRef = (booking_ref || booking_id || '').trim();
+        const isAttachingToExisting = targetRef && targetRef !== 'NEW_BOOKING' && targetRef !== 'null' && targetRef !== 'undefined';
+        if (isAttachingToExisting) {
+            const existingRes = await pool.query(`SELECT * FROM booking 
+         WHERE (id::text = $1 OR booking_ref ILIKE $2) 
+           AND (customer_id::text = $3 OR user_email ILIKE $4) 
+         LIMIT 1`, [targetRef, targetRef, custId, custEmail]);
+            if (!existingRes.rows.length) {
+                return res.status(404).json({
+                    error: `Ticket #${targetRef} was not found or does not belong to your account. You can only add services to your own booked tickets.`
+                });
+            }
+            const targetBooking = existingRes.rows[0];
+            // Merge service names
+            const existingNames = targetBooking.service_name
+                ? targetBooking.service_name.split(',').map((s) => s.trim()).filter(Boolean)
+                : [];
+            if (!existingNames.includes(resolvedTitle)) {
+                existingNames.push(resolvedTitle);
+            }
+            const updatedServiceName = existingNames.join(', ');
+            // Merge service IDs
+            const existingIds = targetBooking.service_id
+                ? targetBooking.service_id.split(',').map((s) => s.trim()).filter(Boolean)
+                : [];
+            if (!existingIds.includes(service_id)) {
+                existingIds.push(service_id);
+            }
+            const updatedServiceId = existingIds.join(', ');
+            const updatedTotalPrice = parseFloat(targetBooking.total_price || '0') + totalPrice;
+            const updatedSpecial = message
+                ? (targetBooking.special_request ? `${targetBooking.special_request} | [Service: ${resolvedTitle}] ${message.trim()}` : `[Service: ${resolvedTitle}] ${message.trim()}`)
+                : targetBooking.special_request;
+            const updateRes = await pool.query(`
+        UPDATE booking 
+        SET service_name = $1,
+            service_id = $2,
+            booked_services = COALESCE(booked_services, '[]'::jsonb) || $3::jsonb,
+            total_price = $4,
+            special_request = $5,
+            updated_at = NOW()
+        WHERE id = $6
+        RETURNING *
+      `, [
+                updatedServiceName,
+                updatedServiceId,
+                JSON.stringify([serviceItem]),
+                updatedTotalPrice,
+                updatedSpecial,
+                targetBooking.id
+            ]);
+            const updatedBooking = updateRes.rows[0];
+            ServiceService.recordInquiry({
+                customer_id: custId,
+                service_id,
+                service_title: resolvedTitle,
+                customer_name: custName,
+                customer_email: custEmail,
+                customer_phone,
+                travel_destination: updatedBooking.destination_name,
+                travel_date: updatedBooking.travel_date,
+                message: `Attached to Ticket #${updatedBooking.booking_ref || updatedBooking.id}: ${message || ''}`
+            });
+            return res.status(200).json({
+                success: true,
+                message: `Service "${resolvedTitle}" successfully attached to Ticket #${updatedBooking.booking_ref || updatedBooking.id}!`,
+                booking: updatedBooking,
+                bookings: [updatedBooking],
+                count: 1,
+                destinations: [updatedBooking.destination_name]
+            });
+        }
+        // 3. Otherwise: User is booking a new trip with this service
         let destList = [];
         if (Array.isArray(destinations) && destinations.length > 0) {
             destList = destinations.map((d) => String(d).trim()).filter(Boolean);
         }
         else if (typeof travel_destination === 'string' && travel_destination.trim()) {
             destList = travel_destination
-                .split(/[,;&\/]|\band\b/i)
+                .split(/[,;&\/]|\s+and\s+/i)
                 .map((s) => s.trim())
                 .filter(Boolean);
         }
         if (destList.length === 0) {
             destList = ['Rome']; // default destination fallback
         }
-        // 3. Resolve / create customer in PostgreSQL
-        let custId = customer_id;
-        if (!custId || !isUUID(custId)) {
-            const custCheck = await pool.query('SELECT id, full_name FROM customer WHERE email ILIKE $1 LIMIT 1', [customer_email.trim()]);
-            if (custCheck.rows.length) {
-                custId = custCheck.rows[0].id;
-            }
-            else {
-                custId = generateUUID();
-                await pool.query('INSERT INTO customer (id, full_name, email, phone) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name RETURNING id', [custId, customer_name.trim(), customer_email.trim().toLowerCase(), customer_phone ? customer_phone.trim() : null]);
-            }
-        }
-        // Pricing calculation
-        const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
-        const pricePerPerson = rawPrice > 0 ? rawPrice : 45.00;
-        const guests = parseInt(String(guests_count || '1'), 10) || 1;
-        const totalPrice = pricePerPerson * guests;
-        // Package Type
         const rawPkg = String(package_type || 'VIP').toLowerCase();
         const pkg = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
-        // Travel Date
         const validDate = travel_date && /^\d{4}-\d{2}-\d{2}$/.test(travel_date)
             ? travel_date
             : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        // 4. Create a SEPARATE booking record for EVERY destination in PostgreSQL
         const createdBookings = [];
         for (const destName of destList) {
             let destId;
@@ -411,8 +520,8 @@ app.post('/api/services/inquire', optionalAuth, async (req, res) => {
           id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
           user_name, user_email, phone_number, travel_date, guests_count, package_type,
           price_per_person, total_price, special_request, status, image_url,
-          service_id, service_name
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+          service_id, service_name, booked_services
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
         RETURNING *
       `, [
                 bookingId,
@@ -422,8 +531,8 @@ app.post('/api/services/inquire', optionalAuth, async (req, res) => {
                 destId,
                 resolvedDestName,
                 attractionName,
-                customer_name.trim(),
-                customer_email.trim().toLowerCase(),
+                custName,
+                custEmail,
                 customer_phone ? customer_phone.trim() : null,
                 validDate,
                 guests,
@@ -434,17 +543,17 @@ app.post('/api/services/inquire', optionalAuth, async (req, res) => {
                 'confirmed',
                 destHeroImg,
                 service_id,
-                resolvedTitle
+                resolvedTitle,
+                JSON.stringify([serviceItem])
             ]);
             createdBookings.push(bookingResult.rows[0]);
         }
-        // 5. Record inquiry tracking object
         const record = ServiceService.recordInquiry({
             customer_id: custId,
             service_id,
             service_title: resolvedTitle,
-            customer_name,
-            customer_email,
+            customer_name: custName,
+            customer_email: custEmail,
             customer_phone,
             travel_destination: destList.join(', '),
             travel_date: validDate,
@@ -463,16 +572,17 @@ app.post('/api/services/inquire', optionalAuth, async (req, res) => {
         res.status(500).json({ error: 'Server error processing service inquiry and bookings' });
     }
 });
-app.post('/api/services', optionalAuth, async (req, res) => {
+app.post('/api/services', authenticateToken, async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ error: 'Authentication required. Please sign in to create custom services.' });
+        }
         const serviceData = req.body;
         if (!serviceData || !serviceData.title) {
             return res.status(400).json({ error: 'Service title is required' });
         }
-        if (req.user) {
-            serviceData.author_id = req.user.id;
-            serviceData.author_name = req.user.full_name;
-        }
+        serviceData.author_id = req.user.id;
+        serviceData.author_name = req.user.full_name;
         if (serviceData.destination_name) {
             const destCheck = await pool.query('SELECT id, name FROM destination WHERE name ILIKE $1 LIMIT 1', [serviceData.destination_name.trim()]);
             if (destCheck.rows.length) {
@@ -506,7 +616,7 @@ app.get('/api/testimonials', async (req, res) => {
             const em = String(email || author_email);
             const { rows } = await pool.query(`
         SELECT t.* FROM testimonials t 
-        LEFT JOIN customer c ON t.costumer_id = c.id 
+        LEFT JOIN users c ON t.costumer_id = c.id 
         WHERE c.email ILIKE $1 
         ORDER BY t.created_at DESC
       `, [em]);
@@ -517,7 +627,7 @@ app.get('/api/testimonials', async (req, res) => {
     }
     catch (err) {
         console.error('GET /api/testimonials error:', err);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
     }
 });
 app.post('/api/testimonials', async (req, res) => {
@@ -530,7 +640,7 @@ app.post('/api/testimonials', async (req, res) => {
             customerId = null;
         if (!customerId && (t.author_email || t.email)) {
             const email = t.author_email || t.email;
-            const custRes = await pool.query('SELECT id FROM customer WHERE email ILIKE $1 LIMIT 1', [email]);
+            const custRes = await pool.query('SELECT id FROM users WHERE email ILIKE $1 LIMIT 1', [email]);
             if (custRes.rows.length)
                 customerId = custRes.rows[0].id;
         }
@@ -547,10 +657,10 @@ app.post('/api/testimonials', async (req, res) => {
                 catch (_) { }
             }
         }
-        // If customerId resolved, auto-fill author name from customer if omitted or default
+        // If customerId resolved, auto-fill author name from user if omitted or default
         if (customerId && (!t.author_name || t.author_name === 'Traveler')) {
             try {
-                const cust = await pool.query('SELECT full_name, email, avatar_url FROM customer WHERE id = $1', [customerId]);
+                const cust = await pool.query('SELECT full_name, email, avatar_url FROM users WHERE id = $1', [customerId]);
                 if (cust.rows.length) {
                     if (!t.author_name || t.author_name === 'Traveler')
                         t.author_name = cust.rows[0].full_name;
@@ -598,8 +708,8 @@ app.post('/api/auth/register', async (req, res) => {
         const { full_name, email, password, phone, avatar_url } = req.body;
         if (!email || !full_name)
             return res.status(400).json({ error: 'full_name and email are required' });
-        // Check duplicate
-        const exists = await pool.query('SELECT id FROM customer WHERE email ILIKE $1', [email]);
+        // Check duplicate in users table
+        const exists = await pool.query('SELECT id FROM users WHERE email ILIKE $1', [email]);
         if (exists.rows.length)
             return res.status(409).json({ error: 'Email already registered' });
         // Hash password securely with bcrypt
@@ -609,7 +719,7 @@ app.post('/api/auth/register', async (req, res) => {
         }
         const id = generateUUID();
         const { rows } = await pool.query(`
-      INSERT INTO customer (id, full_name, email, password, phone, avatar_url, logged_in_at)
+      INSERT INTO users (id, full_name, email, password, phone, avatar_url, logged_in_at)
       VALUES ($1,$2,$3,$4,$5,$6,NOW())
       RETURNING id, full_name, email, phone, avatar_url, created_at, updated_at`, [id, full_name, email, hashedPassword, phone || null, avatar_url || null]);
         const safeUser = rows[0];
@@ -624,7 +734,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
     catch (err) {
         console.error('POST /api/auth/register error:', err);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
     }
 });
 app.post('/api/auth/login', async (req, res) => {
@@ -633,7 +743,7 @@ app.post('/api/auth/login', async (req, res) => {
         const identifier = (email || username || id || '').toString().trim();
         if (!identifier)
             return res.status(400).json({ error: 'Email, username, or ID is required' });
-        let query = 'SELECT * FROM customer WHERE email ILIKE $1 OR full_name ILIKE $1';
+        let query = 'SELECT * FROM users WHERE email ILIKE $1 OR full_name ILIKE $1';
         const params = [identifier];
         if (isUUID(identifier)) {
             query += ` OR id = $${params.length + 1}`;
@@ -661,7 +771,7 @@ app.post('/api/auth/login', async (req, res) => {
                     // Auto-upgrade legacy plaintext password to strong bcrypt hash in PostgreSQL
                     try {
                         const upgradedHash = await bcrypt.hash(password, 10);
-                        await pool.query('UPDATE customer SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
+                        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
                     }
                     catch (upgradeErr) {
                         console.warn('Failed to upgrade password hash:', upgradeErr);
@@ -676,8 +786,8 @@ app.post('/api/auth/login', async (req, res) => {
         if (!isValidPassword) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        // Update logged_in_at
-        await pool.query('UPDATE customer SET logged_in_at=NOW() WHERE id=$1', [user.id]);
+        // Update logged_in_at in users table
+        await pool.query('UPDATE users SET logged_in_at=NOW() WHERE id=$1', [user.id]);
         // Return user without password + signed JWT
         const { password: _pw, ...safeUser } = user;
         const token = generateToken(safeUser);
@@ -691,14 +801,14 @@ app.post('/api/auth/login', async (req, res) => {
     }
     catch (err) {
         console.error('POST /api/auth/login error:', err);
-        res.status(500).json({ error: 'Database error' });
+        res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
     }
 });
 // Authenticated current user endpoint (validates JWT)
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try {
         const userId = req.user?.id;
-        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM customer WHERE id::text = $1 LIMIT 1', [userId]);
+        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM users WHERE id::text = $1 LIMIT 1', [userId]);
         if (!rows.length)
             return res.status(404).json({ error: 'User not found' });
         res.json(rows[0]);
@@ -717,7 +827,7 @@ app.get('/api/auth/profile', optionalAuth, async (req, res) => {
         }
         if (!email && !id)
             return res.status(400).json({ error: 'email or id is required (or Authorization token)' });
-        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM customer WHERE email ILIKE $1 OR id::text = $2 LIMIT 1', [email || '', id || '']);
+        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM users WHERE email ILIKE $1 OR id::text = $2 LIMIT 1', [email || '', id || '']);
         if (!rows.length)
             return res.status(404).json({ error: 'User not found' });
         res.json(rows[0]);
@@ -730,7 +840,8 @@ app.get('/api/auth/profile', optionalAuth, async (req, res) => {
 app.patch('/api/auth/profile', optionalAuth, async (req, res) => {
     try {
         let { id, email, full_name, phone, avatar_url, password } = req.body;
-        if (!id && !email && req.user) {
+        // Enforce authenticated identity if logged in (IDOR prevention)
+        if (req.user) {
             id = req.user.id;
             email = req.user.email;
         }
@@ -759,10 +870,11 @@ app.patch('/api/auth/profile', optionalAuth, async (req, res) => {
             return res.status(400).json({ error: 'No fields to update' });
         params.push(id || '');
         params.push(email || '');
-        const { rows } = await pool.query(`UPDATE customer SET ${sets.join(',')} WHERE id=$${params.length - 1} OR email ILIKE $${params.length}
+        const { rows } = await pool.query(`UPDATE users SET ${sets.join(',')}, updated_at=NOW()
+       WHERE (id::text=$${params.length - 1} OR email ILIKE $${params.length})
        RETURNING id, full_name, email, phone, avatar_url, updated_at`, params);
         if (!rows.length)
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not found in PostgreSQL' });
         res.json(rows[0]);
     }
     catch (err) {

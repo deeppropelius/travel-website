@@ -280,7 +280,7 @@ interface Window {
                 return { success: false, message: 'Please fill out all fields.' };
             }
 
-            // Always register directly in PostgreSQL backend first
+            // Always register directly in PostgreSQL users table
             try {
                 const res = await fetch(`${API_BASE}/api/auth/register`, {
                     method: 'POST',
@@ -299,7 +299,7 @@ interface Window {
                 if (res.ok) {
                     const saved = await res.json();
                     const newUser: User = {
-                        id: saved.id, // Real PostgreSQL UUID
+                        id: saved.id, // Real PostgreSQL UUID from users table
                         fullName: saved.full_name || cleanName,
                         email: saved.email || cleanEmail,
                         password: '',
@@ -307,10 +307,7 @@ interface Window {
                     };
                     (newUser as any).token = saved.token;
 
-                    const users = this.getUsers().filter(u => u.email !== cleanEmail);
-                    users.push(newUser);
-                    Storage.set(STORAGE_KEYS.USERS, users);
-
+                    // Create session directly with real PostgreSQL user (no local dummy storage)
                     this.createSession(newUser);
 
                     try {
@@ -327,25 +324,14 @@ interface Window {
                     return { success: true, message: 'Account created successfully in PostgreSQL!', user: newUser };
                 } else {
                     const err = await res.json().catch(() => ({ error: 'Registration failed' }));
-                    return { success: false, message: err.error || 'Registration failed' };
+                    return { success: false, message: err.error || 'Registration failed in PostgreSQL.' };
                 }
-            } catch (networkErr) {
-                console.warn('Backend register failed, falling back to offline storage:', networkErr);
-                const users = this.getUsers();
-                if (users.find(u => u.email === cleanEmail)) {
-                    return { success: false, message: 'An account with this email already exists.' };
-                }
-                const fallbackUser: User = {
-                    id: 'user_' + Date.now(),
-                    fullName: cleanName,
-                    email: cleanEmail,
-                    password: password,
-                    createdAt: new Date().toISOString()
+            } catch (networkErr: any) {
+                console.error('PostgreSQL register connection error:', networkErr);
+                return {
+                    success: false,
+                    message: 'Could not connect to PostgreSQL backend server. Please verify your internet connection and that the backend is running.'
                 };
-                users.push(fallbackUser);
-                Storage.set(STORAGE_KEYS.USERS, users);
-                this.createSession(fallbackUser);
-                return { success: true, message: 'Account created in offline mode.', user: fallbackUser };
             }
         },
 
@@ -356,7 +342,7 @@ interface Window {
                 return { success: false, message: 'Please enter your email and password.' };
             }
 
-            // Always authenticate with PostgreSQL backend first
+            // Always authenticate with PostgreSQL users table
             try {
                 const res = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
@@ -376,11 +362,6 @@ interface Window {
                         };
                         (loggedIn as any).token = dbUser.token;
 
-                        // Clean out any stale local dummy users
-                        const users = this.getUsers().filter(u => u.email !== loggedIn.email);
-                        users.push(loggedIn);
-                        Storage.set(STORAGE_KEYS.USERS, users);
-
                         this.createSession(loggedIn);
 
                         try {
@@ -397,25 +378,20 @@ interface Window {
                         window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { loggedIn: true, user: loggedIn } }));
                         return { success: true, message: 'Logged in successfully via PostgreSQL!', user: loggedIn };
                     }
+                    return { success: false, message: 'Invalid user response received from database.' };
                 } else if (res.status === 401) {
                     return { success: false, message: 'Invalid credentials. Please verify your email and password.' };
+                } else {
+                    const err = await res.json().catch(() => ({ error: 'Login failed' }));
+                    return { success: false, message: err.error || 'Login failed.' };
                 }
             } catch (networkErr) {
-                console.warn('Backend login unreachable, falling back to local session:', networkErr);
+                console.error('PostgreSQL login connection error:', networkErr);
+                return {
+                    success: false,
+                    message: 'Could not connect to PostgreSQL server. Please check your network connection.'
+                };
             }
-
-            // Local fallback only if backend was unreachable
-            const users = this.getUsers();
-            const localUser = users.find(
-                u => (u.email === cleanId || u.id === cleanId || ((u.fullName || (u as any).full_name || '').toLowerCase() === cleanId)) && u.password === password
-            );
-
-            if (localUser) {
-                this.createSession(localUser);
-                return { success: true, message: 'Logged in from local session cache.', user: localUser };
-            }
-
-            return { success: false, message: 'Invalid credentials. Please verify your email and password.' };
         },
 
         createSession(user: User): User {
@@ -534,6 +510,7 @@ interface Window {
                     credentials: 'include',
                     body: JSON.stringify({
                         booking_ref: newBooking.id,
+                        customer_id: data.userId || '',
                         user_name: data.userName,
                         user_email: data.userEmail,
                         phone_number: data.phone,
@@ -552,6 +529,10 @@ interface Window {
                     if (r.ok) {
                         const saved = await r.json();
                         console.log('✅ Booking successfully stored in PostgreSQL:', saved);
+                        if (saved && saved.id && /^[0-9a-f-]{36}$/i.test(saved.id)) {
+                            newBooking.id = saved.booking_ref || newBooking.id;
+                            (newBooking as any).db_id = saved.id;
+                        }
                     } else {
                         console.error('Failed to store booking in PostgreSQL:', r.statusText);
                     }

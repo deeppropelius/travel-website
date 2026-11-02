@@ -35,6 +35,9 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/login": "/components/auth.html",
   "/signin": "/components/auth.html",
   "/signup": "/components/auth.html",
+  "/favicon.ico": "/favicon.svg",
+  "/favicon.svg": "/favicon.svg",
+  "/favicon.png": "/favicon.svg",
 };
 
 /**

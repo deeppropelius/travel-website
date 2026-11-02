@@ -32,6 +32,9 @@ const ROUTE_ALIASES = {
     "/login": "/components/auth.html",
     "/signin": "/components/auth.html",
     "/signup": "/components/auth.html",
+    "/favicon.ico": "/favicon.svg",
+    "/favicon.svg": "/favicon.svg",
+    "/favicon.png": "/favicon.svg",
 };
 /**
  * Resolves requested path against the root directory and protects against directory traversal.

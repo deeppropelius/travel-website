@@ -6,6 +6,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "migrate": "node scripts/migrate.js",
+    "db": "node scripts/view-tables.cjs",
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
