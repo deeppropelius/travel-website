@@ -1971,6 +1971,9 @@ export const JadooNavAuth = {
                 const willBeActive = !navMenu.classList.contains('active');
                 hamburgerBtn.classList.toggle('active', willBeActive);
                 navMenu.classList.toggle('active', willBeActive);
+                if (typeof document !== 'undefined' && document.body) {
+                    document.body.classList.toggle('mobile-nav-open', willBeActive);
+                }
                 hamburgerBtn.setAttribute('aria-expanded', willBeActive ? 'true' : 'false');
             };
             // Close on outside click
@@ -1981,6 +1984,9 @@ export const JadooNavAuth = {
                     if (!navMenu.contains(target) && !hamburgerBtn.contains(target) && navMenu.classList.contains('active')) {
                         hamburgerBtn.classList.remove('active');
                         navMenu.classList.remove('active');
+                        if (typeof document !== 'undefined' && document.body) {
+                            document.body.classList.remove('mobile-nav-open');
+                        }
                         hamburgerBtn.setAttribute('aria-expanded', 'false');
                     }
                 });
@@ -1990,6 +1996,9 @@ export const JadooNavAuth = {
                 link.addEventListener('click', () => {
                     hamburgerBtn.classList.remove('active');
                     navMenu.classList.remove('active');
+                    if (typeof document !== 'undefined' && document.body) {
+                        document.body.classList.remove('mobile-nav-open');
+                    }
                     hamburgerBtn.setAttribute('aria-expanded', 'false');
                 });
             });

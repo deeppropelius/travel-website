@@ -751,6 +751,11 @@ class JadooDatabase {
             logged_in_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
+        try {
+            localStorage.removeItem('jadoo_logged_out');
+            document.cookie = 'jadoo_logged_out=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        }
+        catch (_) { }
         if (user.token) {
             try {
                 localStorage.setItem('jadoo_auth_token', user.token);
@@ -771,7 +776,8 @@ class JadooDatabase {
         });
         localStorage.setItem('jadoo_current_user', payload);
         document.cookie = `jadoo_current_user=${encodeURIComponent(payload)}; path=/; max-age=31536000; SameSite=Lax`;
-        window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_current_user' } }));
+        window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { loggedIn: true, user: dbUser } }));
+        window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_current_user', user: dbUser } }));
         return dbUser;
     }
     logout() {

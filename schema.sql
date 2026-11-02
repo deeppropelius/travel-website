@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS destination (
   longitude   FLOAT       NOT NULL,
   source      TEXT,
   hero_img    TEXT,
+  hero_img_url TEXT,
   description TEXT,
+  country_code TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -32,6 +34,7 @@ CREATE TABLE IF NOT EXISTS destination (
 -- ── 3. Attraction (child of destination) ─────────────────────
 CREATE TABLE IF NOT EXISTS attraction (
   id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  destination_id   UUID        REFERENCES destination(id) ON DELETE CASCADE,
   name             TEXT        NOT NULL,
   destination_name TEXT        NOT NULL REFERENCES destination(name) ON UPDATE CASCADE ON DELETE CASCADE,
   category         TEXT        NOT NULL CHECK (category IN (
@@ -53,8 +56,10 @@ CREATE TABLE IF NOT EXISTS attraction (
 CREATE TABLE IF NOT EXISTS booking (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_ref     TEXT          UNIQUE NOT NULL DEFAULT 'BK-' || LPAD(FLOOR(RANDOM() * 90000 + 10000)::TEXT, 5, '0'),
+  name            TEXT,
   customer_id     UUID          NOT NULL REFERENCES customer(id) ON DELETE CASCADE,
   destination_id  UUID          NOT NULL REFERENCES destination(id) ON DELETE CASCADE,
+  attraction_id   UUID          REFERENCES attraction(id) ON DELETE SET NULL,
   destination_name TEXT         NOT NULL,
   attraction_name TEXT          NOT NULL,
   user_name       TEXT          NOT NULL,
@@ -68,6 +73,8 @@ CREATE TABLE IF NOT EXISTS booking (
   special_request TEXT,
   status          TEXT          NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','confirmed','cancelled')),
   image_url       TEXT,
+  service_id      TEXT,
+  service_name    TEXT,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
@@ -75,7 +82,8 @@ CREATE TABLE IF NOT EXISTS booking (
 -- ── 5. Testimonials ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS testimonials (
   id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  custumer_id      UUID        REFERENCES customer(id) ON DELETE SET NULL,  -- FK (matches ER diagram spelling)
+  customer_id      UUID        REFERENCES customer(id) ON DELETE SET NULL,
+  costumer_id      UUID        REFERENCES customer(id) ON DELETE SET NULL,  -- Legacy alias for compatibility
   destination_id   UUID        REFERENCES destination(id) ON DELETE SET NULL,
   destination_name TEXT        NOT NULL,
   author_name      TEXT        NOT NULL,
@@ -89,6 +97,32 @@ CREATE TABLE IF NOT EXISTS testimonials (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- ── 6. Services (Standard Concierge & Bespoke Travel Offerings)
+CREATE TABLE IF NOT EXISTS services (
+  id              TEXT          PRIMARY KEY,
+  slug            TEXT          UNIQUE NOT NULL,
+  title           TEXT          NOT NULL,
+  tagline         TEXT,
+  category        TEXT          NOT NULL,
+  icon            TEXT,
+  badge           TEXT,
+  short_desc      TEXT,
+  description     TEXT,
+  features        JSONB         DEFAULT '[]'::jsonb,
+  starting_price  TEXT,
+  unit            TEXT,
+  rating          NUMERIC(3,2)  DEFAULT 5.0,
+  reviews_count   INTEGER       DEFAULT 0,
+  included_perks  JSONB         DEFAULT '[]'::jsonb,
+  banner_image    TEXT,
+  author_id       UUID          REFERENCES customer(id) ON DELETE SET NULL,
+  author_name     TEXT,
+  destination_id  UUID          REFERENCES destination(id) ON DELETE SET NULL,
+  destination_name TEXT,
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
 -- ── Updated-at trigger function ───────────────────────────────
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -100,7 +134,7 @@ $$ LANGUAGE plpgsql;
 
 DO $$ DECLARE tbl TEXT;
 BEGIN
-  FOREACH tbl IN ARRAY ARRAY['customer','destination','attraction','booking','testimonials']
+  FOREACH tbl IN ARRAY ARRAY['customer','destination','attraction','booking','testimonials','services']
   LOOP
     EXECUTE format(
       'DROP TRIGGER IF EXISTS trg_%I_updated_at ON %I;

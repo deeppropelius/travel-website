@@ -4069,28 +4069,81 @@ button.dropdown-item:hover span {
     flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 880px) {
     .nav-user-item {
         width: 100%;
-        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .user-profile-dropdown {
         width: 100%;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .user-profile-btn {
+        margin: 0 auto;
     }
 
     .user-dropdown-menu {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%) translateY(8px) scale(0.97);
-        width: 250px;
-        min-width: unset;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-top: 10px !important;
+        box-sizing: border-box !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
 
     .user-profile-dropdown.open .user-dropdown-menu {
-        transform: translateX(-50%) translateY(0) scale(1);
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+    }
+
+    .dropdown-user-header {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 10px 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .dropdown-avatar-circle {
+        width: 38px !important;
+        height: 38px !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .dropdown-user-info {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+    }
+
+    .dropdown-user-name,
+    .dropdown-user-email {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }
 }
 
@@ -6315,4 +6368,45 @@ body.user-logged-in #destUserProfileDropdown {
         grid-template-columns: repeat(4, 1fr);
         gap: clamp(1.8rem, 2.2vw, 3rem);
     }
+}
+
+/* ==========================================================================
+   HOMEPAGE LUXURY MICRO-INTERACTIONS & UI POLISH
+   ========================================================================== */
+
+/* Enhanced Hero Button Ambient Glow */
+.dobut {
+    box-shadow: 0 8px 24px rgba(241, 165, 1, 0.45), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.dobut:hover {
+    box-shadow: 0 16px 36px rgba(241, 165, 1, 0.65), 0 4px 12px rgba(223, 105, 81, 0.25) !important;
+    transform: translateY(-3px) scale(1.02) !important;
+}
+
+/* Card Glow on Hover */
+.tcard {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease !important;
+}
+
+.tcard:hover {
+    box-shadow: 0 24px 48px -10px rgba(24, 30, 75, 0.16), 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Newsletter Subscribe Box Luxury Polish */
+.subbox {
+    box-shadow: 0 24px 60px -15px rgba(223, 105, 81, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset !important;
+}
+
+.ssend {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease !important;
+}
+
+.ssend:hover {
+    transform: scale(1.06) rotate(3deg) !important;
+    box-shadow: 0 12px 28px rgba(223, 105, 81, 0.5) !important;
+}
+
+.finput:focus-within {
+    box-shadow: 0 0 0 3px rgba(223, 105, 81, 0.25) !important;
 }

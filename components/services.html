@@ -227,7 +227,7 @@
                 <h2 class="why-title">Why 50,000+ Explorers Choose Our Services</h2>
                 <div class="why-perks-row">
                     <div class="why-perk">
-                        <div class="why-icon"><i class="fa-solid fa-shield-check"></i></div>
+                        <div class="why-icon"><i class="fa-solid fa-shield-halved"></i></div>
                         <h3>100% Protection</h3>
                         <p>Every booking includes verified guarantees, flexible cancellations, and secure payments.</p>
                     </div>
@@ -295,18 +295,42 @@
                             </div>
 
                             <div class="inquiry-field">
-                                <label for="inqDestination">Destination of Interest</label>
-                                <input type="text" id="inqDestination" placeholder="e.g. Rome, Italy or Paris, France">
+                                <label for="inqDestination">Destination(s) <span class="req">*</span></label>
+                                <input type="text" id="inqDestination" placeholder="e.g. Rome, Paris, London" required>
+                                <div class="inq-dest-chips" id="inqDestChips">
+                                    <button type="button" class="dest-chip-mini" data-dest="Rome">Rome</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Paris">Paris</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="London">London</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Santorini">Santorini</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Venice">Venice</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Tokyo">Tokyo</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="New York">New York</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Dubai">Dubai</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Agra">Agra</button>
+                                    <button type="button" class="dest-chip-mini" data-dest="Bali">Bali</button>
+                                </div>
+                                <span class="inq-badge-info"><i class="fa-solid fa-circle-check"></i> Every destination receives its own dedicated booking & E-ticket.</span>
+                            </div>
+
+                            <div class="inquiry-row-fields" style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                <div class="inquiry-field" style="flex: 1; margin-bottom: 0;">
+                                    <label for="inqTravelDate">Travel Date <span class="req">*</span></label>
+                                    <input type="date" id="inqTravelDate" required>
+                                </div>
+                                <div class="inquiry-field" style="width: 100px; margin-bottom: 0;">
+                                    <label for="inqGuests">Guests</label>
+                                    <input type="number" id="inqGuests" min="1" max="20" value="1">
+                                </div>
                             </div>
 
                             <div class="inquiry-field">
-                                <label for="inqMessage">Specific Requests / Dates</label>
-                                <textarea id="inqMessage" rows="3" placeholder="Tell us about your flight dates, villa preferences, or bespoke requests..."></textarea>
+                                <label for="inqMessage">Specific Requests / Notes</label>
+                                <textarea id="inqMessage" rows="2" placeholder="Tell us about your flight dates, preferred hotels, or bespoke needs..."></textarea>
                             </div>
 
                             <button type="submit" class="btn-primary-glow service-inquire-btn" id="submitInquiryBtn">
                                 <i class="fa-solid fa-paper-plane"></i>
-                                <span>Request This Service</span>
+                                <span>Book Destination Services</span>
                             </button>
                         </form>
                     </div>
@@ -348,6 +372,26 @@
                                     <option value="Stays">Stays & Villas</option>
                                     <option value="Planning">Planning</option>
                                     <option value="Logistics">Logistics</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="booking-field-group">
+                            <label for="newServiceDestination">Target Destination</label>
+                            <div class="booking-input-wrap select-wrap">
+                                <i class="fa-solid fa-location-dot input-icon"></i>
+                                <select id="newServiceDestination">
+                                    <option value="">All Destinations (Global)</option>
+                                    <option value="Rome">Rome, Italy</option>
+                                    <option value="London">London, UK</option>
+                                    <option value="Paris">Paris, France</option>
+                                    <option value="Santorini">Santorini, Greece</option>
+                                    <option value="Venice">Venice, Italy</option>
+                                    <option value="Tokyo">Tokyo, Japan</option>
+                                    <option value="New York">New York, USA</option>
+                                    <option value="Dubai">Dubai, UAE</option>
+                                    <option value="Agra">Agra, India</option>
+                                    <option value="Bali">Bali, Indonesia</option>
                                 </select>
                             </div>
                         </div>
@@ -413,9 +457,9 @@
     <!-- Footer -->
     <footer id="footer">
         <div class="foot">
-            <div class="lab">
-                <div class="fh">Jadoo.</div>
-                <div class="fp">Book your trip in minute, get full Control for much longer.</div>
+            <div class="col lab">
+                <div class="fh"><a href="../index.html">Jadoo.</a></div>
+                <div class="fp">Book your trip in minutes, get full control for much longer.</div>
             </div>
             <div class="ccol">
                 <div class="col">
@@ -437,20 +481,36 @@
                     <div class="fcp"><a href="./contact.html">Low fare tips</a></div>
                 </div>
             </div>
-            <div class="fico">
+            <div class="col fico">
                 <div class="footi">
-                    <button class="fic fb" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></button>
-                    <button class="fic ins" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></button>
-                    <button class="fic tw" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></button>
+                    <div class="footer-social-icon facebook" title="Facebook" tabindex="0" role="button" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="footer-social-icon instagram" title="Instagram" tabindex="0" role="button" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="footer-social-icon twitter" title="Twitter" tabindex="0" role="button" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></div>
                 </div>
                 <div class="fih">Discover our app</div>
                 <div class="store">
-                    <button class="fps"><img src="../assets/google-play.png" alt="Google Play Store"></button>
-                    <button class="fps"><img src="../assets/apple-store.png" alt="Apple App Store"></button>
+                    <div class="fps">
+                        <div class="pas">
+                            <img src="../assets/google-play.png" alt="Google Play store badge">
+                        </div>
+                        <div class="fit">
+                            <div class="play1">Get it on</div>
+                            <div class="play2">Google Play</div>
+                        </div>
+                    </div>
+                    <div class="fps">
+                        <div class="pas pas1">
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                        <div class="fit">
+                            <div class="play1 play3">Available on the</div>
+                            <div class="play2 play4">Apple Store</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="lfp">All rights reserved @jadoo.co</div>
+        <div class="end lfp">All rights reserved @jadoo.co</div>
     </footer>
 
     <!-- Floating Dark Theme Toggle Button -->
@@ -462,8 +522,10 @@
     <script type="module" src="../scripts/db.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
-        import { JadooDB } from '../scripts/db.js';
+        import { JadooDB, getApiBase } from '../scripts/db.js';
         import { JadooNavAuth, JadooTheme, JadooToast } from '../scripts/features.js';
+
+        const API_BASE = getApiBase();
 
         if (typeof window !== 'undefined') {
             window.JadooTheme = JadooTheme;
@@ -479,6 +541,20 @@
         // Initialize Theme & Auth Sync across navigation and modals
         JadooTheme.init();
         JadooNavAuth.init();
+
+        // Real-time synchronization with auth state across tabs and windows
+        window.addEventListener('jadoo:auth_change', () => {
+            JadooNavAuth.updateNavbar();
+            syncUserAuthToForms();
+        });
+        window.addEventListener('jadoo:db_change', () => {
+            JadooNavAuth.updateNavbar();
+            syncUserAuthToForms();
+        });
+        window.addEventListener('storage', () => {
+            JadooNavAuth.updateNavbar();
+            syncUserAuthToForms();
+        });
 
         // Load & Render Services
         let currentServices = [];
@@ -676,7 +752,7 @@
         async function initServices() {
             const grid = document.getElementById('servicesGrid');
             try {
-                const res = await fetch('/api/services');
+                const res = await fetch(`${API_BASE}/api/services`);
                 if (res.ok) {
                     currentServices = await res.json();
                 } else {
@@ -800,21 +876,34 @@
             }
 
             // Autofill user name and email if logged in
-            const currentUser = JadooDB.getCurrentUser();
-            if (currentUser) {
-                const nameInput = document.getElementById('inqName');
-                const emailInput = document.getElementById('inqEmail');
-                if (nameInput && !nameInput.value) nameInput.value = currentUser.full_name || '';
-                if (emailInput && !emailInput.value) emailInput.value = currentUser.email || '';
-            }
+            syncUserAuthToForms();
 
             modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+        }
+
+        function syncUserAuthToForms() {
+            const currentUser = JadooDB.getCurrentUser();
+            const nameInput = document.getElementById('inqName');
+            const emailInput = document.getElementById('inqEmail');
+            if (currentUser) {
+                const fullName = currentUser.full_name || currentUser.fullName || '';
+                if (nameInput) nameInput.value = fullName;
+                if (emailInput) emailInput.value = currentUser.email || '';
+            } else {
+                if (nameInput && !nameInput.getAttribute('data-user-typed')) nameInput.value = '';
+                if (emailInput && !emailInput.getAttribute('data-user-typed')) emailInput.value = '';
+            }
         }
 
         function closeServiceModal() {
             if (modal) {
+                if (document.activeElement && modal.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
                 modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
             }
         }
@@ -822,7 +911,32 @@
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
         if (modalBackdrop) modalBackdrop.addEventListener('click', closeServiceModal);
 
-        // Submit Inquiry
+        // Destination Selection Mini-Chips Handler
+        const destInput = document.getElementById('inqDestination');
+        const destChips = document.querySelectorAll('.dest-chip-mini');
+        destChips.forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                chip.classList.toggle('is-selected');
+                const selected = Array.from(document.querySelectorAll('.dest-chip-mini.is-selected'))
+                    .map(c => c.getAttribute('data-dest'));
+                if (destInput) {
+                    destInput.value = selected.join(', ');
+                }
+            });
+        });
+
+        if (destInput) {
+            destInput.addEventListener('input', () => {
+                const text = destInput.value.toLowerCase();
+                destChips.forEach(c => {
+                    const dest = (c.getAttribute('data-dest') || '').toLowerCase();
+                    c.classList.toggle('is-selected', text.includes(dest));
+                });
+            });
+        }
+
+        // Submit Service Booking
         const form = document.getElementById('serviceInquiryForm');
         if (form) {
             form.addEventListener('submit', async (e) => {
@@ -832,32 +946,77 @@
                 const customer_name = document.getElementById('inqName').value.trim();
                 const customer_email = document.getElementById('inqEmail').value.trim();
                 const travel_destination = document.getElementById('inqDestination').value.trim();
+                const travel_date = document.getElementById('inqTravelDate')?.value || '';
+                const guests_count = parseInt(document.getElementById('inqGuests')?.value || '1', 10) || 1;
                 const message = document.getElementById('inqMessage').value.trim();
 
+                const currentUser = JadooDB.getCurrentUser();
+                const token = currentUser ? (currentUser.token || localStorage.getItem('jadoo_auth_token')) : localStorage.getItem('jadoo_auth_token');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
                 try {
-                    const res = await fetch('/api/services/inquire', {
+                    const res = await fetch(`${API_BASE}/api/services/inquire`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
+                        credentials: 'include',
                         body: JSON.stringify({
                             service_id,
                             service_title,
                             customer_name,
                             customer_email,
                             travel_destination,
-                            message
+                            travel_date,
+                            guests_count,
+                            message,
+                            customer_id: currentUser ? currentUser.id : undefined
                         })
                     });
                     if (res.ok) {
+                        const data = await res.json();
                         closeServiceModal();
                         form.reset();
+                        destChips.forEach(c => c.classList.remove('is-selected'));
+
+                        // Sync newly generated bookings to local cache for instant UI refresh
+                        if (Array.isArray(data.bookings) && data.bookings.length > 0) {
+                            try {
+                                const currentLocal = JSON.parse(localStorage.getItem('jadoo_bookings') || '[]');
+                                data.bookings.forEach(b => {
+                                    if (!currentLocal.some(x => x.id === b.id || x.booking_ref === b.booking_ref)) {
+                                        currentLocal.unshift(b);
+                                    }
+                                });
+                                localStorage.setItem('jadoo_bookings', JSON.stringify(currentLocal));
+                                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
+                            } catch (_) {}
+                        }
+
+                        const count = data.count || (data.bookings ? data.bookings.length : 1);
+                        const dests = (data.destinations || []).join(', ') || travel_destination;
                         if (window.JadooToast) {
-                            window.JadooToast.show('Inquiry Confirmed!', 'Our concierge team will reach out within 2 hours with customized options.', 'success');
+                            window.JadooToast.show(
+                                'Service Booked!',
+                                `Created ${count} separate destination booking(s) for ${dests}. View your passes under Traveler Profile.`,
+                                'success'
+                            );
                         } else {
-                            alert('Thank you! Your inquiry has been sent to Jadoo Travel Concierge.');
+                            alert(`Confirmed ${count} booking(s) for ${dests}!`);
+                        }
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        const errMsg = errData.error || 'Failed to submit service booking. Please try again.';
+                        if (window.JadooToast) {
+                            window.JadooToast.show('Booking Error', errMsg, 'error');
+                        } else {
+                            alert(errMsg);
                         }
                     }
                 } catch (err) {
-                    console.error('Inquiry submission error:', err);
+                    console.error('Service booking submission error:', err);
+                    if (window.JadooToast) {
+                        window.JadooToast.show('Network Error', 'Could not connect to the booking server. Please verify your connection.', 'error');
+                    }
                 }
             });
         }
@@ -870,15 +1029,32 @@
         const btnOpenCreate = document.getElementById('btnOpenCreateServiceModal');
 
         function openCreateServiceModal() {
+            const currentUser = JadooDB.getCurrentUser();
+            if (!currentUser) {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Authentication Required', 'Please sign in or create an account to publish a custom service.', 'warning');
+                } else {
+                    alert('Please log in to publish a custom service.');
+                }
+                setTimeout(() => {
+                    window.location.href = './auth.html#signin';
+                }, 1000);
+                return;
+            }
             if (createModal) {
                 createModal.classList.add('is-open');
+                createModal.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
             }
         }
 
         function closeCreateServiceModal() {
             if (createModal) {
+                if (document.activeElement && createModal.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
                 createModal.classList.remove('is-open');
+                createModal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
             }
         }
@@ -888,12 +1064,21 @@
         if (createModalBackdrop) createModalBackdrop.addEventListener('click', closeCreateServiceModal);
         if (createModalCancel) createModalCancel.addEventListener('click', closeCreateServiceModal);
 
+        // Global ESC key listener to safely dismiss open modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modal && modal.classList.contains('is-open')) closeServiceModal();
+                if (createModal && createModal.classList.contains('is-open')) closeCreateServiceModal();
+            }
+        });
+
         const createForm = document.getElementById('createServiceForm');
         if (createForm) {
             createForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const title = document.getElementById('newServiceTitle').value.trim();
                 const category = document.getElementById('newServiceCategory').value;
+                const destination_name = document.getElementById('newServiceDestination')?.value || '';
                 const starting_price = document.getElementById('newServicePrice').value.trim();
                 const unit = document.getElementById('newServiceUnit').value.trim();
                 const tagline = document.getElementById('newServiceTagline').value.trim();
@@ -902,20 +1087,29 @@
                 const featuresRaw = document.getElementById('newServiceFeatures').value.trim();
                 const features = featuresRaw ? featuresRaw.split(',').map(f => f.trim()).filter(Boolean) : [];
 
+                const currentUser = JadooDB.getCurrentUser();
+                const token = currentUser ? (currentUser.token || localStorage.getItem('jadoo_auth_token')) : localStorage.getItem('jadoo_auth_token');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
                 try {
-                    const res = await fetch('/api/services', {
+                    const res = await fetch(`${API_BASE}/api/services`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
+                        credentials: 'include',
                         body: JSON.stringify({
                             title,
                             category,
+                            destination_name: destination_name || undefined,
                             starting_price,
                             unit,
                             tagline,
                             short_desc,
                             description: short_desc,
                             badge,
-                            features
+                            features,
+                            author_id: currentUser ? currentUser.id : undefined,
+                            author_name: currentUser ? (currentUser.full_name || currentUser.fullName) : undefined
                         })
                     });
 

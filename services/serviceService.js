@@ -1,3 +1,4 @@
+import { pool } from './db.js';
 const SERVICES_DATA = [
     {
         id: 'srv-weather',
@@ -189,8 +190,75 @@ export class ServiceService {
     static getAllServices() {
         return SERVICES_DATA;
     }
+    static async getAllServicesFromDB() {
+        try {
+            const res = await pool.query('SELECT * FROM services ORDER BY created_at ASC');
+            if (res.rows.length > 0) {
+                return res.rows.map(row => ({
+                    id: row.id,
+                    slug: row.slug,
+                    title: row.title,
+                    tagline: row.tagline,
+                    category: row.category,
+                    icon: row.icon,
+                    badge: row.badge,
+                    short_desc: row.short_desc,
+                    description: row.description,
+                    features: typeof row.features === 'string' ? JSON.parse(row.features) : (row.features || []),
+                    starting_price: row.starting_price,
+                    unit: row.unit,
+                    rating: parseFloat(row.rating) || 5.0,
+                    reviews_count: parseInt(row.reviews_count, 10) || 0,
+                    included_perks: typeof row.included_perks === 'string' ? JSON.parse(row.included_perks) : (row.included_perks || []),
+                    banner_image: row.banner_image,
+                    author_id: row.author_id,
+                    author_name: row.author_name,
+                    destination_id: row.destination_id,
+                    destination_name: row.destination_name
+                }));
+            }
+        }
+        catch (err) {
+            console.warn('PostgreSQL fetch services warning:', err);
+        }
+        return SERVICES_DATA;
+    }
     static getServiceBySlug(slug) {
         return SERVICES_DATA.find(s => s.slug === slug || s.id === slug);
+    }
+    static async getServiceBySlugFromDB(slug) {
+        try {
+            const res = await pool.query('SELECT * FROM services WHERE slug = $1 OR id = $1 LIMIT 1', [slug]);
+            if (res.rows.length > 0) {
+                const row = res.rows[0];
+                return {
+                    id: row.id,
+                    slug: row.slug,
+                    title: row.title,
+                    tagline: row.tagline,
+                    category: row.category,
+                    icon: row.icon,
+                    badge: row.badge,
+                    short_desc: row.short_desc,
+                    description: row.description,
+                    features: typeof row.features === 'string' ? JSON.parse(row.features) : (row.features || []),
+                    starting_price: row.starting_price,
+                    unit: row.unit,
+                    rating: parseFloat(row.rating) || 5.0,
+                    reviews_count: parseInt(row.reviews_count, 10) || 0,
+                    included_perks: typeof row.included_perks === 'string' ? JSON.parse(row.included_perks) : (row.included_perks || []),
+                    banner_image: row.banner_image,
+                    author_id: row.author_id,
+                    author_name: row.author_name,
+                    destination_id: row.destination_id,
+                    destination_name: row.destination_name
+                };
+            }
+        }
+        catch (err) {
+            console.warn('PostgreSQL getServiceBySlug error:', err);
+        }
+        return this.getServiceBySlug(slug);
     }
     static getServicesByCategory(cat) {
         if (!cat || cat.toLowerCase() === 'all')
@@ -209,6 +277,69 @@ export class ServiceService {
     }
     static getInquiries() {
         return inquiriesStore;
+    }
+    static async createServiceInDB(serviceData) {
+        const slug = (serviceData.slug || serviceData.title || 'custom-service')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+        const newService = {
+            id: 'srv-' + Date.now().toString(36),
+            slug,
+            title: serviceData.title || 'Bespoke Travel Concierge',
+            tagline: serviceData.tagline || 'Customized luxury travel experience tailored to your itinerary',
+            category: serviceData.category || 'Bespoke',
+            icon: serviceData.icon || 'fa-solid fa-crown',
+            badge: serviceData.badge || 'VIP Bespoke',
+            short_desc: serviceData.short_desc || serviceData.description?.slice(0, 140) || 'Custom bespoke travel package designed for discerning explorers.',
+            description: serviceData.description || 'Exclusive custom travel package designed for discerning explorers with dedicated concierge liaison.',
+            features: Array.isArray(serviceData.features) && serviceData.features.length > 0
+                ? serviceData.features
+                : ['Personalized VIP concierge liaison', 'Direct priority reservation guarantees', '24/7 dedicated travel support hotline'],
+            starting_price: serviceData.starting_price || '$500',
+            unit: serviceData.unit || 'per booking',
+            rating: 5.0,
+            reviews_count: 1,
+            included_perks: Array.isArray(serviceData.included_perks) && serviceData.included_perks.length > 0
+                ? serviceData.included_perks
+                : ['100% bespoke customization', 'Direct concierge access', 'Flexible cancellation'],
+            banner_image: serviceData.banner_image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+            author_id: serviceData.author_id,
+            author_name: serviceData.author_name,
+            destination_id: serviceData.destination_id,
+            destination_name: serviceData.destination_name
+        };
+        SERVICES_DATA.unshift(newService);
+        try {
+            await pool.query(`INSERT INTO services (id, slug, title, tagline, category, icon, badge, short_desc, description, features, starting_price, unit, rating, reviews_count, included_perks, banner_image, author_id, author_name, destination_id, destination_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+         ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description`, [
+                newService.id,
+                newService.slug,
+                newService.title,
+                newService.tagline,
+                newService.category,
+                newService.icon,
+                newService.badge,
+                newService.short_desc,
+                newService.description,
+                JSON.stringify(newService.features),
+                newService.starting_price,
+                newService.unit,
+                newService.rating,
+                newService.reviews_count,
+                JSON.stringify(newService.included_perks),
+                newService.banner_image,
+                newService.author_id || null,
+                newService.author_name || null,
+                newService.destination_id || null,
+                newService.destination_name || null
+            ]);
+        }
+        catch (err) {
+            console.warn('Could not persist custom service to PostgreSQL:', err);
+        }
+        return newService;
     }
     static createService(serviceData) {
         const slug = (serviceData.slug || serviceData.title || 'custom-service')
@@ -235,7 +366,11 @@ export class ServiceService {
             included_perks: Array.isArray(serviceData.included_perks) && serviceData.included_perks.length > 0
                 ? serviceData.included_perks
                 : ['100% bespoke customization', 'Direct concierge access', 'Flexible cancellation'],
-            banner_image: serviceData.banner_image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+            banner_image: serviceData.banner_image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+            author_id: serviceData.author_id,
+            author_name: serviceData.author_name,
+            destination_id: serviceData.destination_id,
+            destination_name: serviceData.destination_name
         };
         SERVICES_DATA.unshift(newService);
         return newService;

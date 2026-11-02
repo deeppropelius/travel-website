@@ -76,10 +76,13 @@ The platform utilizes a relational PostgreSQL database schema with foreign-key r
 erDiagram
     CUSTOMERS ||--o{ BOOKINGS : places
     CUSTOMERS ||--o{ TESTIMONIALS : writes
+    CUSTOMERS ||--o{ SERVICES : publishes
     DESTINATIONS ||--o{ ATTRACTIONS : has
     DESTINATIONS ||--o{ BOOKINGS : booked_for
     DESTINATIONS ||--o{ TESTIMONIALS : reviewed_in
+    DESTINATIONS ||--o{ SERVICES : hosts
     ATTRACTIONS ||--o{ BOOKINGS : included_in
+    SERVICES ||--o{ BOOKINGS : generates
 
     CUSTOMERS {
         uuid id PK
@@ -123,8 +126,26 @@ erDiagram
         uuid destination_id FK
     }
 
+    SERVICES {
+        string id PK
+        string slug
+        string title
+        string tagline
+        string category
+        string starting_price
+        string unit
+        jsonb features
+        jsonb included_perks
+        string banner_image
+        uuid author_id FK
+        uuid destination_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
     BOOKINGS {
         uuid id PK
+        string booking_ref
         string name
         string user_name
         string user_email
@@ -137,6 +158,8 @@ erDiagram
         string special_request
         status status
         string image_url
+        string service_id
+        string service_name
         timestamp created_at
         timestamp updated_at
         uuid destination_id FK
@@ -167,8 +190,12 @@ erDiagram
 | **`customers`** | `id: uuid` | — | `full_name`, `email` (UNIQUE), `password`, `phone`, `avatar_url`, `logged_in_at`, `created_at`, `updated_at` |
 | **`destinations`** | `id: uuid` | — | `name` (UNIQUE), `country`, `latitude`, `longitude`, `source`, `hero_img_url`, `description`, `country_code`, timestamps |
 | **`attractions`** | `id: uuid` | `destination_id` &rarr; `destinations(id)` | `destination_name`, `category`, `description`, `image_url`, `price_amount`, `rating`, `reviews_count`, `duration`, `wiki_url`, timestamps |
-| **`bookings`** | `id: uuid` | `destination_id`, `customer_id`, `attraction_id` | `name`, `user_name`, `user_email`, `phone_number`, `travel_date`, `guests_count`, `package_type` (`STANDARD` \| `VIP` \| `LUXURY`), `price_per_person`, `total_price`, `special_request`, `status` (`CONFORMED` \| `PENDING` \| `CANCELLED`), `image_url`, timestamps |
+| **`services`** | `id: text` | `author_id` &rarr; `customers(id)`, `destination_id` &rarr; `destinations(id)` | `slug` (UNIQUE), `title`, `tagline`, `category`, `icon`, `badge`, `short_desc`, `description`, `features` (JSONB), `starting_price`, `unit`, `rating`, `reviews_count`, `included_perks` (JSONB), `banner_image`, `destination_name`, timestamps |
+| **`bookings`** | `id: uuid` | `destination_id`, `customer_id`, `attraction_id` | `booking_ref` (UNIQUE), `destination_name`, `attraction_name`, `user_name`, `user_email`, `phone_number`, `travel_date`, `guests_count`, `package_type` (`STANDARD` \| `VIP` \| `LUXURY`), `price_per_person`, `total_price`, `special_request`, `status` (`CONFORMED` \| `PENDING` \| `CANCELLED`), `image_url`, `service_id`, `service_name`, timestamps |
 | **`testimonials`** | `id: uuid` | `customer_id`, `destination_id` | `author_name`, `author_location`, `role_title`, `quote`, `rating`, `avatar_url`, `trip_tag`, timestamps |
+
+> [!NOTE]
+> **Multi-Destination Service Bookings:** When a user books a travel service for multiple destinations (e.g. Rome, Paris, and Tokyo), the system automatically provisions an independent, fully referenced booking record for **every destination** with its own booking reference code (`BK-XXXXX`), pricing calculation, and electronic boarding pass itinerary.
 
 ### Custom PostgreSQL Enums
 * **`package_type`**: `'STANDARD'`, `'VIP'`, `'LUXURY'`

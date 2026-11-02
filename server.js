@@ -266,11 +266,11 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
         }
         const { rows } = await pool.query(`
       INSERT INTO booking
-        (id, booking_ref, customer_id, destination_id, destination_name, attraction_name,
+        (id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
          user_name, user_email, phone_number, travel_date, guests_count, package_type,
          price_per_person, total_price, special_request, status, image_url)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
-      RETURNING *`, [id, booking_ref, customerId, destinationId, destName, attrName,
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+      RETURNING *`, [id, booking_ref, attrName, customerId, destinationId, destName, attrName,
             userName, userEmail, phoneNumber, travelDate,
             guestsCount, packageType, pricePerPerson, totalPrice,
             specialRequest, status, imageUrl]);
@@ -301,49 +301,186 @@ app.patch('/api/bookings/:id/status', async (req, res) => {
 // ══════════════════════════════════════════════════════════════
 // SERVICES
 // ══════════════════════════════════════════════════════════════
-app.get('/api/services', (_req, res) => {
-    const category = _req.query.category;
-    if (category) {
-        return res.json(ServiceService.getServicesByCategory(category));
-    }
-    res.json(ServiceService.getAllServices());
-});
-app.get('/api/services/:slug', (req, res) => {
-    const service = ServiceService.getServiceBySlug(req.params.slug);
-    if (!service)
-        return res.status(404).json({ error: 'Service not found' });
-    res.json(service);
-});
-app.post('/api/services/inquire', (req, res) => {
+app.get('/api/services', async (_req, res) => {
     try {
-        const { service_id, service_title, customer_name, customer_email, customer_phone, travel_destination, travel_date, message } = req.body;
+        const category = _req.query.category;
+        const services = await ServiceService.getAllServicesFromDB();
+        if (category && category.toLowerCase() !== 'all') {
+            return res.json(services.filter(s => s.category.toLowerCase() === category.toLowerCase()));
+        }
+        res.json(services);
+    }
+    catch (err) {
+        console.warn('GET /api/services error, fallback to memory:', err);
+        res.json(ServiceService.getAllServices());
+    }
+});
+app.get('/api/services/:slug', async (req, res) => {
+    try {
+        const service = await ServiceService.getServiceBySlugFromDB(req.params.slug);
+        if (!service)
+            return res.status(404).json({ error: 'Service not found' });
+        res.json(service);
+    }
+    catch (err) {
+        const fallback = ServiceService.getServiceBySlug(req.params.slug);
+        if (!fallback)
+            return res.status(404).json({ error: 'Service not found' });
+        res.json(fallback);
+    }
+});
+app.post('/api/services/inquire', optionalAuth, async (req, res) => {
+    try {
+        let { service_id, service_title, customer_name, customer_email, customer_phone, travel_destination, destinations, travel_date, guests_count, package_type, message, customer_id } = req.body;
+        if (req.user) {
+            customer_id = customer_id || req.user.id;
+            customer_email = customer_email || req.user.email;
+            customer_name = customer_name || req.user.full_name;
+        }
         if (!service_id || !customer_name || !customer_email) {
             return res.status(400).json({ error: 'service_id, customer_name, and customer_email are required' });
         }
+        // 1. Resolve service
+        const service = await ServiceService.getServiceBySlugFromDB(service_id);
+        const resolvedTitle = service_title || service?.title || 'Jadoo Travel Service';
+        // 2. Extract destinations list - every destination gets a separate booking
+        let destList = [];
+        if (Array.isArray(destinations) && destinations.length > 0) {
+            destList = destinations.map((d) => String(d).trim()).filter(Boolean);
+        }
+        else if (typeof travel_destination === 'string' && travel_destination.trim()) {
+            destList = travel_destination
+                .split(/[,;&\/]|\band\b/i)
+                .map((s) => s.trim())
+                .filter(Boolean);
+        }
+        if (destList.length === 0) {
+            destList = ['Rome']; // default destination fallback
+        }
+        // 3. Resolve / create customer in PostgreSQL
+        let custId = customer_id;
+        if (!custId || !isUUID(custId)) {
+            const custCheck = await pool.query('SELECT id, full_name FROM customer WHERE email ILIKE $1 LIMIT 1', [customer_email.trim()]);
+            if (custCheck.rows.length) {
+                custId = custCheck.rows[0].id;
+            }
+            else {
+                custId = generateUUID();
+                await pool.query('INSERT INTO customer (id, full_name, email, phone) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name RETURNING id', [custId, customer_name.trim(), customer_email.trim().toLowerCase(), customer_phone ? customer_phone.trim() : null]);
+            }
+        }
+        // Pricing calculation
+        const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
+        const pricePerPerson = rawPrice > 0 ? rawPrice : 45.00;
+        const guests = parseInt(String(guests_count || '1'), 10) || 1;
+        const totalPrice = pricePerPerson * guests;
+        // Package Type
+        const rawPkg = String(package_type || 'VIP').toLowerCase();
+        const pkg = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
+        // Travel Date
+        const validDate = travel_date && /^\d{4}-\d{2}-\d{2}$/.test(travel_date)
+            ? travel_date
+            : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        // 4. Create a SEPARATE booking record for EVERY destination in PostgreSQL
+        const createdBookings = [];
+        for (const destName of destList) {
+            let destId;
+            let resolvedDestName = destName;
+            let destHeroImg = service?.banner_image || './assets/destination-rome.png';
+            const destCheck = await pool.query('SELECT id, name, country, hero_img FROM destination WHERE name ILIKE $1 LIMIT 1', [destName.trim()]);
+            if (destCheck.rows.length > 0) {
+                destId = destCheck.rows[0].id;
+                resolvedDestName = destCheck.rows[0].name;
+                if (destCheck.rows[0].hero_img)
+                    destHeroImg = destCheck.rows[0].hero_img;
+            }
+            else {
+                destId = generateUUID();
+                const insDest = await pool.query('INSERT INTO destination (id, name, country, latitude, longitude, hero_img) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id, hero_img', [destId, destName.trim(), 'International', 0, 0, destHeroImg]);
+                if (insDest.rows.length) {
+                    destId = insDest.rows[0].id;
+                    if (insDest.rows[0].hero_img)
+                        destHeroImg = insDest.rows[0].hero_img;
+                }
+            }
+            const bookingId = generateUUID();
+            const bookingRef = generateBookingRef();
+            const attractionName = `Service: ${resolvedTitle}`;
+            const bookingResult = await pool.query(`
+        INSERT INTO booking (
+          id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
+          user_name, user_email, phone_number, travel_date, guests_count, package_type,
+          price_per_person, total_price, special_request, status, image_url,
+          service_id, service_name
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+        RETURNING *
+      `, [
+                bookingId,
+                bookingRef,
+                attractionName,
+                custId,
+                destId,
+                resolvedDestName,
+                attractionName,
+                customer_name.trim(),
+                customer_email.trim().toLowerCase(),
+                customer_phone ? customer_phone.trim() : null,
+                validDate,
+                guests,
+                pkg,
+                pricePerPerson,
+                totalPrice,
+                message ? `[Service Booking: ${resolvedTitle}] ${message.trim()}` : `Service booking for ${resolvedDestName}`,
+                'confirmed',
+                destHeroImg,
+                service_id,
+                resolvedTitle
+            ]);
+            createdBookings.push(bookingResult.rows[0]);
+        }
+        // 5. Record inquiry tracking object
         const record = ServiceService.recordInquiry({
+            customer_id: custId,
             service_id,
-            service_title: service_title || 'Jadoo Travel Service',
+            service_title: resolvedTitle,
             customer_name,
             customer_email,
             customer_phone,
-            travel_destination,
-            travel_date,
+            travel_destination: destList.join(', '),
+            travel_date: validDate,
             message
         });
-        res.status(201).json(record);
+        res.status(201).json({
+            message: `Confirmed ${createdBookings.length} separate destination booking(s) for ${resolvedTitle}`,
+            inquiry: record,
+            bookings: createdBookings,
+            count: createdBookings.length,
+            destinations: destList
+        });
     }
     catch (err) {
         console.error('POST /api/services/inquire error:', err);
-        res.status(500).json({ error: 'Server error processing service inquiry' });
+        res.status(500).json({ error: 'Server error processing service inquiry and bookings' });
     }
 });
-app.post('/api/services', (req, res) => {
+app.post('/api/services', optionalAuth, async (req, res) => {
     try {
         const serviceData = req.body;
         if (!serviceData || !serviceData.title) {
             return res.status(400).json({ error: 'Service title is required' });
         }
-        const created = ServiceService.createService(serviceData);
+        if (req.user) {
+            serviceData.author_id = req.user.id;
+            serviceData.author_name = req.user.full_name;
+        }
+        if (serviceData.destination_name) {
+            const destCheck = await pool.query('SELECT id, name FROM destination WHERE name ILIKE $1 LIMIT 1', [serviceData.destination_name.trim()]);
+            if (destCheck.rows.length) {
+                serviceData.destination_id = destCheck.rows[0].id;
+                serviceData.destination_name = destCheck.rows[0].name;
+            }
+        }
+        const created = await ServiceService.createServiceInDB(serviceData);
         res.status(201).json(created);
     }
     catch (err) {

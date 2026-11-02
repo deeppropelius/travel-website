@@ -76,13 +76,13 @@
         position: fixed;
         top: 70px;
         right: -100%;
-        width: 280px;
-        max-width: 80vw;
+        width: min(20rem, 88vw);
+        max-width: 88vw;
         height: calc(100vh - 70px);
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(16px);
         box-shadow: -6px 0 25px rgba(0, 0, 0, 0.1);
-        padding: 35px 25px;
+        padding: 30px 20px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -147,6 +147,82 @@
         font-size: 1rem;
         cursor: pointer;
         padding: 4px 8px;
+    }
+
+    .navitems .nav-user-item {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .navitems .user-profile-dropdown {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .navitems .user-profile-btn {
+        margin: 0 auto;
+    }
+
+    .navitems .user-dropdown-menu {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-top: 10px !important;
+        box-sizing: border-box !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .navitems .user-profile-dropdown.open .user-dropdown-menu {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+    }
+
+    .navitems .dropdown-user-header {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 10px 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .navitems .dropdown-avatar-circle {
+        width: 38px !important;
+        height: 38px !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .navitems .dropdown-user-info {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+    }
+
+    .navitems .dropdown-user-name,
+    .navitems .dropdown-user-email {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }
 
     .cards {

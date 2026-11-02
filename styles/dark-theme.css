@@ -676,7 +676,7 @@ html[data-theme="dark"],
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 99999 !important;
+  z-index: 995;
   width: 52px;
   height: 52px;
   aspect-ratio: 1/1;
@@ -696,6 +696,16 @@ html[data-theme="dark"],
               border-color 0.4s ease;
   outline: none;
   pointer-events: auto !important;
+}
+
+/* When mobile navigation drawer is open, hide floating theme toggle so it does not obstruct user menu */
+.navitems.active ~ .theme-toggle,
+header:has(.navitems.active) ~ .theme-toggle,
+body.mobile-nav-open .theme-toggle {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.7) !important;
 }
 
 .theme-toggle:hover {
@@ -796,10 +806,22 @@ html[data-theme="dark"],
 
 [data-theme="dark"] .sign-in {
   color: #F8FAFC;
+  outline: none;
+  border-radius: 20px;
 }
 
 [data-theme="dark"] .sign-up {
   color: #94A3B8;
+  outline: none;
+  border-radius: 20px;
+}
+
+[data-theme="dark"] .sign-in:focus,
+[data-theme="dark"] .sign-up:focus,
+[data-theme="dark"] .sign-in:focus-visible,
+[data-theme="dark"] .sign-up:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 [data-theme="dark"] .toggle.signup-active .sign-in {
@@ -1530,6 +1552,33 @@ html[data-theme="dark"],
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+[data-theme="dark"] .dest-chip-mini {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .dest-chip-mini:hover {
+  border-color: var(--accent-coral) !important;
+  color: var(--accent-coral) !important;
+  background: rgba(223, 105, 81, 0.15) !important;
+}
+
+[data-theme="dark"] .dest-chip-mini.is-selected {
+  background: var(--accent-coral) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .inq-badge-info {
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] .inquiry-field select {
+  background: #1E293B !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
 [data-theme="dark"] .why-title {
   color: #FFFFFF !important;
 }
@@ -1902,4 +1951,129 @@ html[data-theme="dark"],
 
 [data-theme="dark"] .my-bookings-filter-tabs {
   border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Luxury UI Polish Dark Mode Adapters */
+[data-theme="dark"] .profile-avatar-wrapper,
+[data-theme="dark"] .dropdown-avatar-circle {
+  box-shadow: 0 0 0 2px #0F172A, 0 0 0 4px rgba(223, 105, 81, 0.5) !important;
+}
+
+[data-theme="dark"] .ticket-perforation-line::before,
+[data-theme="dark"] .ticket-perforation-line::after {
+  background: #0B1120 !important;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .service-card-features {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .service-feature-item {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="dark"] .features-modal-content::-webkit-scrollbar-thumb,
+[data-theme="dark"] .inquiry-modal-content::-webkit-scrollbar-thumb,
+[data-theme="dark"] .service-create-modal::-webkit-scrollbar-thumb,
+[data-theme="dark"] .navitems::-webkit-scrollbar-thumb {
+  background: rgba(223, 105, 81, 0.4) !important;
+}
+
+/* Dark Theme Ticket Suite Adapters */
+[data-theme="dark"] .ticket-pass-chip {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #E2E8F0 !important;
+}
+
+[data-theme="dark"] .ticket-pass-chip:hover {
+  border-color: #DF6951 !important;
+  background: rgba(223, 105, 81, 0.12) !important;
+}
+
+[data-theme="dark"] .ticket-pass-chip.is-active {
+  background: rgba(223, 105, 81, 0.2) !important;
+  border-color: #DF6951 !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ticket-pass-chip .pass-chip-ref {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .ticket-cockpit-bar {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #CBD5E1 !important;
+}
+
+[data-theme="dark"] .ticket-cockpit-bar strong {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .dest-intel-card {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .intel-value {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .intel-label,
+[data-theme="dark"] .intel-sub {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .prep-card {
+  background: #1E293B !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .prep-card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .prep-card-header h3 {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .prep-checklist-item {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="dark"] .prep-item-text {
+  color: #E2E8F0 !important;
+}
+
+[data-theme="dark"] .timeline-step-title {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .timeline-step-desc {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .timeline-step-dot {
+  background: #1E293B !important;
+}
+
+[data-theme="dark"] .ticket-modal-card {
+  background: #101726 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ticket-modal-close-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .ticket-modal-close-btn:hover {
+  background: rgba(223, 105, 81, 0.25) !important;
+  color: #FFFFFF !important;
 }

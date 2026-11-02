@@ -232,6 +232,11 @@
                 </div>
             </div>
 
+            <!-- Multi-Ticket Quick Switcher Rail -->
+            <div class="ticket-passes-slider" id="ticketPassesSlider" title="Quickly switch between your travel passes">
+                <!-- Dynamically populated with active user tickets -->
+            </div>
+
             <!-- E-Ticket Card (Redesigned Luxury Experience Pass) -->
             <div class="ticket-voucher-card luxury-ticket-pass heritage-pass-theme" id="ticketVoucherCard">
                 <!-- Ticket Body & Perforated Stub Section -->
@@ -304,6 +309,15 @@
                                 <div class="voucher-script-logo">Jadoo Travel</div>
                                 <div class="voucher-sub-tag">TRAVEL EXCELLENCE</div>
                                 <h2 class="voucher-main-title">TRAVEL VOUCHER</h2>
+                            </div>
+
+                            <!-- Cockpit Meta Strip -->
+                            <div class="ticket-cockpit-bar">
+                                <div class="cockpit-item"><i class="fa-solid fa-plane"></i> <span>Voyage: <strong id="cockpitVoyageId">JD-8824</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-door-open"></i> <span>Gate: <strong id="cockpitGate">B14 (Terminal 2)</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-chair"></i> <span>Pass / Seat: <strong id="cockpitSeat">01A VIP</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-suitcase-rolling"></i> <span>Luggage: <strong>1 Cabin + 1 Checked</strong></span></div>
+                                <div class="cockpit-item"><i class="fa-solid fa-shield-halved" style="color: #10B981;"></i> <span>Protection: <strong>100% Guaranteed</strong></span></div>
                             </div>
 
                             <!-- Option 1 Primary Metadata Row -->
@@ -393,9 +407,10 @@
                         <div class="stub-vip-tag">VIP ADMISSION PASS</div>
 
                         <!-- Scannable High-Contrast QR Code -->
-                        <div class="luxury-qr-frame" id="stubQrBox" title="Scannable Tour Check-in Code">
+                        <div class="luxury-qr-frame" id="stubQrBox" title="Click to Enlarge for Scanner" style="cursor: pointer;">
                             <div id="stubQrCanvas"></div>
                         </div>
+                        <span style="font-size: 0.68rem; color: #64748B; margin-top: -4px;"><i class="fa-solid fa-magnifying-glass-plus"></i> Tap to Enlarge</span>
 
                         <!-- Barcode & Serial Code -->
                         <div class="stub-barcode-wrap">
@@ -423,18 +438,194 @@
                     <i class="fa-solid fa-file-arrow-down"></i>
                     <span>Download PDF Ticket</span>
                 </button>
+                <button type="button" class="btn-secondary-flat" id="printTicketBtn" title="Print High-Resolution Voucher">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Print Pass</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="addToCalendarBtn" title="Download .ics Calendar Event">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    <span>Add to Calendar</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="openWalletModalBtn" title="Save to Mobile Wallet">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Digital Wallet</span>
+                </button>
+                <button type="button" class="btn-secondary-flat" id="openMapModalBtn" title="View Meeting Point Directions">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Meeting Point</span>
+                </button>
                 <button type="button" class="btn-secondary-flat" id="cancelReservationBtn" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.3);">
                     <i class="fa-solid fa-ban"></i>
                     <span>Cancel Reservation</span>
                 </button>
-                <a href="./profile.html#tickets" class="btn-secondary-flat" style="text-decoration: none;">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>All My E-Tickets</span>
-                </a>
-                <a href="./destination-page.html" class="btn-secondary-flat" style="text-decoration: none;">
-                    <i class="fa-solid fa-compass"></i>
-                    <span>Explore More Trips</span>
-                </a>
+            </div>
+
+            <!-- Destination Intelligence & Live Weather Grid -->
+            <div class="ticket-dest-intel-grid" id="destIntelGrid">
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box weather-box"><i class="fa-solid fa-cloud-sun"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Destination Weather</span>
+                        <span class="intel-value" id="intelWeatherVal">22°C Clear & Mild</span>
+                        <span class="intel-sub" id="intelWeatherSub">Ideal for walking & sightseeing</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box time-box"><i class="fa-solid fa-clock"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Local Destination Time</span>
+                        <span class="intel-value" id="intelTimeVal">12:30 PM CEST</span>
+                        <span class="intel-sub" id="intelTimeSub">Synchronized local clock</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box currency-box"><i class="fa-solid fa-coins"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">Currency & Payments</span>
+                        <span class="intel-value" id="intelCurrencyVal">EUR (€) Accepted</span>
+                        <span class="intel-sub">Cards & contactless accepted everywhere</span>
+                    </div>
+                </div>
+                <div class="dest-intel-card">
+                    <div class="intel-icon-box emergency-box"><i class="fa-solid fa-headset"></i></div>
+                    <div class="intel-info">
+                        <span class="intel-label">24/7 VIP Concierge</span>
+                        <span class="intel-value">+1 (800) 523-6677</span>
+                        <span class="intel-sub">Direct emergency traveler line</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voyage Prep: Interactive Checklist & Timeline Grid -->
+            <div class="ticket-voyage-prep">
+                <div class="prep-card">
+                    <div class="prep-card-header">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <h3>Traveler Preparation Checklist</h3>
+                    </div>
+                    <div class="prep-checklist-list" id="prepChecklist">
+                        <label class="prep-checklist-item is-checked">
+                            <input type="checkbox" checked data-task="booking_confirmed">
+                            <span class="prep-item-text">Official Booking Reference Verified</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="id_check">
+                            <span class="prep-item-text">Valid Government Photo ID or Passport In Hand</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="offline_pass">
+                            <span class="prep-item-text">Digital E-Ticket or PDF Downloaded Offline</span>
+                        </label>
+                        <label class="prep-checklist-item">
+                            <input type="checkbox" data-task="meeting_arrive">
+                            <span class="prep-item-text">Arrive at Tourist Gate 15 Mins Prior to Meeting Time</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="prep-card">
+                    <div class="prep-card-header">
+                        <i class="fa-solid fa-route"></i>
+                        <h3>Day-of-Voyage Schedule</h3>
+                    </div>
+                    <div class="timeline-track" id="voyageTimeline">
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">09:30 AM</span>
+                            <span class="timeline-step-title">Guide Meet & VIP Check-In</span>
+                            <span class="timeline-step-desc">Welcome greeting by your master guide with audio headset distribution.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">10:00 AM</span>
+                            <span class="timeline-step-title">Fast-Track Priority Entry</span>
+                            <span class="timeline-step-desc">Direct skip-the-line admission through dedicated VIP entrance.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">11:30 AM</span>
+                            <span class="timeline-step-title">Curated Historical Landmark Walk</span>
+                            <span class="timeline-step-desc">In-depth archaeological commentary with private landmark highlights.</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step-dot"></div>
+                            <span class="timeline-step-time">12:45 PM</span>
+                            <span class="timeline-step-title">Panoramic Vista & Free Exploration</span>
+                            <span class="timeline-step-desc">Exclusive rooftop/terrace photo stop and personalized concierge recommendations.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal 1: Full-Screen QR Pass Scanner Modal -->
+            <div class="ticket-modal-overlay" id="qrScanModal" role="dialog" aria-modal="true" aria-labelledby="qrScanTitle">
+                <div class="ticket-modal-card">
+                    <button type="button" class="ticket-modal-close-btn" id="closeQrScanBtn" aria-label="Close Scanner"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="qrScanTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">High-Brightness Scanner Pass</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0 0 1rem 0;">Present this barcode at turnstiles and checkpoint scanners.</p>
+                    <div class="qr-scan-screen">
+                        <div class="qr-laser-line"></div>
+                        <div id="bigQrCanvas"></div>
+                    </div>
+                    <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #DF6951;" id="bigQrRef">BK-864515</div>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.76rem; color: #10B981; margin: 0.5rem 0 0 0;"><i class="fa-solid fa-circle-check"></i> Cryptographically Validated Pass</p>
+                </div>
+            </div>
+
+            <!-- Modal 2: Digital Wallet Pass Preview Modal -->
+            <div class="ticket-modal-overlay" id="walletPassModal" role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
+                <div class="ticket-modal-card">
+                    <button type="button" class="ticket-modal-close-btn" id="closeWalletBtn" aria-label="Close Wallet Modal"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="walletModalTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">Add to Digital Wallet</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0;">Keep your pass accessible offline on Apple Wallet or Google Pay.</p>
+                    
+                    <div class="wallet-pass-preview">
+                        <div class="wallet-top">
+                            <span class="wallet-logo">Jadoo Experience</span>
+                            <i class="fa-solid fa-wifi wallet-nfc" title="Contactless NFC Ready"></i>
+                        </div>
+                        <div class="wallet-tour" id="walletTourName">Colosseum Historic Walk</div>
+                        <div style="font-size: 0.82rem; color: #F1A501;" id="walletTraveler">Alex Johnson</div>
+                        <div class="wallet-meta">
+                            <div><span>DATE: </span><strong id="walletDate">Nov 15, 2026</strong></div>
+                            <div><span>GATE: </span><strong>B14</strong></div>
+                            <div><span>PASS: </span><strong id="walletRef">#BK-92841</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="wallet-btns-row">
+                        <button type="button" class="btn-primary-glow" id="saveAppleWalletBtn" style="background: #000; color: #FFF; box-shadow: none;">
+                            <i class="fa-brands fa-apple"></i> <span>Apple Wallet</span>
+                        </button>
+                        <button type="button" class="btn-primary-glow" id="saveGooglePayBtn" style="background: #4285F4; color: #FFF; box-shadow: none;">
+                            <i class="fa-brands fa-google"></i> <span>Google Pay</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal 3: Meeting Point Map Modal -->
+            <div class="ticket-modal-overlay" id="meetingPointModal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
+                <div class="ticket-modal-card" style="max-width: 520px;">
+                    <button type="button" class="ticket-modal-close-btn" id="closeMapBtn" aria-label="Close Map Modal"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="mapModalTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">Meeting Point Directions</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0 0 0.85rem 0;">Exact landmark location & walking arrival guidance.</p>
+                    
+                    <div class="map-visual-box" id="mapVisualBox">
+                        <div class="map-visual-overlay"></div>
+                        <i class="fa-solid fa-location-dot map-pin-pulse"></i>
+                    </div>
+
+                    <div style="text-align: left; background: #F8FAFC; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: #14183E; font-size: 0.95rem; margin-bottom: 0.35rem;" id="mapMeetingPointText">Main Tourist Gate, Rome, Italy</div>
+                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4;">Coordinates: <strong id="mapCoords">41.8902° N, 12.4922° E</strong></div>
+                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4; margin-top: 0.25rem;">Guide holds a bright orange <strong>Jadoo Travel</strong> flag outside the official entrance.</div>
+                    </div>
+
+                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="btn-primary-glow" id="openGoogleMapsLink" style="width: 100%; text-decoration: none; justify-content: center; box-sizing: border-box;">
+                        <i class="fa-solid fa-diamond-turn-right"></i>
+                        <span>Open in Google Maps Navigation</span>
+                    </a>
+                </div>
             </div>
         </div>
     </main>
@@ -612,7 +803,7 @@
                 activeBooking = allBookings[0];
             }
 
-            // 4. Render Ticket Data
+            // 4. Render Ticket Data & All Suite Modules
             renderTicket(activeBooking);
 
             // 5. Populate Switcher Dropdown
@@ -627,7 +818,12 @@
                 switchSelect.addEventListener('change', (e) => {
                     const newId = e.target.value;
                     if (newId) {
-                        window.location.search = `?id=${encodeURIComponent(newId)}`;
+                        const target = allBookings.find(item => item.id === newId);
+                        if (target) {
+                            activeBooking = target;
+                            renderTicket(activeBooking);
+                            try { history.replaceState(null, '', '?id=' + encodeURIComponent(newId)); } catch (_) {}
+                        }
                     }
                 });
             }
@@ -640,6 +836,303 @@
 
             const cancelBtn = document.getElementById('cancelReservationBtn');
             cancelBtn?.addEventListener('click', () => cancelBooking(activeBooking));
+
+            // Initialize all rich interactive ticket suite listeners
+            initTicketSuiteInteractions();
+        }
+
+        function renderPassesSlider(active) {
+            const slider = document.getElementById('ticketPassesSlider');
+            if (!slider) return;
+
+            if (!allBookings || allBookings.length <= 1) {
+                slider.style.display = 'none';
+                return;
+            }
+
+            slider.style.display = 'flex';
+            slider.innerHTML = allBookings.map(b => {
+                const isActive = b.id === active.id;
+                const ref = b.booking_ref ? (b.booking_ref.startsWith('#') ? b.booking_ref : '#' + b.booking_ref) : ('#' + b.id.substring(0, 8));
+                let img = b.image_url || '../assets/destination-rome.png';
+                if (img.startsWith('./assets/')) img = '.' + img;
+                const name = b.attraction_name || b.destination_name;
+
+                return `
+                    <button type="button" class="ticket-pass-chip ${isActive ? 'is-active' : ''}" data-booking-id="${b.id}" title="Switch to ${name}">
+                        <img src="${img}" alt="${b.destination_name}" class="pass-chip-thumb" onerror="this.src='../assets/destination-rome.png'">
+                        <span>${name}</span>
+                        <span class="pass-chip-ref">${ref}</span>
+                    </button>
+                `;
+            }).join('');
+
+            slider.querySelectorAll('.ticket-pass-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const id = chip.getAttribute('data-booking-id');
+                    const target = allBookings.find(item => item.id === id);
+                    if (target) {
+                        activeBooking = target;
+                        renderTicket(activeBooking);
+                        const switchSelect = document.getElementById('switchBookingSelect');
+                        if (switchSelect) switchSelect.value = id;
+                        try { history.replaceState(null, '', '?id=' + encodeURIComponent(id)); } catch (_) {}
+                    }
+                });
+            });
+        }
+
+        const DEST_INTEL_MAP = {
+            'Rome': { weather: '22°C Clear & Mild', sub: 'Ideal Mediterranean sightseeing weather', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card Accepted', coords: '41.8902° N, 12.4922° E', meeting: 'Main Colosseum Gate, Piazza del Colosseo, 1, 00184 Roma RM, Italy' },
+            'Paris': { weather: '19°C Mild & Sunny', sub: 'Pleasant City of Light walking atmosphere', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card & Contactless', coords: '48.8584° N, 2.2945° E', meeting: 'Eiffel Tower East Pillar, Champ de Mars, 5 Av. Anatole France, 75007 Paris, France' },
+            'London': { weather: '17°C Light Breeze', sub: 'Partly sunny, light jacket recommended', tz: 'GMT+1 (BST)', offset: 1, curr: 'GBP (£) Oyster / Contactless', coords: '51.5055° N, 0.0754° W', meeting: 'Tower Bridge North Vault Entrance, Tower Bridge Rd, London SE1 2UP, UK' },
+            'Santorini': { weather: '25°C Aegean Sunshine', sub: 'Warm Aegean breeze, sunglasses recommended', tz: 'GMT+3 (EEST)', offset: 3, curr: 'EUR (€) Widely Accepted', coords: '36.3932° N, 25.4615° E', meeting: 'Oia Blue Dome Viewpoint, Nik. Nomikou, Oía 847 02, Greece' },
+            'Tokyo': { weather: '20°C Clear & Mild', sub: 'Excellent visibility across Tokyo skyline', tz: 'GMT+9 (JST)', offset: 9, curr: 'JPY (¥) IC Cards / Suica', coords: '35.6762° N, 139.6503° E', meeting: 'Shibuya Crossing Hachiko Statue Gate, 2 Chome-1 Dogenzaka, Shibuya, Tokyo' },
+            'New York': { weather: '18°C Autumn Crisp', sub: 'Clear skies across Manhattan skyline', tz: 'GMT-4 (EDT)', offset: -4, curr: 'USD ($) Apple Pay / Cards', coords: '40.7128° N, 74.0060° W', meeting: 'Rockefeller Center Plaza Gate, 45 Rockefeller Plaza, New York, NY 10111, USA' },
+            'Dubai': { weather: '31°C Sunny & Warm', sub: 'Sunny desert climate with luxury indoor air conditioning', tz: 'GMT+4 (GST)', offset: 4, curr: 'AED (د.إ) Cashless Ready', coords: '25.2048° N, 55.2708° E', meeting: 'Burj Khalifa Ground Concourse Gate, 1 Sheikh Mohammed bin Rashid Blvd, Dubai, UAE' }
+        };
+
+        function updateDestinationIntelligence(b) {
+            const dest = b.destination_name || 'Rome';
+            const intel = DEST_INTEL_MAP[dest] || {
+                weather: '21°C Pleasant Sightseeing',
+                sub: 'Ideal conditions for walking and outdoor activities',
+                tz: 'Local Timezone',
+                offset: 2,
+                curr: 'International Cards Accepted',
+                coords: '41.9028° N, 12.4964° E',
+                meeting: `Main Tourist Gate, ${dest}`
+            };
+
+            const weatherVal = document.getElementById('intelWeatherVal');
+            const weatherSub = document.getElementById('intelWeatherSub');
+            const timeVal = document.getElementById('intelTimeVal');
+            const currVal = document.getElementById('intelCurrencyVal');
+
+            if (weatherVal) weatherVal.textContent = intel.weather;
+            if (weatherSub) weatherSub.textContent = intel.sub;
+            if (currVal) currVal.textContent = intel.curr;
+
+            if (timeVal) {
+                try {
+                    const now = new Date();
+                    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                    const destTime = new Date(utc + (3600000 * intel.offset));
+                    timeVal.textContent = destTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) + ' ' + intel.tz.split(' ')[0];
+                } catch (_) {
+                    timeVal.textContent = '12:30 PM ' + intel.tz.split(' ')[0];
+                }
+            }
+
+            // Map Modal Update
+            const mapText = document.getElementById('mapMeetingPointText');
+            const mapCoords = document.getElementById('mapCoords');
+            const mapLink = document.getElementById('openGoogleMapsLink');
+            const mapBox = document.getElementById('mapVisualBox');
+
+            if (mapText) mapText.textContent = intel.meeting;
+            if (mapCoords) mapCoords.textContent = intel.coords;
+            if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.meeting)}`;
+            if (mapBox && b.image_url) {
+                let img = b.image_url;
+                if (img.startsWith('./assets/')) img = '.' + img;
+                mapBox.style.backgroundImage = `url('${img}')`;
+            }
+
+            // Wallet Modal Update
+            const walletTour = document.getElementById('walletTourName');
+            const walletTraveler = document.getElementById('walletTraveler');
+            const walletDate = document.getElementById('walletDate');
+            const walletRef = document.getElementById('walletRef');
+            if (walletTour) walletTour.textContent = b.attraction_name || `${b.destination_name} Voyage`;
+            if (walletTraveler) walletTraveler.textContent = b.user_name || 'Alex Johnson';
+            if (walletDate) walletDate.textContent = formatDate(b.travel_date);
+            if (walletRef) walletRef.textContent = b.booking_ref || ('#BK-' + (b.id ? b.id.substring(0, 6).toUpperCase() : '000000'));
+        }
+
+        function updateChecklist(b) {
+            const list = document.getElementById('prepChecklist');
+            if (!list || !b) return;
+
+            const storageKey = `jadoo_checklist_${b.id || 'default'}`;
+            let savedState = {};
+            try {
+                savedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            } catch (_) {}
+
+            list.querySelectorAll('.prep-checklist-item').forEach(item => {
+                const input = item.querySelector('input[type="checkbox"]');
+                if (!input) return;
+                const taskId = input.getAttribute('data-task');
+
+                if (savedState[taskId] !== undefined) {
+                    input.checked = savedState[taskId];
+                }
+
+                if (input.checked) {
+                    item.classList.add('is-checked');
+                } else {
+                    item.classList.remove('is-checked');
+                }
+
+                input.onchange = () => {
+                    if (input.checked) {
+                        item.classList.add('is-checked');
+                    } else {
+                        item.classList.remove('is-checked');
+                    }
+                    savedState[taskId] = input.checked;
+                    try { localStorage.setItem(storageKey, JSON.stringify(savedState)); } catch (_) {}
+                };
+            });
+        }
+
+        function initTicketSuiteInteractions() {
+            // 1. Print Pass Button
+            const printBtn = document.getElementById('printTicketBtn');
+            printBtn?.addEventListener('click', () => {
+                window.print();
+            });
+
+            // 2. Add to Calendar (.ics download)
+            const calBtn = document.getElementById('addToCalendarBtn');
+            calBtn?.addEventListener('click', () => {
+                if (!activeBooking) return;
+                generateIcsCalendarFile(activeBooking);
+            });
+
+            // 3. Digital Wallet Modal
+            const walletBtn = document.getElementById('openWalletModalBtn');
+            const walletModal = document.getElementById('walletPassModal');
+            const closeWalletBtn = document.getElementById('closeWalletBtn');
+            walletBtn?.addEventListener('click', () => {
+                if (walletModal) walletModal.classList.add('is-active');
+            });
+            closeWalletBtn?.addEventListener('click', () => {
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            const appleBtn = document.getElementById('saveAppleWalletBtn');
+            appleBtn?.addEventListener('click', () => {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Apple Wallet Pass Ready', 'Pass synchronized with Apple Wallet credentials.', 'success');
+                } else {
+                    alert('Pass added to Apple Wallet successfully!');
+                }
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            const googleBtn = document.getElementById('saveGooglePayBtn');
+            googleBtn?.addEventListener('click', () => {
+                if (window.JadooToast) {
+                    window.JadooToast.show('Google Pay Ready', 'Pass saved to Google Pay credentials.', 'success');
+                } else {
+                    alert('Pass saved to Google Pay successfully!');
+                }
+                if (walletModal) walletModal.classList.remove('is-active');
+            });
+
+            // 4. Meeting Point Modal
+            const mapBtn = document.getElementById('openMapModalBtn');
+            const mapModal = document.getElementById('meetingPointModal');
+            const closeMapBtn = document.getElementById('closeMapBtn');
+            mapBtn?.addEventListener('click', () => {
+                if (mapModal) mapModal.classList.add('is-active');
+            });
+            closeMapBtn?.addEventListener('click', () => {
+                if (mapModal) mapModal.classList.remove('is-active');
+            });
+
+            // 6. Big QR Code Scanner Modal
+            const qrStubBox = document.getElementById('stubQrBox');
+            const qrModal = document.getElementById('qrScanModal');
+            const closeQrBtn = document.getElementById('closeQrScanBtn');
+            const bigQrCanvas = document.getElementById('bigQrCanvas');
+            const bigQrRef = document.getElementById('bigQrRef');
+
+            qrStubBox?.addEventListener('click', () => {
+                if (!activeBooking) return;
+                const cleanRef = activeBooking.booking_ref || ('#BK-' + (activeBooking.id ? activeBooking.id.substring(0, 6).toUpperCase() : '000000'));
+                if (bigQrRef) bigQrRef.textContent = cleanRef;
+                if (bigQrCanvas) {
+                    const qrUrl = (window.location.origin && window.location.origin !== 'null')
+                        ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(activeBooking.id)
+                        : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(activeBooking.id);
+                    renderSingleTicketQr(bigQrCanvas, qrUrl, 200);
+                }
+                if (qrModal) qrModal.classList.add('is-active');
+            });
+
+            closeQrBtn?.addEventListener('click', () => {
+                if (qrModal) qrModal.classList.remove('is-active');
+            });
+
+            // Close modals when clicking outside card or pressing Escape
+            document.querySelectorAll('.ticket-modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('is-active');
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.ticket-modal-overlay.is-active').forEach(m => m.classList.remove('is-active'));
+                }
+            });
+        }
+
+        function generateIcsCalendarFile(b) {
+            let start = new Date();
+            if (b.travel_date) {
+                const parsed = new Date(b.travel_date);
+                if (!isNaN(parsed.getTime())) start = parsed;
+            }
+            start.setHours(9, 30, 0, 0);
+            const end = new Date(start.getTime() + (3.5 * 3600000));
+
+            const formatDateIcs = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const tourName = b.attraction_name || `${b.destination_name} Curated Tour`;
+            const ref = b.booking_ref || b.id;
+
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Jadoo Travel//Experience Pass//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'BEGIN:VEVENT',
+                `UID:jadoo-${ref}@jadoo.co`,
+                `DTSTAMP:${formatDateIcs(new Date())}`,
+                `DTSTART:${formatDateIcs(start)}`,
+                `DTEND:${formatDateIcs(end)}`,
+                `SUMMARY:Jadoo Tour: ${tourName}`,
+                `DESCRIPTION:Confirmed travel booking with Jadoo Travel. Booking Ref: ${ref}. Fast-track skip-the-line admission included.`,
+                `LOCATION:Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`,
+                'STATUS:CONFIRMED',
+                'BEGIN:VALARM',
+                'TRIGGER:-PT2H',
+                'ACTION:DISPLAY',
+                'DESCRIPTION:Reminder: Your Jadoo Tour starts in 2 hours!',
+                'END:VALARM',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Jadoo-Tour-${ref}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (window.JadooToast) {
+                window.JadooToast.show('Calendar File Exported', 'Tour added to your downloaded .ics calendar file.', 'success');
+            }
         }
 
         function renderSingleTicketQr(container, text, size = 114) {
@@ -837,6 +1330,22 @@
                     ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(b.id)
                     : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(b.id);
                 renderSingleTicketQr(qrCanvas, qrUrl, 114);
+            }
+
+            // Update Slider, Intelligence, Checklist & Cockpit
+            renderPassesSlider(b);
+            updateDestinationIntelligence(b);
+            updateChecklist(b);
+
+            // Update Cockpit Strip
+            const voyageEl = document.getElementById('cockpitVoyageId');
+            const seatEl = document.getElementById('cockpitSeat');
+            if (voyageEl) {
+                const numericPart = (b.booking_ref || b.id || '8824').replace(/\D/g, '').slice(-4) || '8824';
+                voyageEl.textContent = 'JD-' + numericPart;
+            }
+            if (seatEl) {
+                seatEl.textContent = '01A ' + (b.package_type || 'VIP').toUpperCase();
             }
         }
         async function downloadPdf(b) {

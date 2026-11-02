@@ -736,8 +736,10 @@
 
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
-        import { JadooDB } from '../scripts/db.js';
+        import { JadooDB, getApiBase } from '../scripts/db.js';
         import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
+
+        const API_BASE = getApiBase();
 
         // Guarantee global exposure immediately for inline handlers
         if (typeof window !== 'undefined') {
@@ -891,7 +893,7 @@
                     await JadooDB.primeCache();
                 }
                 if (user?.email) {
-                    const freshBookings = await fetch(`/api/bookings?email=${encodeURIComponent(user.email)}`)
+                    const freshBookings = await fetch(`${API_BASE}/api/bookings?email=${encodeURIComponent(user.email)}`)
                         .then(r => r.ok ? r.json() : [])
                         .catch(() => []);
                     if (Array.isArray(freshBookings) && freshBookings.length > 0) {
@@ -1283,6 +1285,7 @@
             }
 
             modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
         };
 
@@ -1294,7 +1297,13 @@
         // Close Modal handlers
         function closeReviewModal() {
             const modal = document.getElementById('reviewModalOverlay');
-            if (modal) modal.classList.remove('is-open');
+            if (modal) {
+                if (document.activeElement && modal.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
             document.body.style.overflow = '';
         }
         document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
@@ -1378,7 +1387,7 @@
 
             // 2. Persist to Backend API
             try {
-                await fetch('/api/testimonials', {
+                await fetch(`${API_BASE}/api/testimonials`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newTestimonial)
