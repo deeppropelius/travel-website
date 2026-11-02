@@ -361,7 +361,7 @@ section {
     flex-wrap: nowrap;
     background: rgba(255, 255, 255, 0.65);
     align-items: center;
-    z-index: 999;
+    z-index: 1005;
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.55);
@@ -2288,6 +2288,8 @@ progress::-webkit-progress-value {
 
 /* ------------------------------footer--------------------------------------------------- */
 footer {
+    position: relative;
+    z-index: 10;
     width: 95%;
     max-width: 2500px;
     margin: clamp(3.5rem, 6vh, 5.5rem) auto clamp(1.5rem, 3vh, 3rem) auto;
@@ -2349,6 +2351,7 @@ footer {
     display: flex;
     justify-content: space-around;
     gap: 24px;
+    padding-top: 6px;
 }
 
 .col {
@@ -2364,6 +2367,9 @@ footer {
     color: #080809;
     letter-spacing: -0.2px;
     margin-bottom: 6px;
+    line-height: 1.4;
+    padding-top: 4px;
+    overflow: visible;
 }
 
 .fcp {
@@ -4144,6 +4150,36 @@ button.dropdown-item:hover span {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
+    }
+
+    .dropdown-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 10px 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .dropdown-item span {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .dropdown-divider {
+        margin: 6px 0 !important;
+        width: 100% !important;
+    }
+
+    /* When mobile navigation drawer is active, hide floating dark-mode toggle button */
+    body.mobile-nav-open .theme-toggle,
+    .navitems.active ~ .theme-toggle,
+    header:has(.navitems.active) ~ .theme-toggle {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
 }
 

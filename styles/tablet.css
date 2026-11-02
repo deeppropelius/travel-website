@@ -72,17 +72,22 @@
         touch-action: manipulation;
     }
 
+    header {
+        position: relative;
+        z-index: 1005;
+    }
+
     .navitems {
         position: fixed;
         top: 70px;
         right: -100%;
-        width: min(20rem, 88vw);
-        max-width: 88vw;
+        width: min(23rem, 92vw);
+        max-width: 92vw;
         height: calc(100vh - 70px);
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(16px);
         box-shadow: -6px 0 25px rgba(0, 0, 0, 0.1);
-        padding: 30px 20px;
+        padding: 30px 16px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -91,6 +96,7 @@
         z-index: 1000;
         border-bottom-left-radius: 20px;
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
     }
 
@@ -223,6 +229,36 @@
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
+    }
+
+    .navitems .dropdown-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 10px 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .navitems .dropdown-item span {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .navitems .dropdown-divider {
+        margin: 6px 0 !important;
+        width: 100% !important;
+    }
+
+    /* When mobile navigation drawer is active, hide floating dark-mode toggle button */
+    body.mobile-nav-open .theme-toggle,
+    .navitems.active ~ .theme-toggle,
+    header:has(.navitems.active) ~ .theme-toggle {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
 
     .cards {
@@ -396,6 +432,13 @@
         flex: 1 1 auto;
         justify-content: space-between;
         gap: 24px;
+        padding-top: 12px;
+    }
+
+    .fch {
+        line-height: 1.4 !important;
+        padding-top: 4px !important;
+        overflow: visible !important;
     }
 
     .fico {
