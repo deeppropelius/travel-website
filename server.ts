@@ -1,33 +1,11 @@
 /**
- * Jadoo Travel – Express + PostgreSQL API Server
- *
- * Routes:
- *  GET  /api/health
- *  GET  /api/destinations
- *  GET  /api/destinations/:id
- *  GET  /api/attractions?destination=Rome&category=...
- *  GET  /api/bookings?email=...
- *  GET  /api/bookings/:id
- *  POST /api/bookings
- *  PATCH /api/bookings/:id/status
- *  GET  /api/testimonials
- *  POST /api/auth/register
- *  POST /api/auth/login
- *  GET  /api/auth/profile?email=...
- *  PATCH /api/auth/profile
- *  GET  /api/destination          (OpenTripMap proxy – existing)
- *  GET  /api/ticket/verify
+ * Jadoo Travel – Main Express Server
+ * Modularized Architecture running cleanly on local dev and Render.
  */
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { pool, testConnection } from './services/db.js';
-import { fetchDestinationDetails } from './services/destinationService.js';
-import { serveStaticFile } from './services/fileService.js';
-import { ServiceService } from './services/serviceService.js';
 import { createServer } from 'node:http';
 import crypto from 'node:crypto';
 
@@ -35,95 +13,17 @@ dotenv.config();
 
 export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const JWT_SECRET = process.env.JWT_SECRET || 'jadoo_super_secret_jwt_key_2026_travel_platform';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-// ── Types ────────────────────────────────────────────────────
-export interface JwtUserPayload {
-  id: string;
-  email: string;
-  full_name: string;
-}
+// Global Middleware
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
-export interface AuthenticatedRequest extends express.Request {
-  user?: JwtUserPayload;
-}
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ── Middleware ────────────────────────────────────────────────
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ── Helpers ──────────────────────────────────────────────────
-function generateUUID(): string {
-  return crypto.randomUUID();
-}
-
-function generateBookingRef(): string {
-  return 'BK-' + Math.floor(10000 + Math.random() * 90000);
-}
-
-function generateToken(user: { id: string; email: string; full_name?: string }): string {
-  return jwt.sign(
-    { id: user.id, email: user.email, full_name: user.full_name || '' },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN as any }
-  );
-}
-
-function extractToken(req: express.Request): string | null {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.slice(7).trim();
-  }
-  // Cookie fallback: jadoo_auth_token=...
-  if (req.headers.cookie) {
-    const match = req.headers.cookie.match(/(?:^|; )jadoo_auth_token=([^;]*)/);
-    if (match) {
-      try {
-        return decodeURIComponent(match[1]);
-      } catch (_) {
-        return match[1];
-      }
-    }
-  }
-  return null;
-}
-
-function authenticateToken(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
-  const token = extractToken(req);
-  if (!token) {
-    return res.status(401).json({ error: 'Authentication required. Missing token.' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid or expired authentication token.' });
-    }
-    req.user = decoded as JwtUserPayload;
-    next();
-  });
-}
-
-function optionalAuth(req: AuthenticatedRequest, _res: express.Response, next: express.NextFunction) {
-  const token = extractToken(req);
-  if (token) {
-    try {
-      req.user = jwt.verify(token, JWT_SECRET) as JwtUserPayload;
-    } catch (_) {
-      // Ignore invalid optional token
-    }
-  }
-  next();
-}
-
-function makeRow(row: any) {
-  return row;
-}
-
-// ══════════════════════════════════════════════════════════════
-// HEALTH
-// ══════════════════════════════════════════════════════════════
+// Health Check
 app.get('/api/health', async (_req, res) => {
   const ok = await testConnection();
   res.json({ status: ok ? 'ok' : 'error', db: ok ? 'connected' : 'unreachable', ts: new Date().toISOString() });
@@ -1057,46 +957,27 @@ app.get('/api/ticket/verify', async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════════
-// NEWSLETTER SUBSCRIPTION
-// ══════════════════════════════════════════════════════════════
-app.post('/api/newsletter', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
-      return res.status(400).json({ error: 'Valid email is required' });
-    }
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        email TEXT UNIQUE NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-    await pool.query(
-      'INSERT INTO newsletter_subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING',
-      [email.trim().toLowerCase()]
-    );
-    res.json({ success: true, message: 'Subscribed successfully to Jadoo updates!' });
-  } catch (err) {
-    console.error('POST /api/newsletter error:', err);
-    res.status(500).json({ error: 'Failed to subscribe' });
-  }
-});
+// Mount Modular Service Routers
+app.use('/api/auth', authRouter);
+app.use('/api/bookings', bookingRouter);
+app.use('/api/services', serviceRouter);
+app.use('/api/testimonials', testimonialRouter);
+app.use('/api/ticket', ticketRouter);
+app.use('/api/newsletter', newsletterRouter);
+app.use('/api', destinationRouter); // /api/destinations, /api/destinations/:id, /api/attractions, /api/destination
 
-// ══════════════════════════════════════════════════════════════
-// STATIC FILE FALLBACK (serve HTML/CSS/JS/Assets)
-// ══════════════════════════════════════════════════════════════
+// Static Assets & Web Pages Fallback
 app.use((req, res, next) => {
   if (serveStaticFile(req.url, res as any)) return;
   next();
 });
 
+// 404 Handler for Unmatched API / Static Routes
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// ── Start ─────────────────────────────────────────────────────
+// Server Initialization
 const httpServer = createServer(app);
 
 function listenOnPort(port: number) {
