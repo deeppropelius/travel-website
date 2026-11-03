@@ -176,3 +176,23 @@ INSERT INTO testimonials (id, costumer_id, destination_id, destination_name, aut
   ('f1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c02','a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11','c7b3d8e0-1a2b-4c3d-8e4f-5a6b7c8d9e02','London','Chris Thomas','London, UK','CEO of Red Button','Exceptional service and unmatched attention to detail. Organizing high-profile executive retreats across Europe has never been smoother.',5.0,'./assets/testimonials-avatar-2.png','European Executive Retreat'),
   ('f1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c03','a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11','c7b3d8e0-1a2b-4c3d-8e4f-5a6b7c8d9e03','Paris','Sophia Martinez','Barcelona, Spain','Travel Photographer','The customized itinerary and 24/7 concierge support blew me away. I captured breathtaking sunrises in Tuscany without worrying about logistics.',4.9,'./assets/testimonials-avatar-3.png','Swiss & Tuscany Discovery')
 ON CONFLICT (id) DO NOTHING;
+
+
+-- ── 7. Newsletter Subscribers ────────────────────────────────
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ── 8. Contact & Concierge Inquiries ─────────────────────────
+CREATE TABLE IF NOT EXISTS contact_inquiries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  subject TEXT,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'unread',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

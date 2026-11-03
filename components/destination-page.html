@@ -439,7 +439,7 @@
     <section class="destination-results-container" id="destinationResultsContainer" style="display: none;">
         <!-- Back Navigation Bar -->
         <div class="results-back-bar" id="resultsBackBar">
-            <button type="button" class="btn-back-locations" id="btnBackToLocations">
+            <button type="button" class="btn-back-locations" id="btnBackToLocations" onclick="window.showPopularLocationsView && window.showPopularLocationsView()">
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Back to Popular Locations</span>
             </button>
@@ -646,6 +646,10 @@
                             <i class="fa-solid fa-feather-pointed"></i>
                             <span>Share Experience</span>
                         </button>
+                        <button type="button" class="modal-wishlist-cta" id="btnToggleWishlistLandmark" title="Save to your wishlist" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(241, 165, 1, 0.12); color: #D97706; border: 1px solid rgba(241, 165, 1, 0.35); border-radius: 9999px; padding: 0.6rem 1.15rem; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease;">
+                            <i class="fa-regular fa-heart"></i>
+                            <span id="btnToggleWishlistLandmarkText">Save to Wishlist</span>
+                        </button>
                         <a id="modal-wiki-link" href="#" target="_blank" rel="noopener noreferrer" class="modal-wiki-btn">
                             <span>Read Article</span>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -726,7 +730,7 @@
                             <label for="bookingDate">Travel Date <span class="required-star">*</span></label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-calendar-days input-icon"></i>
-                                <input type="date" id="bookingDate" name="travelDate" required>
+                                <input type="date" id="bookingDate" min="2026-11-02" name="travelDate" required>
                             </div>
                             <span class="booking-field-error" id="bookingDateError">Please choose a travel date.</span>
                         </div>

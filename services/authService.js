@@ -89,10 +89,19 @@ authRouter.post('/register', async (req, res) => {
       INSERT INTO customer (id, full_name, email, password, phone, avatar_url, logged_in_at)
       VALUES ($1,$2,$3,$4,$5,$6,NOW())
       RETURNING id, full_name, email, phone, avatar_url, created_at, updated_at`, [id, full_name, email, hashedPassword, phone || null, avatar_url || null]);
+        // Keep legacy users table in sync if it exists
+        try {
+            await pool.query(`INSERT INTO users (id, full_name, email, password, phone, avatar_url, logged_in_at)
+         VALUES ($1,$2,$3,$4,$5,$6,NOW())
+         ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, updated_at = NOW()`, [id, full_name, email, hashedPassword, phone || null, avatar_url || null]);
+        }
+        catch (_) {
+            // Non-fatal if users table is not active
+        }
         const safeUser = rows[0];
         const token = generateToken(safeUser);
-        // Set secure HTTP-only cookie for session storage
-        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`);
+        const isSecure = process.env.NODE_ENV === 'production' || Boolean(process.env.DATABASE_URL?.includes('render.com'));
+        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}${isSecure ? '; Secure' : ''}`);
         res.status(201).json({
             ...safeUser,
             token,
@@ -142,6 +151,7 @@ authRouter.post('/login', async (req, res) => {
                     try {
                         const upgradedHash = await bcrypt.hash(password, 10);
                         await pool.query('UPDATE customer SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
+                        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]).catch(() => { });
                     }
                     catch (upgradeErr) {
                         console.warn('Failed to upgrade password hash:', upgradeErr);
@@ -158,11 +168,12 @@ authRouter.post('/login', async (req, res) => {
         }
         // Update logged_in_at
         await pool.query('UPDATE customer SET logged_in_at=NOW() WHERE id=$1', [user.id]);
+        await pool.query('UPDATE users SET logged_in_at=NOW() WHERE id=$1', [user.id]).catch(() => { });
         // Return user without password + signed JWT
         const { password: _pw, ...safeUser } = user;
         const token = generateToken(safeUser);
-        // Set secure HTTP-only cookie for session storage
-        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`);
+        const isSecure = process.env.NODE_ENV === 'production' || Boolean(process.env.DATABASE_URL?.includes('render.com'));
+        res.setHeader('Set-Cookie', `jadoo_auth_token=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}${isSecure ? '; Secure' : ''}`);
         res.json({
             ...safeUser,
             token,
@@ -193,16 +204,10 @@ authRouter.get('/me', authenticateToken, async (req, res) => {
 /**
  * GET /api/auth/profile
  */
-authRouter.get('/profile', optionalAuth, async (req, res) => {
+authRouter.get('/profile', authenticateToken, async (req, res) => {
     try {
-        let { email, id } = req.query;
-        if (!email && !id && req.user) {
-            id = req.user.id;
-            email = req.user.email;
-        }
-        if (!email && !id)
-            return res.status(400).json({ error: 'email or id is required (or Authorization token)' });
-        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM customer WHERE email ILIKE $1 OR id::text = $2 LIMIT 1', [email || '', id || '']);
+        const userId = req.user.id;
+        const { rows } = await pool.query('SELECT id, full_name, email, phone, avatar_url, created_at, updated_at, logged_in_at FROM customer WHERE id::text = $1 LIMIT 1', [userId]);
         if (!rows.length)
             return res.status(404).json({ error: 'User not found' });
         res.json(rows[0]);
@@ -214,44 +219,58 @@ authRouter.get('/profile', optionalAuth, async (req, res) => {
 });
 /**
  * PATCH /api/auth/profile
+ * Strictly authenticated; users can only modify their own account.
  */
-authRouter.patch('/profile', optionalAuth, async (req, res) => {
+authRouter.patch('/profile', authenticateToken, async (req, res) => {
     try {
-        let { id, email, full_name, phone, avatar_url, password } = req.body;
-        // Security enhancement: if authenticated, enforce user's own id/email to prevent IDOR
-        if (req.user) {
-            id = req.user.id;
-            email = req.user.email;
-        }
-        if (!id && !email)
-            return res.status(400).json({ error: 'id or email is required' });
+        const user = req.user;
+        const { full_name, phone, avatar_url, password } = req.body;
         const sets = [];
         const params = [];
-        if (full_name) {
-            params.push(full_name);
+        if (full_name !== undefined) {
+            const trimmed = String(full_name).trim();
+            if (trimmed.length < 2 || trimmed.length > 80) {
+                return res.status(400).json({ error: 'Full name must be between 2 and 80 characters.' });
+            }
+            params.push(trimmed);
             sets.push(`full_name=$${params.length}`);
         }
         if (phone !== undefined) {
-            params.push(phone);
+            const cleanPhone = phone ? String(phone).trim() : null;
+            if (cleanPhone && !/^[\d\s+\-().]{6,25}$/.test(cleanPhone)) {
+                return res.status(400).json({ error: 'Please enter a valid phone number (6-25 digits/symbols).' });
+            }
+            params.push(cleanPhone);
             sets.push(`phone=$${params.length}`);
         }
         if (avatar_url !== undefined) {
-            params.push(avatar_url);
+            const cleanUrl = avatar_url ? String(avatar_url).trim() : null;
+            if (cleanUrl && cleanUrl.length > 2500000) {
+                return res.status(400).json({ error: 'Avatar image is too large. Max size is 2MB.' });
+            }
+            params.push(cleanUrl);
             sets.push(`avatar_url=$${params.length}`);
         }
-        if (password && typeof password === 'string' && password.trim().length > 0) {
+        if (password !== undefined && password !== '') {
+            if (typeof password !== 'string' || password.length < 6) {
+                return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+            }
             const hashedPassword = await bcrypt.hash(password, 10);
             params.push(hashedPassword);
             sets.push(`password=$${params.length}`);
         }
         if (!sets.length)
             return res.status(400).json({ error: 'No fields to update' });
-        params.push(id || '');
-        params.push(email || '');
-        const { rows } = await pool.query(`UPDATE customer SET ${sets.join(',')} WHERE id=$${params.length - 1} OR email ILIKE $${params.length}
+        params.push(user.id);
+        const { rows } = await pool.query(`UPDATE customer SET ${sets.join(', ')}, updated_at=NOW() WHERE id=$${params.length}
        RETURNING id, full_name, email, phone, avatar_url, updated_at`, params);
         if (!rows.length)
             return res.status(404).json({ error: 'User not found' });
+        // Also sync to users table
+        try {
+            await pool.query(`UPDATE users SET ${sets.join(', ')}, updated_at=NOW() WHERE id=$${params.length}`, params);
+        }
+        catch (_) { }
         res.json(rows[0]);
     }
     catch (err) {

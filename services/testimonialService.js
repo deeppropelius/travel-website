@@ -43,15 +43,28 @@ testimonialRouter.post('/', async (req, res) => {
     try {
         const t = req.body;
         const id = generateUUID();
-        // Resolve customer_id
+        // Resolve customer_id safely against database foreign key
         let customerId = t.customer_id || t.costumer_id || t.user_id || null;
         if (customerId && !isUUID(customerId))
             customerId = null;
+        if (customerId) {
+            try {
+                const check = await pool.query('SELECT id FROM customer WHERE id = $1 LIMIT 1', [customerId]);
+                if (!check.rows.length)
+                    customerId = null;
+            }
+            catch (_) {
+                customerId = null;
+            }
+        }
         if (!customerId && (t.author_email || t.email)) {
-            const email = t.author_email || t.email;
-            const custRes = await pool.query('SELECT id FROM customer WHERE email ILIKE $1 LIMIT 1', [email]);
-            if (custRes.rows.length)
-                customerId = custRes.rows[0].id;
+            try {
+                const email = t.author_email || t.email;
+                const custRes = await pool.query('SELECT id FROM customer WHERE email ILIKE $1 LIMIT 1', [email]);
+                if (custRes.rows.length)
+                    customerId = custRes.rows[0].id;
+            }
+            catch (_) { }
         }
         // Check JWT from cookie or authorization header if not provided
         if (!customerId) {
@@ -91,9 +104,9 @@ testimonialRouter.post('/', async (req, res) => {
         }
         const { rows } = await pool.query(`
       INSERT INTO testimonials
-        (id, costumer_id, destination_id, destination_name, author_name, author_location,
+        (id, customer_id, costumer_id, destination_id, destination_name, author_name, author_location,
          role_title, quote, rating, avatar_url, trip_tag)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`, [id, customerId, destinationId, destName,
             t.author_name || 'Traveler',
             t.author_location || 'Global Explorer',
@@ -106,6 +119,98 @@ testimonialRouter.post('/', async (req, res) => {
     }
     catch (err) {
         console.error('POST /api/testimonials error:', err);
+        res.status(500).json({ error: 'Database error', details: String(err) });
+    }
+});
+// PUT /api/testimonials/:id (Update existing review)
+testimonialRouter.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const t = req.body;
+        const ratingVal = t.rating !== undefined ? parseFloat(t.rating) : undefined;
+        // Resolve customer/user ID for syncing safely against database foreign key
+        let customerId = t.customer_id || t.costumer_id || t.user_id || null;
+        if (customerId && !isUUID(customerId))
+            customerId = null;
+        if (customerId) {
+            try {
+                const check = await pool.query('SELECT id FROM customer WHERE id = $1 LIMIT 1', [customerId]);
+                if (!check.rows.length)
+                    customerId = null;
+            }
+            catch (_) {
+                customerId = null;
+            }
+        }
+        if (!customerId && (t.author_email || req.body.email)) {
+            try {
+                const email = t.author_email || req.body.email;
+                const cust = await pool.query('SELECT id FROM customer WHERE email ILIKE $1 LIMIT 1', [email]);
+                if (cust.rows.length)
+                    customerId = cust.rows[0].id;
+            }
+            catch (_) { }
+        }
+        if (isUUID(id)) {
+            const { rows } = await pool.query(`
+        UPDATE testimonials
+        SET 
+          author_name = COALESCE($1, author_name),
+          destination_name = COALESCE($2, destination_name),
+          author_location = COALESCE($3, author_location),
+          role_title = COALESCE($4, role_title),
+          quote = COALESCE($5, quote),
+          rating = COALESCE($6, rating),
+          avatar_url = COALESCE($7, avatar_url),
+          trip_tag = COALESCE($8, trip_tag),
+          customer_id = COALESCE($9, customer_id),
+          costumer_id = COALESCE($9, costumer_id),
+          updated_at = NOW()
+        WHERE id = $10
+        RETURNING *
+      `, [
+                t.author_name || null,
+                t.destination_name || null,
+                t.author_location || null,
+                t.role_title || t.author_role || null,
+                t.quote || null,
+                !isNaN(ratingVal) ? ratingVal : null,
+                t.avatar_url || null,
+                t.trip_tag || null,
+                customerId,
+                id
+            ]);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: 'Review not found' });
+            }
+            return res.json(rows[0]);
+        }
+        else {
+            return res.json({ id, ...t, updated_at: new Date().toISOString() });
+        }
+    }
+    catch (err) {
+        console.error('PUT /api/testimonials/:id error:', err);
+        res.status(500).json({ error: 'Database error', details: String(err) });
+    }
+});
+// DELETE /api/testimonials/:id (Remove review)
+testimonialRouter.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (isUUID(id)) {
+            const { rowCount } = await pool.query('DELETE FROM testimonials WHERE id = $1', [id]);
+            if (rowCount === 0) {
+                return res.status(404).json({ error: 'Review not found' });
+            }
+            return res.json({ success: true, id, message: 'Review deleted successfully' });
+        }
+        else {
+            return res.json({ success: true, id, message: 'Review deleted successfully' });
+        }
+    }
+    catch (err) {
+        console.error('DELETE /api/testimonials/:id error:', err);
         res.status(500).json({ error: 'Database error', details: String(err) });
     }
 });

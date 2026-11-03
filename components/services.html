@@ -284,53 +284,48 @@
                             <input type="hidden" id="inquiryServiceId">
                             <input type="hidden" id="inquiryServiceTitle">
 
-                            <div class="inquiry-field">
-                                <label for="inqName">Your Name <span class="req">*</span></label>
-                                <input type="text" id="inqName" placeholder="e.g. Eleanor Vance" required>
+                            <!-- User Not Logged In Notice -->
+                            <div id="serviceAuthNotice" style="display: none; background: rgba(223, 105, 81, 0.08); border: 1px dashed rgba(223, 105, 81, 0.35); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1.2rem;">
+                                <i class="fa-solid fa-lock" style="font-size: 1.8rem; color: #DF6951; margin-bottom: 0.5rem; display: block;"></i>
+                                <h4 style="font-family: 'Volkhov', serif; color: #181E4B; margin: 0 0 0.35rem 0; font-size: 1.05rem;">Account Sign-In Required</h4>
+                                <p style="font-size: 0.82rem; color: #64748B; margin: 0 0 0.85rem 0; line-height: 1.45;">Please log in to your account to attach concierge services to your booked journeys.</p>
+                                <a href="./auth.html#signin" class="btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 1.2rem; border-radius: 9999px; text-decoration: none; font-size: 0.82rem; font-weight: 600;">
+                                    <i class="fa-solid fa-right-to-bracket"></i>
+                                    <span>Log In to Continue</span>
+                                </a>
+                            </div>
+
+                            <!-- No Trips Booked Notice -->
+                            <div id="serviceNoTripsNotice" style="display: none; background: rgba(241, 165, 1, 0.1); border: 1px dashed rgba(241, 165, 1, 0.4); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1.2rem;">
+                                <i class="fa-solid fa-plane-slash" style="font-size: 1.8rem; color: #D97706; margin-bottom: 0.5rem; display: block;"></i>
+                                <h4 style="font-family: 'Volkhov', serif; color: #181E4B; margin: 0 0 0.35rem 0; font-size: 1.05rem;">No Active Trips Booked</h4>
+                                <p style="font-size: 0.82rem; color: #64748B; margin: 0 0 0.85rem 0; line-height: 1.45;">Services are concierge upgrades attached directly to your trips. Please book a destination first to attach services to your pass.</p>
+                                <a href="./destination-page.html" class="btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 1.2rem; border-radius: 9999px; text-decoration: none; font-size: 0.82rem; font-weight: 600;">
+                                    <i class="fa-solid fa-compass"></i>
+                                    <span>Explore Destinations</span>
+                                </a>
+                            </div>
+
+                            <!-- Trip Selection Dropdown (When traveler has trips) -->
+                            <div id="serviceTripSelectWrap" class="inquiry-field" style="display: none;">
+                                <label for="inqTripSelect">Attach Service to Which Trip? <span class="req">*</span></label>
+                                <select id="inqTripSelect" class="inquiry-select" required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #CBD5E1; font-family: 'Poppins', sans-serif; font-size: 0.88rem; color: #181E4B; background: #FFFFFF;">
+                                    <!-- Populated dynamically with traveler's trips -->
+                                </select>
+                                <div id="serviceAlreadyAttachedWrap"></div>
+                                <span class="inq-badge-info" style="display: block; margin-top: 0.45rem; font-size: 0.76rem; color: #10B981;">
+                                    <i class="fa-solid fa-circle-check"></i> This upgrade will be attached directly to this trip and shown on your E-Ticket.
+                                </span>
                             </div>
 
                             <div class="inquiry-field">
-                                <label for="inqEmail">Email Address <span class="req">*</span></label>
-                                <input type="email" id="inqEmail" placeholder="e.g. eleanor@example.com" required>
-                            </div>
-
-                            <div class="inquiry-field">
-                                <label for="inqDestination">Destination(s) <span class="req">*</span></label>
-                                <input type="text" id="inqDestination" placeholder="e.g. Rome, Paris, London" required>
-                                <div class="inq-dest-chips" id="inqDestChips">
-                                    <button type="button" class="dest-chip-mini" data-dest="Rome">Rome</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Paris">Paris</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="London">London</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Santorini">Santorini</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Venice">Venice</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Tokyo">Tokyo</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="New York">New York</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Dubai">Dubai</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Agra">Agra</button>
-                                    <button type="button" class="dest-chip-mini" data-dest="Bali">Bali</button>
-                                </div>
-                                <span class="inq-badge-info"><i class="fa-solid fa-circle-check"></i> Every destination receives its own dedicated booking & E-ticket.</span>
-                            </div>
-
-                            <div class="inquiry-row-fields" style="display: flex; gap: 12px; margin-bottom: 12px;">
-                                <div class="inquiry-field" style="flex: 1; margin-bottom: 0;">
-                                    <label for="inqTravelDate">Travel Date <span class="req">*</span></label>
-                                    <input type="date" id="inqTravelDate" required>
-                                </div>
-                                <div class="inquiry-field" style="width: 100px; margin-bottom: 0;">
-                                    <label for="inqGuests">Guests</label>
-                                    <input type="number" id="inqGuests" min="1" max="20" value="1">
-                                </div>
-                            </div>
-
-                            <div class="inquiry-field">
-                                <label for="inqMessage">Specific Requests / Notes</label>
-                                <textarea id="inqMessage" rows="2" placeholder="Tell us about your flight dates, preferred hotels, or bespoke needs..."></textarea>
+                                <label for="inqMessage">Special Requests / Preferences</label>
+                                <textarea id="inqMessage" rows="2" placeholder="e.g. Flight preference, arrival time, private lounge needs..."></textarea>
                             </div>
 
                             <button type="submit" class="btn-primary-glow service-inquire-btn" id="submitInquiryBtn">
-                                <i class="fa-solid fa-paper-plane"></i>
-                                <span>Book Destination Services</span>
+                                <i class="fa-solid fa-plus-circle"></i>
+                                <span>Attach Service to Trip</span>
                             </button>
                         </form>
                     </div>
@@ -875,26 +870,141 @@
                 perksBox.innerHTML = service.included_perks.map(p => `<span class="service-perk-pill"><i class="fa-solid fa-sparkle"></i> ${escapeHTML(p)}</span>`).join('');
             }
 
-            // Autofill user name and email if logged in
-            syncUserAuthToForms();
+            // Populate trips for the authenticated traveler
+            populateModalTrips();
 
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
         }
 
-        function syncUserAuthToForms() {
+        async function populateModalTrips() {
             const currentUser = JadooDB.getCurrentUser();
-            const nameInput = document.getElementById('inqName');
-            const emailInput = document.getElementById('inqEmail');
-            if (currentUser) {
-                const fullName = currentUser.full_name || currentUser.fullName || '';
-                if (nameInput) nameInput.value = fullName;
-                if (emailInput) emailInput.value = currentUser.email || '';
-            } else {
-                if (nameInput && !nameInput.getAttribute('data-user-typed')) nameInput.value = '';
-                if (emailInput && !emailInput.getAttribute('data-user-typed')) emailInput.value = '';
+            const tripSelectWrap = document.getElementById('serviceTripSelectWrap');
+            const noTripsNotice = document.getElementById('serviceNoTripsNotice');
+            const authNotice = document.getElementById('serviceAuthNotice');
+            const tripSelect = document.getElementById('inqTripSelect');
+            const submitBtn = document.getElementById('submitInquiryBtn');
+
+            if (!currentUser) {
+                if (tripSelectWrap) tripSelectWrap.style.display = 'none';
+                if (noTripsNotice) noTripsNotice.style.display = 'none';
+                if (authNotice) authNotice.style.display = 'block';
+                if (submitBtn) submitBtn.disabled = true;
+                return;
             }
+
+            if (authNotice) authNotice.style.display = 'none';
+
+            let userTrips = [];
+            try {
+                userTrips = await JadooDB.getUserBookingsAsync(currentUser.email);
+            } catch (_) {
+                userTrips = JadooDB.getUserBookings(currentUser.email) || [];
+            }
+
+            if (!userTrips || !userTrips.length) {
+                if (tripSelectWrap) tripSelectWrap.style.display = 'none';
+                if (noTripsNotice) noTripsNotice.style.display = 'block';
+                if (submitBtn) submitBtn.disabled = true;
+                return;
+            }
+
+            if (noTripsNotice) noTripsNotice.style.display = 'none';
+            if (tripSelectWrap) tripSelectWrap.style.display = 'block';
+            if (submitBtn) submitBtn.disabled = false;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectedTripId = urlParams.get('tripId') || '';
+
+            tripSelect.innerHTML = userTrips.map((t, idx) => {
+                const ref = t.booking_ref || t.id;
+                const isSel = preselectedTripId && (ref === preselectedTripId || t.id === preselectedTripId);
+                const dest = t.destination_name || 'Voyage';
+                const tour = t.attraction_name || `${dest} Tour`;
+
+                let services = [];
+                if (Array.isArray(t.booked_services)) services = t.booked_services;
+                else if (typeof t.booked_services === 'string' && t.booked_services.trim()) {
+                    try { services = JSON.parse(t.booked_services); } catch (_) {}
+                }
+                const sId = document.getElementById('inquiryServiceId').value;
+                const sTitle = document.getElementById('inquiryServiceTitle').value;
+                const hasSvc = services.some(s => s.id === sId || s.service_id === sId || (s.title && s.title.toLowerCase() === sTitle.toLowerCase()));
+
+                return `<option value="${t.id}" ${isSel ? 'selected' : ''}>Trip ${idx + 1}: ${ref} - ${dest} (${tour})${hasSvc ? ' [Already Added]' : ''}</option>`;
+            }).join('');
+
+            const checkSelectedTripDuplicate = () => {
+                const selectedTripId = tripSelect.value;
+                const targetTrip = userTrips.find(x => x.id === selectedTripId || x.booking_ref === selectedTripId);
+                let services = [];
+                if (targetTrip && Array.isArray(targetTrip.booked_services)) services = targetTrip.booked_services;
+                else if (targetTrip && typeof targetTrip.booked_services === 'string' && targetTrip.booked_services.trim()) {
+                    try { services = JSON.parse(targetTrip.booked_services); } catch (_) {}
+                }
+                const sId = document.getElementById('inquiryServiceId').value;
+                const sTitle = document.getElementById('inquiryServiceTitle').value;
+                const hasSvc = services.some(s => s.id === sId || s.service_id === sId || (s.title && s.title.toLowerCase() === sTitle.toLowerCase()));
+                const attachedWrap = document.getElementById('serviceAlreadyAttachedWrap');
+
+                if (hasSvc) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.6';
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Service Already Added</span>';
+                    if (attachedWrap) {
+                        attachedWrap.innerHTML = `
+                            <div style="margin-top: 0.5rem; padding: 0.65rem 0.85rem; background: rgba(239, 68, 68, 0.08); border: 1px dashed rgba(239, 68, 68, 0.35); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.8rem; color: #DC2626; font-weight: 500;">
+                                    <i class="fa-solid fa-circle-info"></i> Currently attached to this voyage.
+                                </span>
+                                <button type="button" id="btnCancelServiceInModal" style="background: #EF4444; color: #FFF; border: none; padding: 0.3rem 0.75rem; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                    <i class="fa-solid fa-xmark"></i> <span>Cancel & Remove</span>
+                                </button>
+                            </div>
+                        `;
+                        const cancelBtn = document.getElementById('btnCancelServiceInModal');
+                        if (cancelBtn) {
+                            cancelBtn.onclick = async () => {
+                                if (!confirm(`Are you sure you want to cancel and remove "${sTitle}" from this voyage?`)) return;
+                                try {
+                                    cancelBtn.disabled = true;
+                                    cancelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing...';
+                                    const token = (currentUser && currentUser.token) || localStorage.getItem('jadoo_auth_token') || '';
+                                    const res = await fetch(`${API_BASE}/api/services/detach`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                        credentials: 'include',
+                                        body: JSON.stringify({ booking_id: selectedTripId, service_id: sId, service_title: sTitle })
+                                    });
+                                    if (!res.ok) {
+                                        const err = await res.json().catch(() => ({}));
+                                        throw new Error(err.error || 'Failed to remove service.');
+                                    }
+                                    if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
+                                        await JadooDB.primeCache();
+                                    }
+                                    window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'services_cancel' } }));
+                                    JadooToast.show('Service Cancelled', `"${sTitle}" was removed from your voyage.`, 'info');
+                                    await populateModalTrips();
+                                } catch (err) {
+                                    console.error('Cancel service error:', err);
+                                    JadooToast.show('Cancellation Failed', err.message, 'error');
+                                    cancelBtn.disabled = false;
+                                    cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> <span>Cancel & Remove</span>';
+                                }
+                            };
+                        }
+                    }
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>Attach Service to Selected Voyage</span>';
+                    if (attachedWrap) attachedWrap.innerHTML = '';
+                }
+            };
+            tripSelect.onchange = checkSelectedTripDuplicate;
+            checkSelectedTripDuplicate();
         }
 
         function closeServiceModal() {
@@ -911,111 +1021,93 @@
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
         if (modalBackdrop) modalBackdrop.addEventListener('click', closeServiceModal);
 
-        // Destination Selection Mini-Chips Handler
-        const destInput = document.getElementById('inqDestination');
-        const destChips = document.querySelectorAll('.dest-chip-mini');
-        destChips.forEach(chip => {
-            chip.addEventListener('click', (e) => {
-                e.preventDefault();
-                chip.classList.toggle('is-selected');
-                const selected = Array.from(document.querySelectorAll('.dest-chip-mini.is-selected'))
-                    .map(c => c.getAttribute('data-dest'));
-                if (destInput) {
-                    destInput.value = selected.join(', ');
-                }
-            });
-        });
-
-        if (destInput) {
-            destInput.addEventListener('input', () => {
-                const text = destInput.value.toLowerCase();
-                destChips.forEach(c => {
-                    const dest = (c.getAttribute('data-dest') || '').toLowerCase();
-                    c.classList.toggle('is-selected', text.includes(dest));
-                });
-            });
-        }
-
-        // Submit Service Booking
+        // Submit Service Attachment to Selected Trip
         const form = document.getElementById('serviceInquiryForm');
         if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const service_id = document.getElementById('inquiryServiceId').value;
                 const service_title = document.getElementById('inquiryServiceTitle').value;
-                const customer_name = document.getElementById('inqName').value.trim();
-                const customer_email = document.getElementById('inqEmail').value.trim();
-                const travel_destination = document.getElementById('inqDestination').value.trim();
-                const travel_date = document.getElementById('inqTravelDate')?.value || '';
-                const guests_count = parseInt(document.getElementById('inqGuests')?.value || '1', 10) || 1;
+                const tripSelect = document.getElementById('inqTripSelect');
+                const booking_id = tripSelect ? tripSelect.value : '';
                 const message = document.getElementById('inqMessage').value.trim();
 
                 const currentUser = JadooDB.getCurrentUser();
-                const token = currentUser ? (currentUser.token || localStorage.getItem('jadoo_auth_token')) : localStorage.getItem('jadoo_auth_token');
+                if (!currentUser) {
+                    JadooToast.show('Authentication Required', 'Please sign in to attach services.', 'warning');
+                    return;
+                }
+
+                if (!booking_id) {
+                    JadooToast.show('Trip Required', 'Please select a booked trip to attach this service to.', 'warning');
+                    return;
+                }
+
+                const token = currentUser.token || localStorage.getItem('jadoo_auth_token');
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
+                const submitBtn = document.getElementById('submitInquiryBtn');
+                const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Attaching to Trip...</span>';
+                }
+
                 try {
-                    const res = await fetch(`${API_BASE}/api/services/inquire`, {
+                    const res = await fetch(`${API_BASE}/api/services/attach`, {
                         method: 'POST',
                         headers,
                         credentials: 'include',
                         body: JSON.stringify({
+                            booking_id,
                             service_id,
                             service_title,
-                            customer_name,
-                            customer_email,
-                            travel_destination,
-                            travel_date,
-                            guests_count,
-                            message,
-                            customer_id: currentUser ? currentUser.id : undefined
+                            notes: message,
+                            customer_email: currentUser.email,
+                            customer_id: currentUser.id
                         })
                     });
+
                     if (res.ok) {
                         const data = await res.json();
                         closeServiceModal();
                         form.reset();
-                        destChips.forEach(c => c.classList.remove('is-selected'));
 
-                        // Sync newly generated bookings to local cache for instant UI refresh
-                        if (Array.isArray(data.bookings) && data.bookings.length > 0) {
-                            try {
-                                const currentLocal = JSON.parse(localStorage.getItem('jadoo_bookings') || '[]');
-                                data.bookings.forEach(b => {
-                                    if (!currentLocal.some(x => x.id === b.id || x.booking_ref === b.booking_ref)) {
-                                        currentLocal.unshift(b);
-                                    }
-                                });
-                                localStorage.setItem('jadoo_bookings', JSON.stringify(currentLocal));
-                                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings' } }));
-                            } catch (_) {}
+                        // Refresh local cache with updated booking
+                        if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
+                            await JadooDB.primeCache().catch(() => {});
                         }
 
-                        const count = data.count || (data.bookings ? data.bookings.length : 1);
-                        const dests = (data.destinations || []).join(', ') || travel_destination;
+                        const updatedBooking = data.booking || {};
+                        const bookingRef = updatedBooking.booking_ref || updatedBooking.id || booking_id;
+                        const dest = updatedBooking.destination_name || 'your voyage';
+
                         if (window.JadooToast) {
                             window.JadooToast.show(
-                                'Service Booked!',
-                                `Created ${count} separate destination booking(s) for ${dests}. View your passes under Traveler Profile.`,
+                                'Service Attached!',
+                                `"${service_title}" has been successfully added to your trip to ${dest} (${bookingRef}). Redirecting to your E-Ticket...`,
                                 'success'
                             );
-                        } else {
-                            alert(`Confirmed ${count} booking(s) for ${dests}!`);
                         }
+
+                        setTimeout(() => {
+                            window.location.href = `./ticket.html?id=${encodeURIComponent(bookingRef)}`;
+                        }, 1200);
                     } else {
                         const errData = await res.json().catch(() => ({}));
-                        const errMsg = errData.error || 'Failed to submit service booking. Please try again.';
-                        if (window.JadooToast) {
-                            window.JadooToast.show('Booking Error', errMsg, 'error');
-                        } else {
-                            alert(errMsg);
-                        }
+                        const errMsg = errData.error || 'Failed to attach service. Please ensure you have an active booking.';
+                        JadooToast.show('Attachment Failed', errMsg, 'error');
                     }
                 } catch (err) {
-                    console.error('Service booking submission error:', err);
+                    console.error('Service attachment error:', err);
                     if (window.JadooToast) {
-                        window.JadooToast.show('Network Error', 'Could not connect to the booking server. Please verify your connection.', 'error');
+                        window.JadooToast.show('Network Error', 'Could not reach server. Please try again.', 'error');
+                    }
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnHtml;
                     }
                 }
             });
@@ -1031,11 +1123,7 @@
         function openCreateServiceModal() {
             const currentUser = JadooDB.getCurrentUser();
             if (!currentUser) {
-                if (window.JadooToast) {
-                    window.JadooToast.show('Authentication Required', 'Please sign in or create an account to publish a custom service.', 'warning');
-                } else {
-                    alert('Please log in to publish a custom service.');
-                }
+                JadooToast.show('Authentication Required', 'Please sign in or create an account to publish a custom service.', 'warning');
                 setTimeout(() => {
                     window.location.href = './auth.html#signin';
                 }, 1000);
@@ -1121,11 +1209,7 @@
                         renderServices();
                         closeCreateServiceModal();
                         createForm.reset();
-                        if (window.JadooToast) {
-                            window.JadooToast.show('Service Published!', `"${newSvc.title}" is now available in our services directory.`, 'success');
-                        } else {
-                            alert(`Service "${newSvc.title}" created successfully!`);
-                        }
+                        JadooToast.show('Service Published!', `"${newSvc.title}" is now available in our services directory.`, 'success');
                     }
                 } catch (err) {
                     console.error('Create service error:', err);

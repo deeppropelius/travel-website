@@ -188,6 +188,13 @@
                                 </div>
                             </div>
                         </li>
+                        <li>
+                            <select name="Language" id="lang" aria-label="Select Language">
+                                <option value="eng">En</option>
+                                <option value="Guj">Guj</option>
+                                <option value="Hi">Hi</option>
+                            </select>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -212,10 +219,11 @@
             <div class="profile-identity">
                 <div class="profile-avatar-large">
                     <img src="../assets/testimonials-avatar-1.png" alt="Profile avatar" id="profilePageAvatar" onerror="this.onerror=null; this.src='../assets/testimonials-avatar-1.png';">
-                    <div class="avatar-edit-badge" title="Change Avatar" id="btnChangeAvatar">
+                    <div class="avatar-edit-badge" title="Upload New Photo" id="btnChangeAvatar" style="cursor: pointer;">
                         <i class="fa-solid fa-camera"></i>
                     </div>
                 </div>
+                <input type="file" id="profileAvatarFileInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
                 <div class="profile-names">
                     <h1 id="profilePageName">Alex Johnson</h1>
                     <span class="profile-email-tag">
@@ -294,7 +302,7 @@
             <button type="button" class="profile-tab-button" data-tab="wishlist" onclick="window.switchProfileTab('wishlist')">
                 <i class="fa-solid fa-heart"></i>
                 <span>Saved Wishlist</span>
-                <span class="tab-counter">6</span>
+                <span class="tab-counter" id="badgeWishlistCount">6</span>
             </button>
             <button type="button" class="profile-tab-button" data-tab="reviews" onclick="window.switchProfileTab('reviews')">
                 <i class="fa-solid fa-comment-dots"></i>
@@ -341,114 +349,21 @@
 
         <!-- Tab 2: Saved Wishlist -->
         <div class="profile-tab-pane" id="tabPaneWishlist">
-            <div class="wishlist-cards-grid">
-                <!-- Rome -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="../assets/destination-rome.png" alt="Rome, Italy">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,840)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>Rome, Italy</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Colosseum, ancient Roman Forum, and historic Vatican museums.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$55 / person</span>
-                            <button type="button" class="btn-primary-glow" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./ticket.html?id=BK-92841'">
-                                <span>View Ticket</span>
-                            </button>
-                        </div>
-                    </div>
+            <div class="wishlist-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+                <div>
+                    <h3 id="wishlistSectionHeading" style="font-family: 'Volkhov', serif; font-size: 1.25rem; color: var(--text-heading, #14183E); margin: 0 0 0.25rem 0;">Saved Travel Destinations</h3>
+                    <p style="color: var(--text-muted, #64748B); font-size: 0.85rem; margin: 0;">Destinations, landmark itineraries, and adventures saved for later.</p>
                 </div>
+                <div id="wishlistHeaderActions" style="display: flex; gap: 0.6rem; align-items: center;">
+                    <button type="button" class="btn-clear-wishlist" onclick="window.clearAllWishlist()" id="btnClearAllWishlist" title="Remove all items from saved destinations">
+                        <i class="fa-regular fa-trash-can"></i>
+                        <span>Clear All</span>
+                    </button>
+                </div>
+            </div>
 
-                <!-- London -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="../assets/destination-london.jpeg" alt="London, UK">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.8 (3,120)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>London, United Kingdom</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Tower of London, Thames riverfront, Big Ben, and royal palaces.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$42 / person</span>
-                            <button type="button" class="btn-primary-glow" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./ticket.html?id=BK-58203'">
-                                <span>View Ticket</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Paris -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80" alt="Paris, France">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (4,210)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>Paris, France</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Eiffel Tower summit, Louvre masterpieces, and Seine river cruises.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$49 / person</span>
-                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
-                                <span>Explore</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tokyo -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80" alt="Tokyo, Japan">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,750)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>Tokyo, Japan</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Shibuya crossing, Asakusa Senso-ji temple, and futuristic skyline decks.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$35 / person</span>
-                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
-                                <span>Explore</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dubai -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=80" alt="Dubai, UAE">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (3,950)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>Dubai, United Arab Emirates</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Burj Khalifa observation decks, desert safaris, and luxury marina walks.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$62 / person</span>
-                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
-                                <span>Explore</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Santorini -->
-                <div class="wishlist-item-card">
-                    <div class="wishlist-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80" alt="Santorini, Greece">
-                        <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> 4.9 (2,310)</span>
-                    </div>
-                    <div class="wishlist-body">
-                        <h3>Santorini, Greece</h3>
-                        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">Oia caldera sunset cliffside walks, Aegean wine tastings, and blue domes.</p>
-                        <div class="wishlist-meta-row">
-                            <span style="font-weight: 700; color: #DF6951; font-size: 1.1rem;">$65 / person</span>
-                            <button type="button" class="btn-secondary-flat" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='./destination-page.html'">
-                                <span>Explore</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="wishlist-cards-grid" id="profileWishlistGrid">
+                <!-- Dynamically populated from JadooDB / localStorage with individual remove controls -->
             </div>
         </div>
 
@@ -489,6 +404,33 @@
                 <p>Manage your public traveler profile, emergency contacts, and personalized travel tier options.</p>
 
                 <form id="profileFullSettingsForm">
+                    <!-- Profile Picture Upload & Presets Selector -->
+                    <div class="profile-settings-avatar-box" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem; background: var(--bg-card-subtle, rgba(24, 30, 75, 0.03)); border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.08)); border-radius: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <div style="position: relative; width: 72px; height: 72px; flex-shrink: 0;">
+                            <img id="settingsAvatarPreview" src="../assets/testimonials-avatar-1.png" alt="Current Avatar" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #DF6951; box-shadow: 0 4px 12px rgba(223, 105, 81, 0.2);">
+                        </div>
+                        <div style="flex: 1; min-width: 220px;">
+                            <div style="font-weight: 700; color: var(--text-heading, #181E4B); font-size: 0.95rem; margin-bottom: 0.25rem;">Profile Picture</div>
+                            <p style="font-size: 0.8rem; color: #64748B; margin: 0 0 0.75rem 0;">Upload a custom photo from your device or pick a standard avatar.</p>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <button type="button" class="btn-primary-glow" id="settingsUploadAvatarBtn" style="padding: 0.45rem 1rem; font-size: 0.82rem; cursor: pointer;">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                                </button>
+                                <div class="avatar-selection-grid" id="settingsPresetGrid" style="margin-top: 0;">
+                                    <div class="avatar-chip is-selected" data-preset="../assets/testimonials-avatar-1.png" title="Avatar 1">
+                                        <img src="../assets/testimonials-avatar-1.png" alt="Avatar 1">
+                                    </div>
+                                    <div class="avatar-chip" data-preset="../assets/testimonials-avatar-2.png" title="Avatar 2">
+                                        <img src="../assets/testimonials-avatar-2.png" alt="Avatar 2">
+                                    </div>
+                                    <div class="avatar-chip" data-preset="../assets/testimonials-avatar-3.png" title="Avatar 3">
+                                        <img src="../assets/testimonials-avatar-3.png" alt="Avatar 3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="booking-form-grid">
                         <div class="booking-field-group">
                             <label for="settingsFullName">Full Name</label>
@@ -569,13 +511,14 @@
         <div class="features-modal-card">
             <div class="features-modal-header">
                 <div>
-                    <span class="modal-header-badge"><i class="fa-solid fa-feather-pointed"></i> Share Your Story</span>
-                    <h3 class="features-modal-title">Write a Testimonial</h3>
+                    <span class="modal-header-badge" id="reviewModalBadge"><i class="fa-solid fa-feather-pointed"></i> Share Your Story</span>
+                    <h3 class="features-modal-title" id="reviewModalTitle">Write a Testimonial</h3>
                 </div>
                 <button type="button" class="features-modal-close" id="reviewModalClose" aria-label="Close modal">&times;</button>
             </div>
             <div class="features-modal-body">
                 <form id="testimonialReviewForm">
+                    <input type="hidden" id="editingReviewId" value="">
                     <div class="booking-field-group">
                         <label>Trip Experience Rating <span class="required-star">*</span></label>
                         <div class="star-rating-picker" id="starRatingPicker">
@@ -662,7 +605,7 @@
                         <button type="button" class="btn-secondary-flat" id="reviewCancelBtn">Cancel</button>
                         <button type="submit" class="btn-primary-glow" id="reviewSubmitBtn">
                             <i class="fa-solid fa-paper-plane"></i>
-                            <span>Publish Testimonial</span>
+                            <span id="reviewSubmitBtnText">Publish Testimonial</span>
                         </button>
                     </div>
                 </form>
@@ -810,6 +753,7 @@
                 if (tabName === 'bookings') renderBookings(u);
                 else if (tabName === 'tickets') renderTickets(u);
                 else if (tabName === 'reviews') renderReviews(u);
+                else if (tabName === 'wishlist') renderWishlist();
             } catch (_) {}
         }
         window.switchProfileTab = switchProfileTab;
@@ -886,6 +830,7 @@
             try { renderBookings(user); } catch (e) { console.error('renderBookings:', e); }
             try { renderTickets(user); } catch (e) { console.error('renderTickets:', e); }
             try { renderReviews(user); } catch (e) { console.error('renderReviews:', e); }
+            try { renderWishlist(); } catch (e) { console.error('renderWishlist:', e); }
 
             // 2. Refresh data from PostgreSQL in background
             try {
@@ -893,9 +838,9 @@
                     await JadooDB.primeCache();
                 }
                 if (user?.email) {
-                    const freshBookings = await fetch(`${API_BASE}/api/bookings?email=${encodeURIComponent(user.email)}`)
-                        .then(r => r.ok ? r.json() : [])
-                        .catch(() => []);
+                    const freshBookings = (typeof JadooDB !== 'undefined' && JadooDB.getUserBookingsAsync)
+                        ? await JadooDB.getUserBookingsAsync(user.email).catch(() => [])
+                        : [];
                     if (Array.isArray(freshBookings) && freshBookings.length > 0) {
                         window.__jadoo_bookings_cache = freshBookings;
                         try { localStorage.setItem('jadoo_bookings', JSON.stringify(freshBookings)); } catch (_) {}
@@ -912,6 +857,7 @@
             try { renderBookings(freshUser); } catch (e) { console.error('renderBookings:', e); }
             try { renderTickets(freshUser); } catch (e) { console.error('renderTickets:', e); }
             try { renderReviews(freshUser); } catch (e) { console.error('renderReviews:', e); }
+            try { renderWishlist(); } catch (e) { console.error('renderWishlist:', e); }
 
             // Automatically open Tickets tab if #tickets is in URL hash
             if (window.location.hash === '#tickets') {
@@ -927,33 +873,128 @@
                 JadooToast.show('Passes Updated', 'All boarding passes and gate tokens are up to date.', 'info');
             });
 
-            // Settings Form Save
+            // Settings Form Save with Validation
             const settingsForm = document.getElementById('profileFullSettingsForm');
             settingsForm?.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const name = document.getElementById('settingsFullName').value.trim();
-                const phone = document.getElementById('settingsPhone').value.trim();
-                if (name) {
-                    JadooDB.updateProfile({ full_name: name, phone });
-                    renderProfileHeader(JadooDB.getCurrentUser());
-                    JadooNavAuth.updateNavbar();
-                    JadooToast.show('Account Updated', 'Your profile details and travel preferences have been saved.', 'success');
+                const nameInput = document.getElementById('settingsFullName');
+                const phoneInput = document.getElementById('settingsPhone');
+                const name = nameInput ? nameInput.value.trim() : '';
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+
+                if (!name || name.length < 2) {
+                    if (nameInput) nameInput.focus();
+                    JadooToast.show('Validation Error', 'Full name must be at least 2 characters.', 'error');
+                    return;
                 }
+
+                if (phone && !/^[\d\s+\-().]{6,25}$/.test(phone)) {
+                    if (phoneInput) phoneInput.focus();
+                    JadooToast.show('Validation Error', 'Please enter a valid phone number (6-25 digits/symbols).', 'error');
+                    return;
+                }
+
+                JadooDB.updateProfile({ full_name: name, phone });
+                renderProfileHeader(JadooDB.getCurrentUser());
+                JadooNavAuth.updateNavbar();
+                JadooToast.show('Account Updated', 'Your profile details and travel preferences have been saved.', 'success');
             });
 
-            // Avatar Change Trigger
-            document.getElementById('btnChangeAvatar')?.addEventListener('click', () => {
-                const newAvatar = prompt('Enter image URL or pick standard avatar (1-3):', '1');
-                if (newAvatar) {
-                    let avatarUrl = newAvatar;
-                    if (newAvatar === '1') avatarUrl = '../assets/testimonials-avatar-1.png';
-                    if (newAvatar === '2') avatarUrl = '../assets/testimonials-avatar-2.png';
-                    if (newAvatar === '3') avatarUrl = '../assets/testimonials-avatar-3.png';
-                    JadooDB.updateProfile({ avatar_url: avatarUrl });
-                    const avEl = document.getElementById('profilePageAvatar');
-                    if (avEl) avEl.src = avatarUrl;
-                    JadooToast.show('Avatar Updated', 'Your traveler profile picture has been updated.', 'success');
+            // --- Custom Avatar Upload & Synchronization Engine ---
+            const fileInput = document.getElementById('profileAvatarFileInput');
+            const btnChange = document.getElementById('btnChangeAvatar');
+            const btnSettingsUpload = document.getElementById('settingsUploadAvatarBtn');
+
+            function triggerAvatarUpload() {
+                if (fileInput) fileInput.click();
+            }
+
+            btnChange?.addEventListener('click', triggerAvatarUpload);
+            btnSettingsUpload?.addEventListener('click', triggerAvatarUpload);
+
+            fileInput?.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    JadooToast.show('Invalid Format', 'Please upload a valid image file (PNG, JPG, or WebP).', 'error');
+                    fileInput.value = '';
+                    return;
                 }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    JadooToast.show('File Too Large', 'Please select an image smaller than 10MB.', 'error');
+                    fileInput.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const maxDim = 320;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > h) {
+                            if (w > maxDim) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            }
+                        } else {
+                            if (h > maxDim) {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0, w, h);
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                            const updatedUser = JadooDB.updateProfile({ avatar_url: compressedDataUrl });
+                            if (updatedUser) {
+                                renderProfileHeader(updatedUser);
+                                if (typeof JadooNavAuth !== 'undefined' && typeof JadooNavAuth.updateNavbar === 'function') {
+                                    JadooNavAuth.updateNavbar();
+                                }
+                                window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { user: updatedUser } }));
+                                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'profile_avatar' } }));
+                                JadooToast.show('Profile Photo Updated', 'Your traveler profile picture has been synced across all pages.', 'success');
+                            }
+                        }
+                        fileInput.value = '';
+                    };
+                    img.onerror = function() {
+                        JadooToast.show('Processing Error', 'Could not process the selected image.', 'error');
+                        fileInput.value = '';
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Preset Avatars Selector
+            const presetChips = document.querySelectorAll('#settingsPresetGrid .avatar-chip');
+            presetChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const presetUrl = chip.getAttribute('data-preset');
+                    if (!presetUrl) return;
+                    presetChips.forEach(c => c.classList.remove('is-selected'));
+                    chip.classList.add('is-selected');
+
+                    const updatedUser = JadooDB.updateProfile({ avatar_url: presetUrl });
+                    if (updatedUser) {
+                        renderProfileHeader(updatedUser);
+                        if (typeof JadooNavAuth !== 'undefined' && typeof JadooNavAuth.updateNavbar === 'function') {
+                            JadooNavAuth.updateNavbar();
+                        }
+                        window.dispatchEvent(new CustomEvent('jadoo:auth_change', { detail: { user: updatedUser } }));
+                        window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'profile_avatar' } }));
+                        JadooToast.show('Avatar Selected', 'Your traveler avatar has been updated.', 'success');
+                    }
+                });
             });
         }
 
@@ -963,10 +1004,27 @@
             initProfilePage();
         }
 
+        function resolveAvatarUrl(url) {
+            const defaultAvatar = '../assets/testimonials-avatar-1.png';
+            if (!url) return defaultAvatar;
+            const str = String(url).trim();
+            if (str.startsWith('data:') || str.startsWith('http://') || str.startsWith('https://')) {
+                return str;
+            }
+            if (str.startsWith('./assets/')) {
+                return '.' + str;
+            }
+            if (str.startsWith('../assets/')) {
+                return str;
+            }
+            return '../assets/' + str.replace(/^\/+/, '');
+        }
+
         function renderProfileHeader(user) {
             const nameEl = document.getElementById('profilePageName');
             const emailEl = document.getElementById('profilePageEmail');
             const avatarEl = document.getElementById('profilePageAvatar');
+            const settingsPreview = document.getElementById('settingsAvatarPreview');
             const nameInput = document.getElementById('settingsFullName');
             const emailInput = document.getElementById('settingsEmail');
             const phoneInput = document.getElementById('settingsPhone');
@@ -974,17 +1032,41 @@
             const defaultAvatar = '../assets/testimonials-avatar-1.png';
             if (nameEl) nameEl.textContent = user?.full_name || 'Traveler';
             if (emailEl) emailEl.textContent = user?.email || '';
+
+            const resolvedAvatar = resolveAvatarUrl(user?.avatar_url);
+
             if (avatarEl) {
-                let av = user?.avatar_url;
-                if (!av || av.startsWith('./assets/')) {
-                    av = defaultAvatar;
-                }
-                avatarEl.src = av;
+                avatarEl.src = resolvedAvatar;
                 avatarEl.onerror = function() {
                     this.onerror = null;
                     this.src = defaultAvatar;
                 };
             }
+
+            if (settingsPreview) {
+                settingsPreview.src = resolvedAvatar;
+                settingsPreview.onerror = function() {
+                    this.onerror = null;
+                    this.src = defaultAvatar;
+                };
+            }
+
+            // Sync preset chips active highlight
+            const presetChips = document.querySelectorAll('#settingsPresetGrid .avatar-chip');
+            presetChips.forEach(chip => {
+                const preset = chip.getAttribute('data-preset');
+                if (preset && (preset === user?.avatar_url || resolveAvatarUrl(preset) === resolvedAvatar)) {
+                    chip.classList.add('is-selected');
+                } else {
+                    chip.classList.remove('is-selected');
+                }
+            });
+
+            // Sync navigation circle
+            const navAvatarImg = document.getElementById('navUserAvatarImg');
+            if (navAvatarImg) navAvatarImg.src = resolvedAvatar;
+            const dropAvatarImg = document.getElementById('dropdownUserAvatarImg');
+            if (dropAvatarImg) dropAvatarImg.src = resolvedAvatar;
 
             if (nameInput) nameInput.value = user?.full_name || '';
             if (emailInput) emailInput.value = user?.email || '';
@@ -1015,7 +1097,201 @@
             if (badgeTickets) badgeTickets.textContent = String(confirmedCount);
             const badgeReviews = document.getElementById('badgeReviewsCount');
             if (badgeReviews) badgeReviews.textContent = String(userReviews.length);
+            const badgeWishlist = document.getElementById('badgeWishlistCount');
+            if (badgeWishlist) badgeWishlist.textContent = String(getSavedWishlist().length);
         }
+
+        // ── SAVED WISHLIST CONTROLLER & PERSISTENCE ENGINE ──────────
+        const DEFAULT_WISHLIST = [
+            {
+                id: 'wish-rome',
+                title: 'Rome, Italy',
+                description: 'Colosseum, ancient Roman Forum, and historic Vatican museums.',
+                img: '../assets/destination-rome.png',
+                rating: '4.9',
+                reviews: '2,840',
+                price: '$55 / person',
+                actionUrl: './ticket.html?id=BK-92841',
+                actionLabel: 'View Ticket',
+                actionType: 'primary'
+            },
+            {
+                id: 'wish-london',
+                title: 'London, United Kingdom',
+                description: 'Tower of London, Thames riverfront, Big Ben, and royal palaces.',
+                img: '../assets/destination-london.jpeg',
+                rating: '4.8',
+                reviews: '3,120',
+                price: '$42 / person',
+                actionUrl: './ticket.html?id=BK-58203',
+                actionLabel: 'View Ticket',
+                actionType: 'primary'
+            },
+            {
+                id: 'wish-paris',
+                title: 'Paris, France',
+                description: 'Eiffel Tower summit, Louvre masterpieces, and Seine river cruises.',
+                img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80',
+                rating: '4.9',
+                reviews: '4,210',
+                price: '$49 / person',
+                actionUrl: './destination-page.html?search=Paris',
+                actionLabel: 'Explore',
+                actionType: 'secondary'
+            },
+            {
+                id: 'wish-tokyo',
+                title: 'Tokyo, Japan',
+                description: 'Shibuya crossing, Asakusa Senso-ji temple, and futuristic skyline decks.',
+                img: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
+                rating: '4.9',
+                reviews: '2,750',
+                price: '$35 / person',
+                actionUrl: './destination-page.html?search=Tokyo',
+                actionLabel: 'Explore',
+                actionType: 'secondary'
+            },
+            {
+                id: 'wish-dubai',
+                title: 'Dubai, United Arab Emirates',
+                description: 'Burj Khalifa observation decks, desert safaris, and luxury marina walks.',
+                img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=80',
+                rating: '4.9',
+                reviews: '3,950',
+                price: '$62 / person',
+                actionUrl: './destination-page.html?search=Dubai',
+                actionLabel: 'Explore',
+                actionType: 'secondary'
+            },
+            {
+                id: 'wish-santorini',
+                title: 'Santorini, Greece',
+                description: 'Oia caldera sunset cliffside walks, Aegean wine tastings, and blue domes.',
+                img: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80',
+                rating: '4.9',
+                reviews: '2,310',
+                price: '$65 / person',
+                actionUrl: './destination-page.html?search=Santorini',
+                actionLabel: 'Explore',
+                actionType: 'secondary'
+            }
+        ];
+
+        function getSavedWishlist() {
+            try {
+                const raw = localStorage.getItem('jadoo_saved_wishlist');
+                if (raw !== null) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) return parsed;
+                }
+            } catch (_) {}
+            return DEFAULT_WISHLIST;
+        }
+
+        function saveWishlist(items) {
+            try {
+                localStorage.setItem('jadoo_saved_wishlist', JSON.stringify(items));
+            } catch (_) {}
+        }
+
+        function renderWishlist() {
+            const grid = document.getElementById('profileWishlistGrid');
+            if (!grid) return;
+
+            const items = getSavedWishlist();
+            const badge = document.getElementById('badgeWishlistCount');
+            if (badge) badge.textContent = String(items.length);
+
+            const heading = document.getElementById('wishlistSectionHeading');
+            if (heading) heading.textContent = `Saved Travel Destinations (${items.length})`;
+
+            const clearBtn = document.getElementById('btnClearAllWishlist');
+            if (clearBtn) clearBtn.style.display = items.length > 0 ? 'inline-flex' : 'none';
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state-card" style="text-align: center; padding: 3.5rem 1.5rem; background: var(--card-bg, #fff); border-radius: 20px; border: 1px dashed rgba(148, 163, 184, 0.35); grid-column: 1 / -1;">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(223, 105, 81, 0.12); color: #DF6951; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem auto;">
+                            <i class="fa-regular fa-heart"></i>
+                        </div>
+                        <h3 style="margin-bottom: 0.5rem; font-family: 'Volkhov', serif; color: var(--text-heading, #14183E);">Your Saved Wishlist is Empty</h3>
+                        <p style="color: var(--text-muted, #64748B); max-width: 440px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; line-height: 1.6;">You have no saved destinations right now. Browse our world-famous locations to add trips to your wishlist.</p>
+                        <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="./destination-page.html" class="btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.6rem; border-radius: 9999px; text-decoration: none; font-weight: 600;">
+                                <i class="fa-solid fa-earth-americas"></i>
+                                <span>Explore Destinations</span>
+                            </a>
+                            <button type="button" class="btn-secondary-flat" onclick="window.restoreDefaultWishlist()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.4rem; border-radius: 9999px; font-weight: 500; cursor: pointer;">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Restore Sample Items</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => {
+                const btnClass = item.actionType === 'primary' ? 'btn-primary-glow' : 'btn-secondary-flat';
+                const safeTitle = escapeHTML(item.title);
+                const safeDesc = escapeHTML(item.description);
+                return `
+                    <div class="wishlist-item-card" data-id="${item.id}">
+                        <div class="wishlist-img-wrap">
+                            <img src="${item.img}" alt="${safeTitle}" onerror="this.onerror=null; this.src='../assets/destination-rome.png';">
+                            <span class="wishlist-badge"><i class="fa-solid fa-star" style="color: #F1A501;"></i> ${item.rating} (${item.reviews})</span>
+                        </div>
+                        <div class="wishlist-body">
+                            <h3>${safeTitle}</h3>
+                            <p style="font-size: 0.85rem; color: #64748B; margin: 0; min-height: 2.55rem;">${safeDesc}</p>
+                            <div class="wishlist-meta-row">
+                                <span style="font-weight: 700; color: #DF6951; font-size: 1.05rem;">${item.price}</span>
+                                <div class="wishlist-actions-group">
+                                    <button type="button" class="btn-wishlist-remove" onclick="window.removeWishlistItem('${item.id}')" title="Remove from wishlist">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                        <span>Remove</span>
+                                    </button>
+                                    <button type="button" class="${btnClass}" style="padding: 0.45rem 1rem; font-size: 0.8rem;" onclick="window.location.href='${item.actionUrl}'">
+                                        <span>${item.actionLabel}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.removeWishlistItem = function(id) {
+            const items = getSavedWishlist();
+            const target = items.find(x => x.id === id);
+            const targetName = target ? target.title : 'this destination';
+            if (!confirm(`Are you sure you want to remove "${targetName}" from your saved destinations?`)) {
+                return;
+            }
+            const updated = items.filter(x => x.id !== id);
+            saveWishlist(updated);
+            renderWishlist();
+            JadooToast.show('Removed from Saved', `"${targetName}" has been removed from your saved wishlist.`, 'info');
+        };
+
+        window.clearAllWishlist = function() {
+            const items = getSavedWishlist();
+            if (items.length === 0) return;
+            if (!confirm(`Are you sure you want to remove all ${items.length} destinations from your saved wishlist?`)) {
+                return;
+            }
+            saveWishlist([]);
+            renderWishlist();
+            JadooToast.show('Wishlist Cleared', 'All saved destinations have been removed.', 'info');
+        };
+
+        window.restoreDefaultWishlist = function() {
+            if (!confirm('Restore the default curated destinations to your saved wishlist?')) return;
+            saveWishlist(DEFAULT_WISHLIST);
+            renderWishlist();
+            JadooToast.show('Wishlist Restored', 'Curated destinations have been restored to your wishlist.', 'success');
+        };
 
         function formatBookingRef(b) {
             if (!b) return '#BK-92841';
@@ -1210,13 +1486,13 @@
 
             if (userReviews.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state-card" style="text-align: center; padding: 3rem 1.5rem; background: var(--card-bg, #fff); border-radius: 20px; border: 1px dashed rgba(148, 163, 184, 0.35);">
-                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(223, 105, 81, 0.12); color: #DF6951; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1rem;">
+                    <div class="empty-state-card review-empty-state">
+                        <div class="review-empty-icon">
                             <i class="fa-solid fa-feather-pointed"></i>
                         </div>
-                        <h3 style="margin-bottom: 0.5rem; font-family: 'Volkhov', serif; color: var(--text-heading, #14183E);">No Reviews Shared Yet</h3>
-                        <p style="color: var(--text-muted, #64748B); max-width: 440px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; line-height: 1.6;">You haven't posted any trip reviews or testimonials yet. Share your experience from your journeys to inspire fellow travelers!</p>
-                        <button type="button" class="btn-primary-glow" onclick="window.openShareTripExperience('', '', '')" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.6rem; border-radius: 9999px; border: none; font-weight: 600; cursor: pointer;">
+                        <h3 class="review-empty-title">No Reviews Shared Yet</h3>
+                        <p class="review-empty-desc">You haven't posted any trip reviews or testimonials yet. Share your experience from your journeys to inspire fellow travelers!</p>
+                        <button type="button" class="btn-primary-glow reviews-write-btn" onclick="window.openShareTripExperience('', '', '')">
                             <i class="fa-solid fa-plus"></i>
                             <span>Write Your First Trip Review</span>
                         </button>
@@ -1226,35 +1502,53 @@
             }
 
             container.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+                <div class="reviews-header-row">
                     <div>
-                        <h3 style="font-family: 'Volkhov', serif; font-size: 1.25rem; color: var(--text-heading, #14183E); margin: 0 0 0.25rem 0;">My Travel Stories (${userReviews.length})</h3>
-                        <p style="color: var(--text-muted, #64748B); font-size: 0.85rem; margin: 0;">Verified reviews published across Jadoo destinations &amp; testimonials.</p>
+                        <h3 class="reviews-header-title">My Travel Stories (${userReviews.length})</h3>
+                        <p class="reviews-header-subtitle">Verified reviews published across Jadoo destinations &amp; testimonials.</p>
                     </div>
-                    <button type="button" class="btn-primary-glow" onclick="window.openShareTripExperience('', '', '')" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 9999px; border: none; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                    <button type="button" class="btn-primary-glow reviews-write-btn" onclick="window.openShareTripExperience('', '', '')">
                         <i class="fa-solid fa-feather-pointed"></i>
                         <span>Write New Review</span>
                     </button>
                 </div>
-                <div class="user-reviews-grid" style="display: grid; gap: 1.25rem;">
+                <div class="user-reviews-grid">
                     ${userReviews.map(t => `
-                        <div class="channel-card" style="display: flex; gap: 1.25rem; align-items: flex-start; padding: 1.4rem; border-radius: 18px; background: var(--card-bg, #fff); box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color, rgba(0,0,0,0.06));">
-                            <div class="channel-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(241, 165, 1, 0.12); color: #F1A501; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                        <div class="user-review-card" data-id="${t.id}">
+                            <div class="review-quote-icon">
                                 <i class="fa-solid fa-quote-left"></i>
                             </div>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-                                    <h4 style="margin: 0; font-size: 1.05rem; font-family: 'Poppins', sans-serif; color: var(--text-heading, #14183E); font-weight: 600;">${escapeHTML(t.trip_tag || t.destination_name)}</h4>
-                                    <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(241, 165, 1, 0.14); padding: 0.25rem 0.65rem; border-radius: 9999px; color: #F1A501; font-weight: 700; font-size: 0.88rem;">
-                                        <i class="fa-solid fa-star"></i>
-                                        <span>${(parseFloat(t.rating) || 5.0).toFixed(1)}</span>
+                            <div class="review-main-col">
+                                <div class="review-card-top">
+                                    <div class="review-title-group">
+                                        <h4 class="review-destination-title">${escapeHTML(t.trip_tag || t.destination_name)}</h4>
+                                        <div class="review-badges-row">
+                                            <span class="review-id-pill" title="Review ID: ${t.id}"><i class="fa-solid fa-hashtag"></i> ${t.id ? t.id.slice(0, 8) : 'Review'}</span>
+                                            ${(t.user_id || t.customer_id || t.costumer_id) ? `<span class="review-user-synced-pill" title="Synced with User ID: ${(t.user_id || t.customer_id || t.costumer_id).slice(0, 8)}"><i class="fa-solid fa-circle-check"></i> User Synced</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="review-top-actions">
+                                        <div class="review-rating-badge">
+                                            <i class="fa-solid fa-star"></i>
+                                            <span>${(parseFloat(t.rating) || 5.0).toFixed(1)}</span>
+                                        </div>
+                                        <div class="review-actions-group">
+                                            <button type="button" class="btn-review-action btn-review-edit" onclick="window.editTripExperience('${t.id}')" title="Edit your travel story">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                                <span>Edit</span>
+                                            </button>
+                                            <button type="button" class="btn-review-action btn-review-delete" onclick="window.deleteTripExperience('${t.id}')" title="Remove this review">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                                <span>Remove</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <p style="font-style: italic; margin: 0.6rem 0; color: var(--text-color, #475569); line-height: 1.6; font-size: 0.95rem;">&ldquo;${escapeHTML(t.quote)}&rdquo;</p>
-                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.82rem; color: #94A3B8; border-top: 1px dashed var(--border-color, rgba(0,0,0,0.08)); padding-top: 0.6rem; margin-top: 0.5rem;">
-                                    <span><i class="fa-solid fa-location-dot" style="color: #DF6951; margin-right: 0.35rem;"></i>${escapeHTML(t.destination_name || 'Global')}</span>
-                                    <span><i class="fa-solid fa-user-check" style="margin-right: 0.35rem;"></i>${escapeHTML(t.author_role || 'Verified Explorer')}</span>
-                                    <span><i class="fa-regular fa-clock" style="margin-right: 0.35rem;"></i>${t.created_at ? new Date(t.created_at).toLocaleDateString() : 'Recent'}</span>
+                                <p class="review-quote-text">&ldquo;${escapeHTML(t.quote)}&rdquo;</p>
+                                <div class="review-footer-row">
+                                    <span class="review-footer-item"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(t.destination_name || 'Global')}</span>
+                                    <span class="review-footer-item"><i class="fa-solid fa-user-check"></i> ${escapeHTML(t.author_role || t.role_title || 'Verified Explorer')}</span>
+                                    <span class="review-footer-item"><i class="fa-regular fa-clock"></i> ${t.created_at ? new Date(t.created_at).toLocaleDateString() : 'Recent'}</span>
                                 </div>
                             </div>
                         </div>
@@ -1263,21 +1557,47 @@
             `;
         }
 
-        // --- Write / Share Trip Experience Modal Handler ---
+        // --- Write / Share / Edit Trip Experience Modal Handler ---
         let profileRating = 5;
         let profileSelectedAvatar = '../assets/testimonials-avatar-1.png';
+
+        function syncReviewAvatarChips(selectedUrl) {
+            profileSelectedAvatar = selectedUrl || '../assets/testimonials-avatar-1.png';
+            const avatarChips = document.querySelectorAll('#avatarSelectionGrid .avatar-chip');
+            avatarChips.forEach(chip => {
+                const av = chip.getAttribute('data-avatar');
+                chip.classList.toggle('is-selected', av === profileSelectedAvatar);
+            });
+        }
 
         window.openShareTripExperience = function (destName, attractionName, bookingId) {
             const modal = document.getElementById('reviewModalOverlay');
             if (!modal) return;
 
+            // Reset editing state for new review
+            const editingInput = document.getElementById('editingReviewId');
+            if (editingInput) editingInput.value = '';
+
+            const badge = document.getElementById('reviewModalBadge');
+            const title = document.getElementById('reviewModalTitle');
+            const submitBtnText = document.getElementById('reviewSubmitBtnText');
+            if (badge) badge.innerHTML = '<i class="fa-solid fa-feather-pointed"></i> Share Your Story';
+            if (title) title.textContent = 'Write a Testimonial';
+            if (submitBtnText) submitBtnText.textContent = 'Publish Testimonial';
+
             const user = JadooDB.getCurrentUser();
             const nameInput = document.getElementById('reviewAuthorName');
             const destSelect = document.getElementById('reviewDestinationSelect');
             const tagInput = document.getElementById('reviewTripTag');
+            const locInput = document.getElementById('reviewAuthorLocation');
+            const roleInput = document.getElementById('reviewRoleTitle');
+            const quoteInput = document.getElementById('reviewQuote');
 
-            if (nameInput && user) nameInput.value = user.full_name || '';
-            if (tagInput) tagInput.value = attractionName ? `${attractionName} Journey` : `${destName} Expedition`;
+            if (nameInput) nameInput.value = user?.full_name || '';
+            if (tagInput) tagInput.value = attractionName ? `${attractionName} Journey` : (destName ? `${destName} Expedition` : '');
+            if (locInput) locInput.value = '';
+            if (roleInput) roleInput.value = '';
+            if (quoteInput) quoteInput.value = '';
 
             // Populate destinations dropdown if not already populated
             if (destSelect && destSelect.options.length <= 1) {
@@ -1299,9 +1619,119 @@
                 }
             }
 
+            // Sync user avatar if available
+            if (user?.avatar_url) {
+                syncReviewAvatarChips(user.avatar_url);
+            } else {
+                syncReviewAvatarChips('../assets/testimonials-avatar-1.png');
+            }
+
+            setProfileStarRating(5);
+
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+        };
+
+        // Edit Existing Travel Review
+        window.editTripExperience = function (id) {
+            const allTestimonials = JadooDB.getTestimonials();
+            const t = allTestimonials.find(item => item.id === id);
+            if (!t) {
+                JadooToast.show('Review Not Found', 'Could not locate the requested review to edit.', 'warning');
+                return;
+            }
+
+            const modal = document.getElementById('reviewModalOverlay');
+            if (!modal) return;
+
+            // Set hidden editing ID
+            const editingInput = document.getElementById('editingReviewId');
+            if (editingInput) editingInput.value = t.id;
+
+            // Populate form fields
+            const nameInput = document.getElementById('reviewAuthorName');
+            const destSelect = document.getElementById('reviewDestinationSelect');
+            const locInput = document.getElementById('reviewAuthorLocation');
+            const roleInput = document.getElementById('reviewRoleTitle');
+            const tagInput = document.getElementById('reviewTripTag');
+            const quoteInput = document.getElementById('reviewQuote');
+
+            if (nameInput) nameInput.value = t.author_name || '';
+            if (locInput) locInput.value = t.author_location || '';
+            if (roleInput) roleInput.value = t.author_role || t.role_title || '';
+            if (tagInput) tagInput.value = t.trip_tag || '';
+            if (quoteInput) quoteInput.value = t.quote || '';
+
+            // Populate destinations select if needed
+            if (destSelect && destSelect.options.length <= 1) {
+                const dests = JadooDB.getDestinations();
+                dests.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = `${d.name}, ${d.country}`;
+                    destSelect.appendChild(opt);
+                });
+            }
+
+            if (destSelect && t.destination_name) {
+                let matched = false;
+                for (let i = 0; i < destSelect.options.length; i++) {
+                    if (destSelect.options[i].value.toLowerCase().includes(t.destination_name.toLowerCase())) {
+                        destSelect.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    const customOpt = document.createElement('option');
+                    customOpt.value = t.destination_name;
+                    customOpt.textContent = t.destination_name;
+                    customOpt.selected = true;
+                    destSelect.appendChild(customOpt);
+                }
+            }
+
+            // Rating
+            const ratingNum = Math.round(parseFloat(t.rating) || 5);
+            setProfileStarRating(ratingNum);
+
+            // Avatar
+            syncReviewAvatarChips(t.avatar_url);
+
+            // Update modal title & button for edit mode
+            const badge = document.getElementById('reviewModalBadge');
+            const title = document.getElementById('reviewModalTitle');
+            const submitBtnText = document.getElementById('reviewSubmitBtnText');
+            if (badge) badge.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Review #${t.id ? t.id.slice(0, 8) : ''}`;
+            if (title) title.textContent = `Edit Review #${t.id ? t.id.slice(0, 8) : ''}`;
+            if (submitBtnText) submitBtnText.textContent = 'Update Review';
+
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        };
+
+        // Delete Existing Travel Review with confirmation
+        window.deleteTripExperience = async function (id) {
+            const allTestimonials = JadooDB.getTestimonials();
+            const t = allTestimonials.find(item => item.id === id);
+            const reviewLabel = t ? `"${t.destination_name || 'your review'}"` : 'this review';
+
+            if (!confirm(`Are you sure you want to delete your review for ${reviewLabel}? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                await JadooDB.deleteTestimonialAsync(id);
+                const user = JadooDB.getCurrentUser();
+                renderStats(user);
+                renderReviews(user);
+                JadooToast.show('Review Deleted', 'Your travel review has been removed.', 'info');
+            } catch (err) {
+                console.error('Delete review error:', err);
+                JadooToast.show('Error', 'Could not delete review. Please try again.', 'error');
+            }
         };
 
         // Wire "Share Travel Story" hero button
@@ -1319,6 +1749,8 @@
                 modal.classList.remove('is-open');
                 modal.setAttribute('aria-hidden', 'true');
             }
+            const editingInput = document.getElementById('editingReviewId');
+            if (editingInput) editingInput.value = '';
             document.body.style.overflow = '';
         }
         document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
@@ -1362,11 +1794,20 @@
             });
         });
 
-        // Submit Review Form
+        // Submit Review Form (handles both Create and Update with Review ID and User ID sync)
         const reviewForm = document.getElementById('testimonialReviewForm');
         reviewForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === 'function') {
+                e.stopImmediatePropagation();
+            }
+
+            const submitBtn = reviewForm.querySelector('button[type="submit"]');
+            const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+
             const user = JadooDB.getCurrentUser();
+            const editingId = document.getElementById('editingReviewId')?.value.trim();
             const author_name = document.getElementById('reviewAuthorName')?.value.trim() || user?.full_name || 'Traveler';
             const destination_name = document.getElementById('reviewDestinationSelect')?.value || 'Rome, Italy';
             const author_location = document.getElementById('reviewAuthorLocation')?.value.trim() || 'Global Traveler';
@@ -1379,50 +1820,96 @@
                 return;
             }
 
-            const newTestimonial = {
-                id: 'testi-' + Date.now().toString(36),
-                user_id: user?.id || null,
-                customer_id: user?.id || null,
-                costumer_id: user?.id || null,
-                author_name,
-                author_email: user?.email || '',
-                author_location,
-                author_role,
-                avatar_url: profileSelectedAvatar,
-                rating: profileRating,
-                trip_tag,
-                destination_name,
-                quote,
-                is_featured: true,
-                created_at: new Date().toISOString()
-            };
+            if (editingId) {
+                // Editing existing review - UPDATE matching review ID and sync User ID
+                if (!confirm(`Are you sure you want to update review #${editingId.slice(0, 8)} for "${destination_name}"?`)) {
+                    return;
+                }
 
-            // 1. Save to local DB cache
-            JadooDB.addTestimonial(newTestimonial);
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Updating...</span>';
+                }
 
-            // 2. Persist to Backend API
-            try {
-                await fetch(`${API_BASE}/api/testimonials`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newTestimonial)
-                });
-            } catch (err) {
-                console.warn('API sync warning:', err);
+                const updatedData = {
+                    id: editingId,
+                    user_id: user?.id || null,
+                    customer_id: user?.id || null,
+                    costumer_id: user?.id || null,
+                    author_email: user?.email || '',
+                    author_name,
+                    destination_name,
+                    author_location,
+                    role_title: author_role,
+                    author_role,
+                    trip_tag,
+                    quote,
+                    rating: profileRating,
+                    avatar_url: profileSelectedAvatar
+                };
+
+                await JadooDB.updateTestimonialAsync(editingId, updatedData);
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnHtml;
+                }
+
+                closeReviewModal();
+                reviewForm.reset();
+                const editingInput = document.getElementById('editingReviewId');
+                if (editingInput) editingInput.value = '';
+
+                renderStats(user);
+                renderReviews(user);
+
+                JadooToast.show('Review Updated!', `Review #${editingId.slice(0, 8)} updated and synced with your User ID.`, 'success');
+            } else {
+                // Creating new review
+                if (!confirm(`Are you sure you want to publish your review for "${destination_name}"?`)) {
+                    return;
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Publishing...</span>';
+                }
+
+                const newTestimonial = {
+                    user_id: user?.id || null,
+                    customer_id: user?.id || null,
+                    costumer_id: user?.id || null,
+                    author_name,
+                    author_email: user?.email || '',
+                    author_location,
+                    role_title: author_role,
+                    author_role,
+                    avatar_url: profileSelectedAvatar,
+                    rating: profileRating,
+                    trip_tag,
+                    destination_name,
+                    quote
+                };
+
+                await JadooDB.addTestimonialAsync(newTestimonial);
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnHtml;
+                }
+
+                closeReviewModal();
+                reviewForm.reset();
+
+                renderStats(user);
+                renderReviews(user);
+
+                // Automatically switch to My Reviews tab
+                const reviewsTabBtn = document.querySelector('#profileTabsNav [data-tab="reviews"]');
+                if (reviewsTabBtn) reviewsTabBtn.click();
+
+                JadooToast.show('Thank You, Explorer!', 'Your travel story has been published to our testimonials.', 'success');
             }
-
-            closeReviewModal();
-            reviewForm.reset();
-
-            // Refresh UI
-            renderStats(user);
-            renderReviews(user);
-
-            // Automatically switch to My Reviews tab
-            const reviewsTabBtn = document.querySelector('#profileTabsNav [data-tab="reviews"]');
-            if (reviewsTabBtn) reviewsTabBtn.click();
-
-            JadooToast.show('Thank You, Explorer!', 'Your travel story has been published to our testimonials.', 'success');
         });
     </script>
 </body>
