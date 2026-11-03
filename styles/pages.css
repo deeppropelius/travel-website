@@ -365,6 +365,94 @@
   border-top: 1px solid #F1F5F9;
 }
 
+.wishlist-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-wishlist-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-wishlist-remove:hover {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #EF4444;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.btn-wishlist-remove i {
+  font-size: 0.82rem;
+  color: #EF4444;
+  transition: transform 0.2s ease;
+}
+
+.btn-wishlist-remove:hover i {
+  transform: scale(1.15);
+}
+
+.btn-wishlist-remove-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  color: #FFFFFF;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.btn-wishlist-remove-icon:hover {
+  background: #EF4444;
+  color: #FFFFFF;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.btn-clear-wishlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #FFFFFF;
+  color: #EF4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-wishlist:hover {
+  background: #FEF2F2;
+  border-color: #EF4444;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
 /* --------------------------------------------------------------------------
    1.5 PROFILE E-TICKETS & BOARDING PASSES SECTION
    -------------------------------------------------------------------------- */
@@ -4230,11 +4318,12 @@ body.user-logged-in #destUserProfileDropdown {
 /* Cardstock Manifest Inner Area */
 .voucher-manifest-inner {
   position: relative;
-  padding: clamp(1rem, 2vw, 1.4rem) clamp(1rem, 2.5vw, 2rem);
+  padding: clamp(0.85rem, 1.8vw, 1.25rem) clamp(1rem, 2.5vw, 1.85rem);
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 0.65rem;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -4568,20 +4657,60 @@ body.user-logged-in #destUserProfileDropdown {
   box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.12);
 }
 
-/* Right VIP Check-In Pass Stub */
+/* Right VIP Check-In Pass Stub (Proportional & Centered) */
 .heritage-pass-theme .ticket-qr-stub {
-  width: 285px;
-  min-width: 270px;
-  max-width: 300px;
+  width: 275px;
+  min-width: 260px;
+  max-width: 295px;
   background: #FDFBF8;
-  padding: 1.25rem 1.25rem;
+  padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   text-align: center;
   box-sizing: border-box;
   flex-shrink: 0;
+}
+
+.stub-inner-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: auto 0;
+}
+
+.stub-header-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.stub-qr-center-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stub-tap-hint {
+  font-size: 0.65rem;
+  color: #94A3B8;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.stub-footer-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0.45rem;
 }
 
@@ -4591,8 +4720,8 @@ body.user-logged-in #destUserProfileDropdown {
 
 /* 3D Embossed Gold Seal */
 .voucher-gold-seal {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #FBF1D3 0%, #D8AB48 45%, #9E7420 85%, #6B4E0F 100%);
   box-shadow: 0 4px 12px rgba(180, 131, 37, 0.45), 0 0 0 2px #E8C87A inset;
@@ -4603,7 +4732,7 @@ body.user-logged-in #destUserProfileDropdown {
   color: #3F2C05;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
   cursor: default;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
   transition: transform 0.3s ease;
   flex-shrink: 0;
 }
@@ -4613,7 +4742,7 @@ body.user-logged-in #destUserProfileDropdown {
 }
 
 .voucher-gold-seal i {
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #3F2C05;
   margin-bottom: 1px;
 }
@@ -4634,7 +4763,7 @@ body.user-logged-in #destUserProfileDropdown {
 
 .stub-traveler-name {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #181E4B;
   letter-spacing: 1px;
@@ -4655,7 +4784,7 @@ body.user-logged-in #destUserProfileDropdown {
   letter-spacing: 1.5px;
   color: #B38738;
   text-transform: uppercase;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
 }
 
 [data-theme="dark"] .stub-vip-tag {
@@ -4663,20 +4792,29 @@ body.user-logged-in #destUserProfileDropdown {
 }
 
 .heritage-pass-theme .luxury-qr-frame {
-  width: 120px;
-  height: 120px;
+  width: 125px;
+  height: 125px;
   background: #FFFFFF !important;
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  border: 1px solid #E2E8F0;
-  margin-bottom: 0.35rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  margin: 0;
   box-sizing: border-box;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heritage-pass-theme .luxury-qr-frame:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.25);
 }
 
 .stub-barcode-wrap {
-  width: 135px;
+  width: 125px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5082,7 +5220,8 @@ body.user-logged-in #destUserProfileDropdown {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: center !important;
+  gap: 0.85rem !important;
   box-sizing: border-box !important;
   border-top: none !important;
 }
@@ -6434,9 +6573,24 @@ textarea:focus-visible {
   flex: 1;
 }
 
+.prep-checklist-item.is-checked {
+  background: rgba(16, 185, 129, 0.07);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
 .prep-checklist-item.is-checked .prep-item-text {
-  text-decoration: line-through;
-  color: #94A3B8;
+  text-decoration: none;
+  color: #047857;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .prep-checklist-item.is-checked {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .prep-checklist-item.is-checked .prep-item-text {
+  color: #6EE7B7;
 }
 
 /* Timeline Milestones */
@@ -6735,4 +6889,502 @@ textarea:focus-visible {
   .ticket-modal-overlay {
     display: none !important;
   }
+}
+
+/* ==========================================================================
+   ATTACHED CONCIERGE SERVICES & UPGRADES (TICKET VOUCHER SECTION)
+   ========================================================================== */
+.voucher-services-section {
+  margin-top: 0.5rem;
+  background: rgba(197, 160, 89, 0.05);
+  border: 1px dashed rgba(197, 160, 89, 0.35);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+[data-theme="dark"] .voucher-services-section {
+  background: rgba(212, 175, 55, 0.04);
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+.voucher-services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  gap: 0.5rem;
+}
+
+.voucher-services-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #B38738;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+[data-theme="dark"] .voucher-services-title {
+  color: #F6C358;
+}
+
+.voucher-services-add-btn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #DF6951;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(223, 105, 81, 0.08);
+  transition: all 0.2s ease;
+}
+
+.voucher-services-add-btn:hover {
+  background: #DF6951;
+  color: #FFFFFF;
+}
+
+.voucher-services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.voucher-service-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  border-radius: 9999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.7rem;
+  color: #181E4B;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  max-width: 240px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.voucher-service-tag:hover {
+  background: #FFFDF9;
+  border-color: rgba(197, 160, 89, 0.6);
+}
+
+[data-theme="dark"] .voucher-service-tag {
+  background: #1E293B;
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #F8FAFC;
+}
+
+.voucher-service-tag i {
+  color: #DF6951;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.voucher-service-tag .svc-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 135px;
+}
+
+.voucher-service-tag .svc-price-pill {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.btn-cancel-service {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 0.15rem;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-cancel-service:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444 !important;
+}
+
+.voucher-no-services {
+  font-size: 0.72rem;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0;
+}
+
+.voucher-no-services i {
+  color: #F1A501;
+  font-size: 0.75rem;
+}
+
+.voucher-no-services a {
+  color: #DF6951;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-left: 0.25rem;
+  font-size: 0.72rem;
+}
+
+/* ==========================================================================
+   TICKET EMPTY STATE (AUTHENTIC 0 TICKETS VIEW)
+   ========================================================================== */
+.ticket-empty-state {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
+  max-width: 620px;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .ticket-empty-state {
+  background: #111827;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.ticket-empty-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(223, 105, 81, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  color: #DF6951;
+  font-size: 2.2rem;
+}
+
+.ticket-empty-title {
+  font-family: 'Volkhov', serif;
+  font-size: clamp(1.4rem, 2.5vw, 1.75rem);
+  color: #181E4B;
+  margin: 0 0 0.5rem;
+}
+
+[data-theme="dark"] .ticket-empty-title {
+  color: #F8FAFC;
+}
+
+.ticket-empty-desc {
+  font-size: 0.95rem;
+  color: #64748B;
+  max-width: 480px;
+  margin: 0 auto 1.8rem;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .ticket-empty-desc {
+  color: #94A3B8;
+}
+
+
+/* ==========================================================================
+   User Reviews & Testimonials Actions (Edit & Remove)
+   ========================================================================== */
+.review-actions-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn-review-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: inherit;
+    border: 1px solid transparent;
+}
+
+.btn-review-action:focus-visible {
+    outline: 2px solid #DF6951;
+    outline-offset: 2px;
+}
+
+.btn-review-edit {
+    background: rgba(223, 105, 81, 0.08);
+    color: #DF6951;
+    border-color: rgba(223, 105, 81, 0.28);
+}
+
+.btn-review-edit:hover {
+    background: #DF6951;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(223, 105, 81, 0.28);
+    transform: translateY(-1px);
+}
+
+.btn-review-delete {
+    background: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
+    border-color: rgba(239, 68, 68, 0.28);
+}
+
+.btn-review-delete:hover {
+    background: #EF4444;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   User Reviews Tab & Review Cards
+   ========================================================================== */
+.reviews-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.reviews-header-title {
+    font-family: 'Volkhov', serif;
+    font-size: 1.25rem;
+    color: #14183E;
+    margin: 0 0 0.25rem 0;
+}
+
+.reviews-header-subtitle {
+    color: #64748B;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.reviews-write-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 9999px;
+    border: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.user-reviews-grid {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.user-review-card {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    padding: 1.4rem;
+    border-radius: 18px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.user-review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+.review-quote-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(241, 165, 1, 0.12);
+    color: #F1A501;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.review-main-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.review-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.review-destination-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-family: 'Poppins', sans-serif;
+    color: #14183E;
+    font-weight: 600;
+}
+
+.review-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.review-rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(241, 165, 1, 0.14);
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    color: #F1A501;
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+.review-quote-text {
+    font-style: italic;
+    margin: 0.65rem 0;
+    color: #475569;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.review-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #94A3B8;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    padding-top: 0.65rem;
+    margin-top: 0.55rem;
+}
+
+.review-footer-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.review-footer-item i {
+    color: #94A3B8;
+}
+
+.review-footer-item i.fa-location-dot {
+    color: #DF6951;
+}
+
+.review-empty-state {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+}
+
+.review-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(223, 105, 81, 0.12);
+    color: #DF6951;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin: 0 auto 1rem auto;
+}
+
+.review-empty-title {
+    margin-bottom: 0.5rem;
+    font-family: 'Volkhov', serif;
+    font-size: 1.35rem;
+    color: #14183E;
+}
+
+.review-empty-desc {
+    color: #64748B;
+    max-width: 440px;
+    margin: 0 auto 1.5rem auto;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Review ID and User Synced Badges */
+.review-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.review-badges-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.review-id-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.18rem 0.52rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: monospace;
+    background: rgba(148, 163, 184, 0.16);
+    color: #475569;
+    letter-spacing: 0.02em;
+}
+
+.review-user-synced-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.58rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
 }

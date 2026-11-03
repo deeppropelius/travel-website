@@ -162,7 +162,7 @@
                                             <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
-                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
+                                            <span class="dropdown-user-name" id="dropdownUserName">Traveler</span>
                                             <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
                                         </div>
                                     </div>
@@ -187,6 +187,13 @@
                                     </button>
                                 </div>
                             </div>
+                        </li>
+                        <li>
+                            <select name="Language" id="lang" aria-label="Select Language">
+                                <option value="eng">En</option>
+                                <option value="Guj">Guj</option>
+                                <option value="Hi">Hi</option>
+                            </select>
                         </li>
                     </ul>
                 </div>
@@ -237,6 +244,19 @@
                 <!-- Dynamically populated with active user tickets -->
             </div>
 
+            <!-- Authentic 0-Tickets Empty State -->
+            <div class="ticket-empty-state" id="ticketEmptyState" style="display: none;">
+                <div class="ticket-empty-icon">
+                    <i class="fa-solid fa-ticket-simple"></i>
+                </div>
+                <h2 class="ticket-empty-title">No Active Tickets Found</h2>
+                <p class="ticket-empty-desc">You don't have any booked trips yet. Discover our breathtaking destinations and book your next voyage to view your live e-ticket and boarding passes.</p>
+                <a href="./destination-page.html" class="btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.8rem; border-radius: 9999px; text-decoration: none; font-weight: 600;">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>Explore Destinations</span>
+                </a>
+            </div>
+
             <!-- E-Ticket Card (Redesigned Luxury Experience Pass) -->
             <div class="ticket-voucher-card luxury-ticket-pass heritage-pass-theme" id="ticketVoucherCard">
                 <!-- Ticket Body & Perforated Stub Section -->
@@ -263,15 +283,15 @@
                                             <i class="fa-solid fa-circle-check"></i>
                                             <span id="ticketCardStatusText">CONFIRMED PASS</span>
                                         </span>
-                                        <span class="ticket-ref-pill" id="ticketRefNumber">#BK-92841</span>
+                                        <span class="ticket-ref-pill" id="ticketRefNumber">#BK-00000</span>
                                     </div>
                                 </div>
                                 <div class="ticket-hero-bottom-row">
                                     <div class="ticket-hero-title-wrap">
                                         <span class="ticket-experience-type"><i class="fa-solid fa-compass"></i> CURATED ATTRACTION & CITY VOYAGE</span>
-                                        <h1 class="ticket-attraction-title" id="ticketTourTitle">Colosseum & Historic Walking Tour</h1>
+                                        <h1 class="ticket-attraction-title" id="ticketTourTitle">Voyage Experience Pass</h1>
                                         <div class="ticket-hero-meta-row">
-                                            <span class="meta-location"><i class="fa-solid fa-location-dot"></i> <span id="ticketTourLocation">Rome, Italy</span></span>
+                                            <span class="meta-location"><i class="fa-solid fa-location-dot"></i> <span id="ticketTourLocation">Global Destination</span></span>
                                             <span class="meta-divider">•</span>
                                             <span class="meta-rating"><i class="fa-solid fa-star"></i> 4.9 (Top Rated Experience)</span>
                                         </div>
@@ -324,49 +344,49 @@
                             <div class="voucher-primary-meta">
                                 <div class="meta-cell">
                                     <span class="meta-label">TRAVELER NAME</span>
-                                    <strong class="meta-value" id="ticketPassengerName">Alex Johnson</strong>
+                                    <strong class="meta-value" id="ticketPassengerName">Traveler</strong>
                                 </div>
                                 <div class="meta-cell">
                                     <span class="meta-label">PACKAGE</span>
-                                    <strong class="meta-value" id="ticketPackageTier">VIP TOUR PACKAGE</strong>
+                                    <strong class="meta-value" id="ticketPackageTier">TOUR PACKAGE</strong>
                                 </div>
                                 <div class="meta-cell">
                                     <span class="meta-label">DEPARTURE</span>
-                                    <strong class="meta-value" id="ticketTravelDate">Nov 15, 2026</strong>
+                                    <strong class="meta-value" id="ticketTravelDate">Upcoming</strong>
                                 </div>
                                 <div class="meta-cell">
                                     <span class="meta-label">PARTY SIZE</span>
-                                    <strong class="meta-value" id="ticketGuestsCount">2 Travelers</strong>
+                                    <strong class="meta-value" id="ticketGuestsCount">1 Traveler</strong>
                                 </div>
                             </div>
 
                             <!-- Reference & Payment Sub-line -->
                             <div class="voucher-ref-line">
-                                <span>Booking Ref: <strong id="ticketVoucherRef">#BK-92841</strong></span>
+                                <span>Booking Ref: <strong id="ticketVoucherRef">#BK-00000</strong></span>
                                 <span class="ref-sep">•</span>
                                 <span>Pass: <strong id="ticketSeatPass">01A VIP</strong></span>
                                 <span class="ref-sep">•</span>
-                                <span>Payment: <strong style="color: #10B981;" id="ticketTotalPaid">$110.00 USD (Paid in Full)</strong></span>
+                                <span>Payment: <strong style="color: #10B981;" id="ticketTotalPaid">Paid in Full</strong></span>
                             </div>
 
-                            <!-- 3 Lower Feature Columns (Itinerary, Inclusions, Experiences) -->
-                            <div class="voucher-features-grid">
+                            <!-- 3 Lower Feature Cards (Compact: Just Icon, Header, and Punchy Key Sub) -->
+                            <div class="voucher-features-grid compact-pills">
                                 <div class="feature-col">
                                     <div class="feature-header">
                                         <i class="fa-solid fa-landmark-dome feature-icon"></i>
                                         <span>ITINERARY</span>
                                     </div>
                                     <p class="feature-desc" id="ticketFeatureItinerary">
-                                        <strong id="ticketMeetingPoint">Main Colosseum Gate, Rome, Italy</strong>. Direct guided access with VIP admission to all landmark zones.
+                                        <strong id="ticketMeetingPoint">Main Meeting Gate</strong>
                                     </p>
                                 </div>
                                 <div class="feature-col">
                                     <div class="feature-header">
-                                        <i class="fa-solid fa-shield feature-icon"></i>
+                                        <i class="fa-solid fa-shield-halved feature-icon"></i>
                                         <span>INCLUSIONS</span>
                                     </div>
                                     <p class="feature-desc">
-                                        Fast-track skip-the-line pass, certified English-speaking master guide, audio headset, and 100% full refund guarantee.
+                                        <strong>Fast-Track Pass & Master Guide</strong>
                                     </p>
                                 </div>
                                 <div class="feature-col">
@@ -375,8 +395,28 @@
                                         <span>EXPERIENCES</span>
                                     </div>
                                     <p class="feature-desc">
-                                        Curated panoramic photo stops, historical insights, and exclusive Jadoo traveler privileges throughout the voyage.
+                                        <strong>Curated Panoramic Stops</strong>
                                     </p>
+                                </div>
+                            </div>
+
+                            <!-- Attached Concierge Services & Upgrades -->
+                            <div class="voucher-services-section" id="ticketAttachedServicesWrap">
+                                <div class="voucher-services-header">
+                                    <div class="voucher-services-title">
+                                        <i class="fa-solid fa-bell-concierge"></i>
+                                        <span>ATTACHED SERVICES</span>
+                                    </div>
+                                    <a href="./services.html" class="voucher-services-add-btn" id="ticketAddServiceLink" title="Add services to this trip">
+                                        <i class="fa-solid fa-plus"></i> Add Service
+                                    </a>
+                                </div>
+                                <div class="voucher-services-list" id="ticketAttachedServicesList">
+                                    <div class="voucher-no-services">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        <span>No concierge upgrades attached yet.</span>
+                                        <a href="./services.html" class="voucher-add-svc-link">+ Add Services to this Voyage</a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -396,35 +436,44 @@
 
                     <!-- Right VIP Check-In Pass Stub -->
                     <div class="ticket-qr-stub">
-                        <!-- Embossed 3D Gold Seal -->
-                        <div class="voucher-gold-seal" title="Official Verified Admission">
-                            <i class="fa-solid fa-check"></i>
-                            <span class="seal-text-main">VERIFIED</span>
-                            <span class="seal-text-sub">ACCESS</span>
-                        </div>
-
-                        <div class="stub-traveler-name" id="stubTraveler">ALEX JOHNSON</div>
-                        <div class="stub-vip-tag">VIP ADMISSION PASS</div>
-
-                        <!-- Scannable High-Contrast QR Code -->
-                        <div class="luxury-qr-frame" id="stubQrBox" title="Click to Enlarge for Scanner" style="cursor: pointer;">
-                            <div id="stubQrCanvas"></div>
-                        </div>
-                        <!-- Barcode & Serial Code -->
-                        <div class="stub-barcode-wrap">
-                            <div class="mock-barcode-lines" aria-hidden="true">
-                                <span></span><span></span><span></span><span></span><span></span>
-                                <span></span><span></span><span></span><span></span><span></span>
-                                <span></span><span></span><span></span><span></span><span></span>
-                                <span></span><span></span><span></span><span></span><span></span>
-                                <span></span><span></span><span></span><span></span>
+                        <div class="stub-inner-content">
+                            <!-- Top Header: Embossed 3D Gold Seal + Traveler Name -->
+                            <div class="stub-header-group">
+                                <div class="voucher-gold-seal" title="Official Verified Admission">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span class="seal-text-main">VERIFIED</span>
+                                    <span class="seal-text-sub">ACCESS</span>
+                                </div>
+                                <div class="stub-traveler-name" id="stubTraveler">TRAVELER</div>
+                                <div class="stub-vip-tag">VIP ADMISSION PASS</div>
                             </div>
-                            <div class="stub-serial-code" id="stubTicketId">BK-92841</div>
-                        </div>
 
-                        <div class="stub-verified-seal" title="Cryptographically Verified">
-                            <i class="fa-solid fa-shield"></i>
-                            <span>VERIFIED VOUCHER</span>
+                            <!-- Center: Scannable High-Contrast QR Code -->
+                            <div class="stub-qr-center-block">
+                                <div class="luxury-qr-frame" id="stubQrBox" title="Click to Enlarge for Scanner" style="cursor: pointer;">
+                                    <div id="stubQrCanvas"></div>
+                                </div>
+                                <div class="stub-tap-hint"><i class="fa-solid fa-expand"></i> Tap to enlarge</div>
+                            </div>
+
+                            <!-- Bottom: Barcode & Serial Code + Verified Badge -->
+                            <div class="stub-footer-group">
+                                <div class="stub-barcode-wrap">
+                                    <div class="mock-barcode-lines" aria-hidden="true">
+                                        <span></span><span></span><span></span><span></span><span></span>
+                                        <span></span><span></span><span></span><span></span><span></span>
+                                        <span></span><span></span><span></span><span></span><span></span>
+                                        <span></span><span></span><span></span><span></span><span></span>
+                                        <span></span><span></span><span></span><span></span>
+                                    </div>
+                                    <div class="stub-serial-code" id="stubTicketId">BK-00000</div>
+                                </div>
+
+                                <div class="stub-verified-seal" title="Cryptographically Verified">
+                                    <i class="fa-solid fa-shield"></i>
+                                    <span>VERIFIED VOUCHER</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -436,13 +485,13 @@
                     <i class="fa-solid fa-file-arrow-down"></i>
                     <span>Download PDF Ticket</span>
                 </button>
+                <button type="button" class="btn-secondary-flat" id="checkInBtn" title="Complete Online Check-In & Boarding" style="color: #10B981; border-color: rgba(16, 185, 129, 0.4);">
+                    <i class="fa-solid fa-plane-departure"></i>
+                    <span>Online Check-In</span>
+                </button>
                 <button type="button" class="btn-secondary-flat" id="printTicketBtn" title="Print High-Resolution Voucher">
                     <i class="fa-solid fa-print"></i>
                     <span>Print Pass</span>
-                </button>
-                <button type="button" class="btn-secondary-flat" id="addToCalendarBtn" title="Download .ics Calendar Event">
-                    <i class="fa-solid fa-calendar-plus"></i>
-                    <span>Add to Calendar</span>
                 </button>
                 <button type="button" class="btn-secondary-flat" id="openWalletModalBtn" title="Save to Mobile Wallet">
                     <i class="fa-solid fa-wallet"></i>
@@ -494,8 +543,18 @@
                 </div>
             </div>
 
-            <!-- Voyage Prep: Interactive Checklist & Timeline Grid -->
-            <div class="ticket-voyage-prep">
+            <!-- Voyage Prep: Optional Traveler Day Guide & Schedule Accordion -->
+            <div class="prep-section-title-bar" style="display: flex; justify-content: space-between; align-items: center; margin: 2rem 0 1rem 0;">
+                <div>
+                    <h3 style="font-family: 'Volkhov', serif; color: #14183E; font-size: 1.15rem; margin: 0;">Traveler Day Guide & Schedule</h3>
+                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: #64748B; margin: 0.2rem 0 0 0;">Pre-departure checklist & estimated itinerary timeline</p>
+                </div>
+                <button type="button" class="btn-secondary-flat" id="togglePrepGuideBtn" style="font-size: 0.76rem; padding: 0.35rem 0.85rem;" onclick="const el = document.getElementById('ticketVoyagePrepGrid'); if(el) { const hidden = el.style.display === 'none'; el.style.display = hidden ? 'grid' : 'none'; this.querySelector('span').textContent = hidden ? 'Hide Guide' : 'Show Day Guide & Checklist'; }">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Show Day Guide & Checklist</span>
+                </button>
+            </div>
+            <div class="ticket-voyage-prep" id="ticketVoyagePrepGrid" style="display: none;">
                 <div class="prep-card">
                     <div class="prep-card-header">
                         <i class="fa-solid fa-clipboard-check"></i>
@@ -582,7 +641,7 @@
                             <i class="fa-solid fa-wifi wallet-nfc" title="Contactless NFC Ready"></i>
                         </div>
                         <div class="wallet-tour" id="walletTourName">Colosseum Historic Walk</div>
-                        <div style="font-size: 0.82rem; color: #F1A501;" id="walletTraveler">Alex Johnson</div>
+                        <div style="font-size: 0.82rem; color: #F1A501;" id="walletTraveler">Traveler</div>
                         <div class="wallet-meta">
                             <div><span>DATE: </span><strong id="walletDate">Nov 15, 2026</strong></div>
                             <div><span>GATE: </span><strong>B14</strong></div>
@@ -698,6 +757,7 @@
 
         if (typeof window !== 'undefined') {
             window.JadooTheme = JadooTheme;
+            window.JadooToast = JadooToast;
             window.toggleThemeGlobal = (e) => {
                 if (e) {
                     e.preventDefault();
@@ -712,24 +772,24 @@
 
         function formatDate(dateStr) {
             try {
-                if (!dateStr) return 'Nov 15, 2026';
+                if (!dateStr) return '---';
                 const d = new Date(dateStr);
                 if (isNaN(d.getTime())) return dateStr;
                 return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             } catch (_) {
-                return dateStr;
+                return dateStr || '---';
             }
         }
 
         function formatBookingRef(b) {
-            if (!b) return '#BK-92841';
+            if (!b) return '';
             let raw = '';
             if (typeof b === 'string') {
                 raw = b.trim();
             } else {
                 raw = (b.booking_ref || b.bookingReference || b.bookingRef || b.id || '').toString().trim();
             }
-            if (!raw) return '#BK-92841';
+            if (!raw) return '';
 
             // Strip leading hash symbols
             raw = raw.replace(/^#+/, '').trim();
@@ -763,15 +823,24 @@
 
         function populateSwitcher(list, current) {
             const switchSelect = document.getElementById('switchBookingSelect');
-            if (!switchSelect || !list || !list.length) return;
+            const switchWrap = document.querySelector('.ticket-switch-wrap');
+            if (!switchSelect) return;
+            if (!list || !list.length) {
+                if (switchWrap) switchWrap.style.display = 'none';
+                return;
+            }
+            if (switchWrap) switchWrap.style.display = 'flex';
+
             const currentId = current ? (current.id || current.booking_ref) : '';
-            switchSelect.innerHTML = list.map(b => {
+            switchSelect.innerHTML = list.map((b, idx) => {
                 const ref = formatBookingRef(b);
                 const bVal = b.id || b.booking_ref;
                 const isSelected = bVal === currentId || b.id === current?.id || b.booking_ref === current?.booking_ref;
+                const dest = b.destination_name || 'Voyage';
+                const tour = b.attraction_name || `${dest} Tour`;
                 return `
                     <option value="${bVal}" ${isSelected ? 'selected' : ''}>
-                        ${ref} - ${b.attraction_name || b.destination_name} (${b.destination_name || 'Voyage'})
+                        Ticket ${idx + 1} of ${list.length}: ${ref} - ${dest} (${tour})
                     </option>
                 `;
             }).join('');
@@ -798,6 +867,11 @@
             JadooTheme.init();
             JadooNavAuth.init();
 
+            // Clear legacy seed booking pollution from localStorage
+            try {
+                localStorage.removeItem('jadoo_schema_bookings');
+            } catch (_) {}
+
             // Guard: redirect unauthenticated users immediately
             const currentUser = JadooDB.getCurrentUser();
             if (!currentUser) {
@@ -805,56 +879,8 @@
                 return;
             }
 
-            const seedBooking = {
-                id: 'BK-92841',
-                booking_ref: 'BK-92841',
-                destination_name: 'Rome',
-                attraction_name: 'Colosseum & Historic Walking Tour',
-                user_name: currentUser.full_name || 'Alex Johnson',
-                user_email: currentUser.email || 'alex.traveler@example.com',
-                phone_number: currentUser.phone || '+1 (555) 234-5678',
-                travel_date: '2026-11-15',
-                guests_count: 2,
-                package_type: 'VIP',
-                price_per_person: 55,
-                total_price: 110,
-                special_request: 'Morning priority entrance',
-                status: 'confirmed',
-                created_at: '2026-10-15T10:00:00.000Z',
-                image_url: '../assets/destination-rome.png'
-            };
-
-            function getLocalBookings() {
-                let list = [];
-                try {
-                    list = JadooDB.getUserBookings(currentUser?.email) || [];
-                    if (!list.length) list = JadooDB.getBookings() || [];
-                } catch (_) {}
-                if (!list || !list.length) {
-                    try {
-                        const raw = localStorage.getItem('jadoo_schema_bookings');
-                        if (raw) list = JSON.parse(raw);
-                    } catch (_) {}
-                }
-                if (!Array.isArray(list) || !list.length) {
-                    list = [seedBooking];
-                    try {
-                        localStorage.setItem('jadoo_schema_bookings', JSON.stringify(list));
-                    } catch (_) {}
-                }
-                return list;
-            }
-
-            allBookings = getLocalBookings();
-
-            // Resolve requested booking (URL param > localStorage > first booking)
-            const params = new URLSearchParams(window.location.search);
-            let requestedId = (params.get('id') || '').trim();
-            if (!requestedId) {
-                try {
-                    requestedId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
-                } catch (_) {}
-            }
+            const userEmail = (currentUser.email || '').trim().toLowerCase();
+            const userId = (currentUser.id || '').trim();
 
             function matchBooking(search, list) {
                 if (!search || !list || !list.length) return null;
@@ -866,10 +892,66 @@
                 });
             }
 
-            activeBooking = matchBooking(requestedId, allBookings) || allBookings[0] || seedBooking;
+            // Fetch user's bookings from PostgreSQL or cache
+            let userBookings = [];
+            try {
+                userBookings = await JadooDB.getUserBookingsAsync(userEmail);
+                if (Array.isArray(userBookings)) {
+                    window.__jadoo_bookings_cache = userBookings;
+                    localStorage.setItem('jadoo_bookings', JSON.stringify(userBookings));
+                }
+            } catch (_) {
+                userBookings = JadooDB.getUserBookings(userEmail) || [];
+            }
 
-            // Synchronize active ID to localStorage and clean URL
-            const activeId = activeBooking.booking_ref || activeBooking.id || 'BK-92841';
+            allBookings = Array.isArray(userBookings) ? userBookings : [];
+
+            // UI Elements
+            const emptyState = document.getElementById('ticketEmptyState');
+            const voucherCard = document.getElementById('ticketVoucherCard');
+            const passesSlider = document.getElementById('ticketPassesSlider');
+            const destIntelGrid = document.getElementById('destIntelGrid');
+            const voyageCountdown = document.getElementById('voyageCountdownWrap');
+            const voyagePrep = document.querySelector('.ticket-voyage-prep');
+            const actionsBar = document.querySelector('.ticket-actions-bar');
+            const switchWrap = document.querySelector('.ticket-switch-wrap');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            const statusPill = document.getElementById('ticketStatusPill');
+
+            if (!allBookings.length) {
+                // Traveler has 0 tickets: Show friendly empty state, hide all ticket cards
+                if (emptyState) emptyState.style.display = 'block';
+                if (voucherCard) voucherCard.style.display = 'none';
+                if (passesSlider) passesSlider.style.display = 'none';
+                if (destIntelGrid) destIntelGrid.style.display = 'none';
+                if (voyageCountdown) voyageCountdown.style.display = 'none';
+                if (voyagePrep) voyagePrep.style.display = 'none';
+                if (actionsBar) actionsBar.style.display = 'none';
+                if (switchWrap) switchWrap.style.display = 'none';
+                if (downloadPdfBtn) downloadPdfBtn.style.display = 'none';
+                if (statusPill) statusPill.style.display = 'none';
+                return;
+            }
+
+            // Traveler has tickets: show cards and hide empty state
+            if (emptyState) emptyState.style.display = 'none';
+            if (voucherCard) voucherCard.style.display = 'block';
+            if (actionsBar) actionsBar.style.display = 'flex';
+            if (switchWrap) switchWrap.style.display = 'flex';
+            if (downloadPdfBtn) downloadPdfBtn.style.display = 'inline-flex';
+            if (statusPill) statusPill.style.display = 'inline-flex';
+
+            const params = new URLSearchParams(window.location.search);
+            let requestedId = (params.get('id') || '').trim();
+            if (!requestedId) {
+                try {
+                    requestedId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
+                } catch (_) {}
+            }
+
+            activeBooking = matchBooking(requestedId, allBookings) || allBookings[0];
+
+            const activeId = activeBooking.booking_ref || activeBooking.id;
             try {
                 localStorage.setItem('jadoo_current_ticket_id', activeId);
                 if (!params.get('id')) {
@@ -877,11 +959,10 @@
                 }
             } catch (_) {}
 
-            // Immediate 0ms synchronous render
             renderTicket(activeBooking);
             populateSwitcher(allBookings, activeBooking);
 
-            // Action Listeners (Direct PDF Download & Management)
+            // Listeners
             const pdfActions = [document.getElementById('downloadPdfBtn'), document.getElementById('bottomPdfBtn')];
             pdfActions.forEach(btn => {
                 btn?.addEventListener('click', () => downloadPdf(activeBooking));
@@ -890,37 +971,10 @@
             const cancelBtn = document.getElementById('cancelReservationBtn');
             cancelBtn?.addEventListener('click', () => cancelBooking(activeBooking));
 
-            // Initialize all rich interactive ticket suite listeners
-            initTicketSuiteInteractions();
+            const checkInBtn = document.getElementById('checkInBtn');
+            checkInBtn?.addEventListener('click', () => checkInBooking(activeBooking));
 
-            // Background cache priming from PostgreSQL
-            try {
-                if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
-                    await JadooDB.primeCache();
-                }
-                const fresh = JadooDB.getUserBookings(currentUser?.email);
-                if (Array.isArray(fresh) && fresh.length > 0) {
-                    allBookings = fresh;
-                    const matched = matchBooking(requestedId || activeId, allBookings);
-                    if (matched) {
-                        activeBooking = matched;
-                        renderTicket(activeBooking);
-                        populateSwitcher(allBookings, activeBooking);
-                    }
-                } else if (requestedId) {
-                    try {
-                        const fetched = await JadooDB.getBookingAsync(requestedId);
-                        if (fetched) {
-                            activeBooking = fetched;
-                            if (!allBookings.find(b => b.id === fetched.id)) {
-                                allBookings.unshift(fetched);
-                            }
-                            renderTicket(activeBooking);
-                            populateSwitcher(allBookings, activeBooking);
-                        }
-                    } catch (_) {}
-                }
-            } catch (_) {}
+            initTicketSuiteInteractions();
         }
 
         function renderPassesSlider(active) {
@@ -974,14 +1028,18 @@
             'Paris': { weather: '19°C Mild & Sunny', sub: 'Pleasant City of Light walking atmosphere', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card & Contactless', coords: '48.8584° N, 2.2945° E', meeting: 'Eiffel Tower East Pillar, Champ de Mars, 5 Av. Anatole France, 75007 Paris, France' },
             'London': { weather: '17°C Light Breeze', sub: 'Partly sunny, light jacket recommended', tz: 'GMT+1 (BST)', offset: 1, curr: 'GBP (£) Oyster / Contactless', coords: '51.5055° N, 0.0754° W', meeting: 'Tower Bridge North Vault Entrance, Tower Bridge Rd, London SE1 2UP, UK' },
             'Santorini': { weather: '25°C Aegean Sunshine', sub: 'Warm Aegean breeze, sunglasses recommended', tz: 'GMT+3 (EEST)', offset: 3, curr: 'EUR (€) Widely Accepted', coords: '36.3932° N, 25.4615° E', meeting: 'Oia Blue Dome Viewpoint, Nik. Nomikou, Oía 847 02, Greece' },
+            'Venice': { weather: '20°C Lagoon Breeze', sub: 'Gondola canals and scenic waterways', tz: 'GMT+2 (CEST)', offset: 2, curr: 'EUR (€) Card Accepted', coords: '45.4408° N, 12.3155° E', meeting: "St. Mark's Square Clocktower, Piazza San Marco, 30124 Venezia VE, Italy" },
             'Tokyo': { weather: '20°C Clear & Mild', sub: 'Excellent visibility across Tokyo skyline', tz: 'GMT+9 (JST)', offset: 9, curr: 'JPY (¥) IC Cards / Suica', coords: '35.6762° N, 139.6503° E', meeting: 'Shibuya Crossing Hachiko Statue Gate, 2 Chome-1 Dogenzaka, Shibuya, Tokyo' },
             'New York': { weather: '18°C Autumn Crisp', sub: 'Clear skies across Manhattan skyline', tz: 'GMT-4 (EDT)', offset: -4, curr: 'USD ($) Apple Pay / Cards', coords: '40.7128° N, 74.0060° W', meeting: 'Rockefeller Center Plaza Gate, 45 Rockefeller Plaza, New York, NY 10111, USA' },
-            'Dubai': { weather: '31°C Sunny & Warm', sub: 'Sunny desert climate with luxury indoor air conditioning', tz: 'GMT+4 (GST)', offset: 4, curr: 'AED (د.إ) Cashless Ready', coords: '25.2048° N, 55.2708° E', meeting: 'Burj Khalifa Ground Concourse Gate, 1 Sheikh Mohammed bin Rashid Blvd, Dubai, UAE' }
+            'Dubai': { weather: '31°C Sunny & Warm', sub: 'Sunny desert climate with luxury indoor air conditioning', tz: 'GMT+4 (GST)', offset: 4, curr: 'AED (د.إ) Cashless Ready', coords: '25.2048° N, 55.2708° E', meeting: 'Burj Khalifa Ground Concourse Gate, 1 Sheikh Mohammed bin Rashid Blvd, Dubai, UAE' },
+            'Agra': { weather: '28°C Bright & Clear', sub: 'Early morning sunrise viewing recommended', tz: 'GMT+5:30 (IST)', offset: 5.5, curr: 'INR (₹) UPI & Card Ready', coords: '27.1767° N, 78.0081° E', meeting: 'Taj Mahal East Gate VIP Access, Dharmapuri, Forest Colony, Tajganj, Agra, Uttar Pradesh 282001, India' },
+            'Bali': { weather: '29°C Tropical Warmth', sub: 'Gentle sea breezes and sunny mornings', tz: 'GMT+8 (WITA)', offset: 8, curr: 'IDR (Rp) Card & QRIS', coords: '8.3405° S, 115.0920° E', meeting: 'Ubud Palace Main Entrance Gate, Jl. Raya Ubud No.8, Ubud, Bali 80571, Indonesia' }
         };
 
         function updateDestinationIntelligence(b) {
             const dest = b.destination_name || 'Rome';
-            const intel = DEST_INTEL_MAP[dest] || {
+            const matchKey = Object.keys(DEST_INTEL_MAP).find(k => k.toLowerCase() === dest.toLowerCase()) || 'Rome';
+            const intel = DEST_INTEL_MAP[matchKey] || {
                 weather: '21°C Pleasant Sightseeing',
                 sub: 'Ideal conditions for walking and outdoor activities',
                 tz: 'Local Timezone',
@@ -1014,11 +1072,30 @@
 
             if (mapText) mapText.textContent = intel.meeting;
             if (mapCoords) mapCoords.textContent = intel.coords;
-            if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.meeting)}`;
+            if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(intel.coords || intel.meeting)}`;
             if (mapBox && b.image_url) {
                 let img = b.image_url;
                 if (img.startsWith('./assets/')) img = '.' + img;
                 mapBox.style.backgroundImage = `url('${img}')`;
+            }
+
+            // Sync with Meeting Point Directions Modal
+            const modalMeeting = document.getElementById('mapMeetingPointText');
+            const modalCoords = document.getElementById('mapCoords');
+            const modalLink = document.getElementById('openGoogleMapsLink');
+            const modalBox = document.getElementById('mapVisualBox');
+
+            if (modalMeeting) modalMeeting.textContent = intel.meeting;
+            if (modalCoords) modalCoords.textContent = intel.coords;
+            if (modalLink) {
+                modalLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((b.attraction_name ? b.attraction_name + ' ' : '') + intel.meeting)}`;
+            }
+            if (modalBox && b.image_url) {
+                let img = b.image_url;
+                if (img.startsWith('./assets/')) img = '.' + img;
+                modalBox.style.backgroundImage = `url('${img}')`;
+                modalBox.style.backgroundSize = 'cover';
+                modalBox.style.backgroundPosition = 'center';
             }
 
             // Wallet Modal Update
@@ -1027,7 +1104,7 @@
             const walletDate = document.getElementById('walletDate');
             const walletRef = document.getElementById('walletRef');
             if (walletTour) walletTour.textContent = b.attraction_name || `${b.destination_name} Voyage`;
-            if (walletTraveler) walletTraveler.textContent = b.user_name || 'Alex Johnson';
+            if (walletTraveler) walletTraveler.textContent = b.user_name || 'Traveler';
             if (walletDate) walletDate.textContent = formatDate(b.travel_date);
             if (walletRef) walletRef.textContent = formatBookingRef(b);
         }
@@ -1076,14 +1153,7 @@
                 window.print();
             });
 
-            // 2. Add to Calendar (.ics download)
-            const calBtn = document.getElementById('addToCalendarBtn');
-            calBtn?.addEventListener('click', () => {
-                if (!activeBooking) return;
-                generateIcsCalendarFile(activeBooking);
-            });
-
-            // 3. Digital Wallet Modal
+            // 2. Digital Wallet Modal
             const walletBtn = document.getElementById('openWalletModalBtn');
             const walletModal = document.getElementById('walletPassModal');
             const closeWalletBtn = document.getElementById('closeWalletBtn');
@@ -1096,21 +1166,13 @@
 
             const appleBtn = document.getElementById('saveAppleWalletBtn');
             appleBtn?.addEventListener('click', () => {
-                if (window.JadooToast) {
-                    window.JadooToast.show('Apple Wallet Pass Ready', 'Pass synchronized with Apple Wallet credentials.', 'success');
-                } else {
-                    alert('Pass added to Apple Wallet successfully!');
-                }
+                JadooToast.show('Apple Wallet Pass Ready', 'Pass synchronized with Apple Wallet credentials.', 'success');
                 if (walletModal) walletModal.classList.remove('is-active');
             });
 
             const googleBtn = document.getElementById('saveGooglePayBtn');
             googleBtn?.addEventListener('click', () => {
-                if (window.JadooToast) {
-                    window.JadooToast.show('Google Pay Ready', 'Pass saved to Google Pay credentials.', 'success');
-                } else {
-                    alert('Pass saved to Google Pay successfully!');
-                }
+                JadooToast.show('Google Pay Ready', 'Pass saved to Google Pay credentials.', 'success');
                 if (walletModal) walletModal.classList.remove('is-active');
             });
 
@@ -1164,58 +1226,6 @@
                     document.querySelectorAll('.ticket-modal-overlay.is-active').forEach(m => m.classList.remove('is-active'));
                 }
             });
-        }
-
-        function generateIcsCalendarFile(b) {
-            let start = new Date();
-            if (b.travel_date) {
-                const parsed = new Date(b.travel_date);
-                if (!isNaN(parsed.getTime())) start = parsed;
-            }
-            start.setHours(9, 30, 0, 0);
-            const end = new Date(start.getTime() + (3.5 * 3600000));
-
-            const formatDateIcs = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-            const tourName = b.attraction_name || `${b.destination_name} Curated Tour`;
-            const ref = formatBookingRef(b).replace(/^#/, '');
-
-            const icsContent = [
-                'BEGIN:VCALENDAR',
-                'VERSION:2.0',
-                'PRODID:-//Jadoo Travel//Experience Pass//EN',
-                'CALSCALE:GREGORIAN',
-                'METHOD:PUBLISH',
-                'BEGIN:VEVENT',
-                `UID:jadoo-${ref}@jadoo.co`,
-                `DTSTAMP:${formatDateIcs(new Date())}`,
-                `DTSTART:${formatDateIcs(start)}`,
-                `DTEND:${formatDateIcs(end)}`,
-                `SUMMARY:Jadoo Tour: ${tourName}`,
-                `DESCRIPTION:Confirmed travel booking with Jadoo Travel. Booking Ref: ${ref}. Fast-track skip-the-line admission included.`,
-                `LOCATION:Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`,
-                'STATUS:CONFIRMED',
-                'BEGIN:VALARM',
-                'TRIGGER:-PT2H',
-                'ACTION:DISPLAY',
-                'DESCRIPTION:Reminder: Your Jadoo Tour starts in 2 hours!',
-                'END:VALARM',
-                'END:VEVENT',
-                'END:VCALENDAR'
-            ].join('\r\n');
-
-            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Jadoo-Tour-${ref}.ics`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            if (window.JadooToast) {
-                window.JadooToast.show('Calendar File Exported', 'Tour added to your downloaded .ics calendar file.', 'success');
-            }
         }
 
         function renderSingleTicketQr(container, text, size = 114) {
@@ -1334,9 +1344,115 @@
             container.appendChild(fallbackImg);
         }
 
+        function renderAttachedServices(b) {
+            const listEl = document.getElementById('ticketAttachedServicesList');
+            const addLink = document.getElementById('ticketAddServiceLink');
+            if (!listEl) return;
+
+            const bookingRef = b ? (b.booking_ref || b.id || '') : '';
+            if (addLink) {
+                addLink.href = `./services.html?tripId=${encodeURIComponent(bookingRef)}`;
+            }
+
+            let services = [];
+            if (b && Array.isArray(b.booked_services)) {
+                services = b.booked_services;
+            } else if (b && typeof b.booked_services === 'string' && b.booked_services.trim()) {
+                try {
+                    services = JSON.parse(b.booked_services);
+                } catch (_) {
+                    services = [];
+                }
+            } else if (b && b.service_name) {
+                services = [{
+                    title: b.service_name,
+                    category: 'Service',
+                    icon: 'fa-solid fa-bell-concierge',
+                    price: 0
+                }];
+            }
+
+            // Deduplicate services by id/title so duplicates never render
+            const seen = new Set();
+            services = services.filter(s => {
+                const key = (s.service_id || s.id || s.title || '').toString().trim().toLowerCase();
+                if (!key || seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            if (!services.length) {
+                listEl.innerHTML = `
+                    <div class="voucher-no-services">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>No concierge upgrades attached yet.</span>
+                        <a href="./services.html?tripId=${encodeURIComponent(bookingRef)}" class="voucher-add-svc-link">+ Add Services</a>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = services.map(s => {
+                const icon = s.icon || 'fa-solid fa-bell-concierge';
+                const fullTitle = (s.title || s.service_title || s.service_name || 'Concierge Upgrade').trim();
+                const price = parseFloat(s.price || '0');
+                const priceStr = price > 0 ? `+$${price.toFixed(0)}` : 'Included';
+                const safeTitle = fullTitle.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const sId = (s.id || s.service_id || fullTitle).replace(/'/g, "\\'");
+                return `
+                    <div class="voucher-service-tag" title="${safeTitle}">
+                        <i class="${icon}"></i>
+                        <span class="svc-name-text">${safeTitle}</span>
+                        <span class="svc-price-pill">${priceStr}</span>
+                        <button type="button" class="btn-cancel-service" onclick="window.cancelAttachedService('${b.id || b.booking_ref}', '${sId}', '${safeTitle}')" title="Cancel & remove this service">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.cancelAttachedService = async function(bookingId, serviceId, serviceTitle) {
+            if (!confirm(`Are you sure you want to cancel and remove "${serviceTitle}" from this voyage?`)) return;
+            try {
+                const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) || localStorage.getItem('jadoo_auth_token') || '';
+                const res = await fetch('/api/services/detach', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ booking_id: bookingId, service_id: serviceId })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Failed to remove service.');
+                }
+                const data = await res.json();
+                if (data.booking) {
+                    activeBooking = data.booking;
+                    const idx = allBookings.findIndex(x => (x.id && x.id === activeBooking.id) || (x.booking_ref && x.booking_ref === activeBooking.booking_ref));
+                    if (idx !== -1) allBookings[idx] = activeBooking;
+                    try { localStorage.setItem('jadoo_schema_bookings', JSON.stringify(allBookings)); } catch (_) {}
+                    try { localStorage.setItem('jadoo_bookings', JSON.stringify(allBookings)); } catch (_) {}
+                    window.__jadoo_bookings_cache = allBookings;
+                    if (typeof JadooDB !== 'undefined' && JadooDB.primeCache) {
+                        JadooDB.primeCache().catch(() => {});
+                    }
+                    window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'ticket_cancel_service' } }));
+                    renderTicket(activeBooking);
+                }
+                if (window.JadooToast) window.JadooToast.show('Service Removed', `Service "${serviceTitle}" has been removed and cancelled from this booking.`, 'info');
+            } catch (err) {
+                console.error('Cancel service error:', err);
+                if (window.JadooToast) window.JadooToast.show('Cancellation Failed', err.message, 'error');
+            }
+        };
+
         function renderTicket(b) {
             if (!b) return;
 
+            const currentUser = JadooDB.getCurrentUser() || {};
             const setTxt = (id, val) => {
                 const el = document.getElementById(id);
                 if (el) el.textContent = val;
@@ -1354,6 +1470,9 @@
                 if (b.status === 'cancelled') {
                     pill.classList.add('pill-cancelled');
                     txt.textContent = 'CANCELLED PASS';
+                } else if (b.is_boarded) {
+                    pill.classList.add('pill-confirmed');
+                    txt.textContent = 'CHECKED IN / BOARDED';
                 } else if (b.status === 'pending') {
                     pill.classList.add('pill-pending');
                     txt.textContent = 'PENDING PAYMENT';
@@ -1364,6 +1483,24 @@
             };
             setPillState(statusPill, statusTxt);
             setPillState(cardStatusPill, cardStatusTxt);
+
+            const checkInBtn = document.getElementById('checkInBtn');
+            if (checkInBtn) {
+                if (b.status === 'cancelled') {
+                    checkInBtn.disabled = true;
+                    checkInBtn.style.opacity = '0.5';
+                    checkInBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>Check-In Unavailable</span>';
+                } else if (b.is_boarded) {
+                    checkInBtn.disabled = false;
+                    checkInBtn.style.opacity = '1';
+                    checkInBtn.style.borderColor = 'rgba(16, 185, 129, 0.8)';
+                    checkInBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>Checked In (${b.seat_number || '01A'})</span>`;
+                } else {
+                    checkInBtn.disabled = false;
+                    checkInBtn.style.opacity = '1';
+                    checkInBtn.innerHTML = '<i class="fa-solid fa-plane-departure"></i> <span>Online Check-In</span>';
+                }
+            }
 
             // Canonical Reference formatting: Always #BK-XXXXX (never #BK-BK-)
             const cleanRef = formatBookingRef(b);
@@ -1384,23 +1521,28 @@
                 tourImg.src = imgUrl;
             }
 
-            // Traveler & Tour details
-            setTxt('ticketPassengerName', b.user_name || 'Alex Johnson');
-            setTxt('stubTraveler', (b.user_name || 'Alex Johnson').toUpperCase());
+            // Traveler & Tour details (Strict user isolation, NO seed defaults)
+            const travelerName = b.user_name || currentUser.full_name || 'Traveler';
+            setTxt('ticketPassengerName', travelerName);
+            setTxt('stubTraveler', travelerName.toUpperCase());
             setTxt('ticketTravelDate', formatDate(b.travel_date));
             setTxt('ticketGuestsCount', `${b.guests_count || 1} Traveler${(b.guests_count || 1) > 1 ? 's' : ''}`);
             setTxt('ticketPackageTier', `${(b.package_type || 'Standard').toUpperCase()} Tour Package`);
-            setTxt('ticketEmail', b.user_email || 'alex.traveler@example.com');
-            setTxt('ticketPhone', b.phone_number || '+1 (555) 234-5678');
+            setTxt('ticketEmail', b.user_email || currentUser.email || '');
+            setTxt('ticketPhone', b.phone_number || currentUser.phone || 'VIP Concierge Priority');
             setTxt('ticketMeetingPoint', `Main Tourist Gate, ${b.destination_name || 'Central Meeting Point'}`);
+
             // Total Price formatting
             const priceNum = parseFloat(b.total_price) || 0;
             setTxt('ticketTotalPaid', '$' + priceNum.toFixed(2) + ' USD (Paid in Full)');
 
+            // Render Attached Concierge Services
+            renderAttachedServices(b);
+
             // Generate clean single QR code
             const qrCanvas = document.getElementById('stubQrCanvas');
             if (qrCanvas) {
-                const targetId = b.booking_ref || b.id || 'BK-92841';
+                const targetId = b.booking_ref || b.id || serialCode;
                 const qrUrl = (window.location.origin && window.location.origin !== 'null')
                     ? window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(targetId)
                     : 'https://jadoo-travel.app/ticket?id=' + encodeURIComponent(targetId);
@@ -1420,7 +1562,7 @@
                 voyageEl.textContent = 'JD-' + numericPart;
             }
             if (seatEl) {
-                seatEl.textContent = '01A ' + (b.package_type || 'VIP').toUpperCase();
+                seatEl.textContent = (b.seat_number || '01A') + ' ' + (b.package_type || 'VIP').toUpperCase();
             }
         }
         async function downloadPdf(b) {
@@ -1580,9 +1722,81 @@
             }
         }
 
+        async function checkInBooking(b) {
+            if (!b) return;
+            if (b.status === 'cancelled') {
+                JadooToast.show('Check-In Unavailable', 'Cancelled reservations cannot be checked in.', 'warning');
+                return;
+            }
+            if (b.is_boarded) {
+                JadooToast.show('Already Checked In', `Your assigned seat is ${b.seat_number || '01A'}.`, 'info');
+                return;
+            }
+
+            const checkInBtn = document.getElementById('checkInBtn');
+            const origHtml = checkInBtn ? checkInBtn.innerHTML : '';
+            if (checkInBtn) {
+                checkInBtn.disabled = true;
+                checkInBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Checking In...</span>';
+            }
+
+            try {
+                const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) 
+                           || localStorage.getItem('jadoo_auth_token') || '';
+                const bookingId = b.id || b.booking_ref;
+                const res = await fetch('/api/ticket/checkin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ booking_id: bookingId })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Server rejected check-in request.');
+                }
+
+                const data = await res.json();
+                b.is_boarded = true;
+                if (data.booking && data.booking.seat_number) {
+                    b.seat_number = data.booking.seat_number;
+                } else if (!b.seat_number) {
+                    b.seat_number = '14A';
+                }
+                b.status = 'confirmed';
+
+                // Update in localStorage cache as well
+                try {
+                    const cached = JSON.parse(localStorage.getItem('jadoo_schema_bookings') || '[]');
+                    const idx = cached.findIndex(x => (x.id && x.id === b.id) || (x.booking_ref && x.booking_ref === b.booking_ref));
+                    if (idx !== -1) {
+                        cached[idx] = { ...cached[idx], is_boarded: true, seat_number: b.seat_number, status: 'confirmed' };
+                        localStorage.setItem('jadoo_schema_bookings', JSON.stringify(cached));
+                    }
+                } catch (_) {}
+
+                renderTicket(b);
+                JadooToast.show('Check-In Successful!', `Your Boarding Pass is confirmed with Seat ${b.seat_number}. Have a wonderful voyage!`, 'success');
+            } catch (err) {
+                console.warn('Check-in network error, applying local fallback:', err);
+                b.is_boarded = true;
+                if (!b.seat_number) b.seat_number = '14A';
+                b.status = 'confirmed';
+                renderTicket(b);
+                JadooToast.show('Check-In Confirmed', `Seat ${b.seat_number} assigned.`, 'success');
+            } finally {
+                if (checkInBtn) {
+                    checkInBtn.disabled = false;
+                    checkInBtn.innerHTML = origHtml;
+                }
+            }
+        }
+
         function cancelBooking(b) {
             if (b.status === 'cancelled') {
-                alert('This reservation is already marked as cancelled.');
+                JadooToast.show('Already Cancelled', 'This reservation is already marked as cancelled.', 'info');
                 return;
             }
 
@@ -1595,7 +1809,7 @@
                 }
                 b.status = 'cancelled';
                 renderTicket(b);
-                alert(`Booking #${b.id} has been cancelled successfully.`);
+                JadooToast.show('Reservation Cancelled', `Booking #${b.id} has been cancelled successfully.`, 'info');
             }
         }
 

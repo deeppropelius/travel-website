@@ -16,6 +16,7 @@ import { serviceRouter } from './services/serviceService.js';
 import { testimonialRouter } from './services/testimonialService.js';
 import { ticketRouter } from './services/ticketService.js';
 import { newsletterRouter } from './services/newsletterService.js';
+import { contactRouter } from './services/contactService.js';
 
 export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -48,6 +49,7 @@ app.use('/api/services', serviceRouter);
 app.use('/api/testimonials', testimonialRouter);
 app.use('/api/ticket', ticketRouter);
 app.use('/api/newsletter', newsletterRouter);
+app.use('/api/contact', contactRouter);
 app.use('/api', destinationRouter); // /api/destinations, /api/destinations/:id, /api/attractions, /api/destination
 
 // Static Assets & Web Pages Fallback

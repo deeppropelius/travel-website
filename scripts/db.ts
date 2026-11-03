@@ -109,6 +109,11 @@ export interface DbBooking {
     special_request: string;
     status: DbBookingStatus;
     image_url?: string;
+    booked_services?: any[];
+    service_id?: string;
+    service_name?: string;
+    seat_number?: string;
+    is_boarded?: boolean;
 }
 export type Booking = DbBooking;
 
@@ -125,6 +130,7 @@ export interface DbTestimonial {
     author_name: string;
     author_location: string;
     role_title: string;
+    author_role?: string;
     quote: string;
     rating: number;
     avatar_url: string;
@@ -247,6 +253,9 @@ function defaultAvatar(): string {
 function normalizeAvatar(avatar: string | undefined): string {
     const isComp = getIsComponent();
     const av = avatar || defaultAvatar();
+    if (av.startsWith('data:') || av.startsWith('http://') || av.startsWith('https://')) {
+        return av;
+    }
     if (isComp && av.startsWith('./assets/')) return '.' + av;
     if (!isComp && av.startsWith('../assets/')) return av.replace(/^\.\.\//, './');
     return av;
@@ -477,6 +486,15 @@ const SEED_TESTIMONIALS: DbTestimonial[] = [
 // Initialize global in-memory caches with seed defaults
 if (typeof window !== 'undefined') {
     (window as any).__jadoo_destinations_cache = (window as any).__jadoo_destinations_cache || SEED_DESTINATIONS;
+    try {
+        const storedTestimonials = localStorage.getItem('jadoo_testimonials');
+        if (storedTestimonials) {
+            const parsed = JSON.parse(storedTestimonials);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                (window as any).__jadoo_testimonials_cache = parsed;
+            }
+        }
+    } catch (_) {}
     (window as any).__jadoo_testimonials_cache = (window as any).__jadoo_testimonials_cache || SEED_TESTIMONIALS;
     (window as any).__jadoo_bookings_cache = (window as any).__jadoo_bookings_cache || [];
 }
@@ -621,6 +639,23 @@ class JadooDatabase {
         return result;
     }
 
+    async attachServiceToBookingAsync(bookingIdOrRef: string, serviceData: { service_id: string; service_title: string; category?: string; price?: number; notes?: string }): Promise<DbBooking> {
+        const result = await apiFetch<any>('/api/services/attach', {
+            method: 'POST',
+            body: JSON.stringify({ booking_id: bookingIdOrRef, ...serviceData })
+        });
+        const updated = result?.booking || result;
+        if (updated && updated.id) {
+            this._syncBookingToLegacy(updated);
+            const cache: DbBooking[] = (window as any).__jadoo_bookings_cache || [];
+            const idx = cache.findIndex(b => b.id === updated.id || b.booking_ref === updated.booking_ref);
+            if (idx !== -1) cache[idx] = updated;
+            else cache.unshift(updated);
+            (window as any).__jadoo_bookings_cache = cache;
+        }
+        return updated;
+    }
+
     addBooking(data: Omit<DbBooking, 'id' | 'created_at' | 'updated_at'>): DbBooking {
         const stub: DbBooking = {
             ...data,
@@ -733,6 +768,19 @@ class JadooDatabase {
     }
 
     getTestimonials(): DbTestimonial[] {
+        if ((window as any).__jadoo_testimonials_cache && (window as any).__jadoo_testimonials_cache.length > 0) {
+            return (window as any).__jadoo_testimonials_cache;
+        }
+        try {
+            const stored = localStorage.getItem('jadoo_testimonials');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    (window as any).__jadoo_testimonials_cache = parsed;
+                    return parsed;
+                }
+            }
+        } catch (_) {}
         return (window as any).__jadoo_testimonials_cache || SEED_TESTIMONIALS;
     }
 
@@ -753,6 +801,15 @@ class JadooDatabase {
         const cache: DbTestimonial[] = (window as any).__jadoo_testimonials_cache || [];
         cache.unshift(stub);
         (window as any).__jadoo_testimonials_cache = cache;
+        try {
+            localStorage.setItem('jadoo_testimonials', JSON.stringify(cache));
+        } catch (_) {}
+        try {
+            window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'testimonials', data: cache } }));
+        } catch (_) {}
+        try {
+            window.dispatchEvent(new CustomEvent('jadoo:new_testimonial', { detail: stub }));
+        } catch (_) {}
 
         this.addTestimonialAsync(data).then(saved => {
             if (saved && saved.id) {
@@ -760,6 +817,69 @@ class JadooDatabase {
             }
         }).catch(console.error);
         return stub;
+    }
+
+    async updateTestimonialAsync(id: string, data: Partial<DbTestimonial>): Promise<DbTestimonial | null> {
+        try {
+            const updated = await apiFetch<DbTestimonial>(`/api/testimonials/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            this.updateTestimonial(id, data);
+            return updated;
+        } catch (err) {
+            console.error('updateTestimonialAsync error:', err);
+            return this.updateTestimonial(id, data);
+        }
+    }
+
+    updateTestimonial(id: string, data: Partial<DbTestimonial>): DbTestimonial | null {
+        let cache: DbTestimonial[] = (window as any).__jadoo_testimonials_cache || [];
+        const index = cache.findIndex(t => t.id === id);
+        if (index >= 0) {
+            cache[index] = { ...cache[index], ...data, updated_at: new Date().toISOString() };
+            (window as any).__jadoo_testimonials_cache = cache;
+            try {
+                localStorage.setItem('jadoo_testimonials', JSON.stringify(cache));
+            } catch (_) {}
+            try {
+                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'testimonials', data: cache } }));
+            } catch (_) {}
+            try {
+                window.dispatchEvent(new CustomEvent('jadoo:new_testimonial'));
+            } catch (_) {}
+            return cache[index];
+        }
+        return null;
+    }
+
+    async deleteTestimonialAsync(id: string): Promise<boolean> {
+        try {
+            await apiFetch<{ success: boolean }>(`/api/testimonials/${encodeURIComponent(id)}`, {
+                method: 'DELETE'
+            });
+            this.deleteTestimonial(id);
+            return true;
+        } catch (err) {
+            console.error('deleteTestimonialAsync error:', err);
+            return this.deleteTestimonial(id);
+        }
+    }
+
+    deleteTestimonial(id: string): boolean {
+        let cache: DbTestimonial[] = (window as any).__jadoo_testimonials_cache || [];
+        const newCache = cache.filter(t => t.id !== id);
+        (window as any).__jadoo_testimonials_cache = newCache;
+        try {
+            localStorage.setItem('jadoo_testimonials', JSON.stringify(newCache));
+        } catch (_) {}
+        try {
+            window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'testimonials', data: newCache } }));
+        } catch (_) {}
+        try {
+            window.dispatchEvent(new CustomEvent('jadoo:new_testimonial'));
+        } catch (_) {}
+        return true;
     }
 
     // ── RELATIONAL HELPERS ────────────────────────
@@ -972,6 +1092,9 @@ class JadooDatabase {
         const merged: DbUser = { ...current, ...updated, updated_at: new Date().toISOString() };
         this.setCurrentUser(merged);
         this.updateProfileAsync(updated).catch(console.error);
+        if (typeof (window as any).JadooNavAuth !== 'undefined' && typeof (window as any).JadooNavAuth.updateNavbar === 'function') {
+            (window as any).JadooNavAuth.updateNavbar();
+        }
         return merged;
     }
 
@@ -1010,24 +1133,28 @@ class JadooDatabase {
                 this.getAttractionsAsync()
             ]);
             (window as any).__jadoo_destinations_cache = destinations;
-            (window as any).__jadoo_testimonials_cache = testimonials;
+            if (Array.isArray(testimonials) && testimonials.length > 0) {
+                (window as any).__jadoo_testimonials_cache = testimonials;
+                try {
+                    localStorage.setItem('jadoo_testimonials', JSON.stringify(testimonials));
+                } catch (_) {}
+                try {
+                    window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'testimonials', data: testimonials } }));
+                } catch (_) {}
+            }
             (window as any).__jadoo_attractions_cache = attractions;
 
             const user = this.getCurrentUser();
             if (user?.email || user?.id) {
                 const bookings = await this.getBookingsAsync(user?.email || undefined, user?.id || undefined);
-                if (Array.isArray(bookings) && bookings.length > 0) {
+                if (Array.isArray(bookings)) {
                     (window as any).__jadoo_bookings_cache = bookings;
                     try {
                         localStorage.setItem('jadoo_bookings', JSON.stringify(bookings));
                     } catch (_) {}
-                } else {
-                    const existing = this.getBookings();
-                    if (existing && existing.length > 0) {
-                        (window as any).__jadoo_bookings_cache = existing;
-                    } else if (Array.isArray(bookings)) {
-                        (window as any).__jadoo_bookings_cache = bookings;
-                    }
+                    try {
+                        window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { key: 'jadoo_bookings', data: bookings } }));
+                    } catch (_) {}
                 }
             } else {
                 (window as any).__jadoo_bookings_cache = [];

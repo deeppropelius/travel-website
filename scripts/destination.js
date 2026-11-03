@@ -36,7 +36,15 @@ function showPopularLocationsView() {
         clearBtn.style.display = "none";
     locationCards.forEach((c) => c.classList.remove("is-selected"));
     quickChips.forEach((c) => c.classList.remove("active"));
+    try {
+        const url = new URL(window.location.href);
+        url.search = "";
+        window.history.pushState({}, "", url.pathname);
+    }
+    catch (_) { }
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
+window.showPopularLocationsView = showPopularLocationsView;
 function showAttractionsView(city) {
     if (popularLocationsSection)
         popularLocationsSection.style.display = "none";
@@ -54,9 +62,9 @@ function showAttractionsView(city) {
     targetScroll?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 // Back to Popular Locations button
-btnBackToLocations?.addEventListener("click", () => {
+btnBackToLocations?.addEventListener("click", (e) => {
+    e.preventDefault();
     showPopularLocationsView();
-    popularLocationsSection?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 // Category Filter & View Mode Elements
 const catChips = document.querySelectorAll("#categoryFilterChips .cat-chip");
@@ -320,14 +328,70 @@ async function getData(destination) {
     renderCurrentPage();
     updateMapMarkers();
 }
+const CATEGORY_RULES = {
+    landmarks: [
+        "landmark", "historic", "ancient", "monument", "temple", "ruin", "forum", "colosseum",
+        "archaeolog", "wall", "fortificat", "gate", "tomb", "pyramid", "palace", "castle",
+        "memorial", "heritage", "fountain", "square", "piazza", "step", "tower", "stair",
+        "bath", "domus", "statue", "amphitheat", "basilica", "church"
+    ],
+    museums: [
+        "museum", "art", "gallery", "exhibit", "collection", "fresco", "painting", "sculptur",
+        "synagogue", "curated", "heritage"
+    ],
+    architecture: [
+        "architect", "building", "cathedral", "basilica", "church", "temple", "palace",
+        "tower", "bridge", "dome", "stairs", "amphitheat", "pyramid", "monument", "gate",
+        "castle", "structure", "facade", "skyline"
+    ],
+    nature: [
+        "nature", "park", "garden", "landscape", "hill", "mountain", "river", "lake",
+        "beach", "island", "sea", "ocean", "waterfall", "zoo", "bioparco", "horti",
+        "cliff", "scenic", "tree", "flora", "bay"
+    ],
+    entertainment: [
+        "entertain", "leisure", "piazza", "square", "cafe", "caffè", "market", "shop",
+        "theat", "opera", "nightlife", "zoo", "aquarium", "wheel", "cruise", "tour",
+        "walk", "mask", "amusement", "dining", "resort"
+    ]
+};
+function matchesCategory(place, category) {
+    if (!category || category.toLowerCase() === "all")
+        return true;
+    const cat = category.toLowerCase().trim();
+    const kindsLower = (place.kinds || "").toLowerCase();
+    const descLower = (place.description || "").toLowerCase();
+    const nameLower = (place.name || "").toLowerCase();
+    const combinedText = `${nameLower} ${kindsLower} ${descLower}`;
+    if (kindsLower.includes(cat) || descLower.includes(cat)) {
+        return true;
+    }
+    let ruleKey = "";
+    if (cat.includes("landmark") || cat.includes("historic"))
+        ruleKey = "landmarks";
+    else if (cat.includes("museum") || cat.includes("art"))
+        ruleKey = "museums";
+    else if (cat.includes("architect"))
+        ruleKey = "architecture";
+    else if (cat.includes("nature") || cat.includes("scener") || cat.includes("park"))
+        ruleKey = "nature";
+    else if (cat.includes("entertain") || cat.includes("leisure"))
+        ruleKey = "entertainment";
+    if (ruleKey && CATEGORY_RULES[ruleKey]) {
+        return CATEGORY_RULES[ruleKey].some(kw => combinedText.includes(kw));
+    }
+    return combinedText.includes(cat);
+}
 // Apply Category Filter & Sorting
 function applyCategoryAndSort() {
     displayedPlaces = [...rawPlaces];
     // Category Filter
     if (currentCategory && currentCategory !== "All") {
-        const catLower = currentCategory.toLowerCase();
-        displayedPlaces = displayedPlaces.filter(p => (p.kinds && p.kinds.toLowerCase().includes(catLower)) ||
-            (p.description && p.description.toLowerCase().includes(catLower)));
+        displayedPlaces = displayedPlaces.filter(p => matchesCategory(p, currentCategory));
+    }
+    // Update Count Badge
+    if (countBadge) {
+        countBadge.textContent = `${displayedPlaces.length} attractions`;
     }
     // Sort
     switch (currentSort) {
@@ -485,19 +549,74 @@ function openBookingModalForPlace(place) {
         });
     }
 }
-// ── LEAFLET INTERACTIVE MAP INTEGRATION ─────────────────────────────
+// ── CITY COORDINATES & LEAFLET INTERACTIVE MAP INTEGRATION ──────────
+const CITY_COORDINATES = {
+    rome: [41.8902, 12.4922],
+    london: [51.5074, -0.1278],
+    paris: [48.8566, 2.3522],
+    tokyo: [35.6762, 139.6503],
+    "new york": [40.7128, -74.006],
+    dubai: [25.2048, 55.2708],
+    sydney: [-33.8688, 151.2093],
+    agra: [27.1767, 78.0081],
+    bali: [-8.3405, 115.092],
+    santorini: [36.3932, 25.4615],
+    venice: [45.4408, 12.3155]
+};
+function resolveCityCoordinates(cityName) {
+    const norm = (cityName || "").toLowerCase().trim();
+    for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+        if (norm.includes(key) || key.includes(norm)) {
+            return coords;
+        }
+    }
+    return [41.8902, 12.4922];
+}
+function extractPoint(p, fallbackCity) {
+    if (!p)
+        return null;
+    let pt = p.point;
+    if (typeof pt === "string") {
+        try {
+            pt = JSON.parse(pt);
+        }
+        catch (_) {
+            pt = null;
+        }
+    }
+    if (pt && typeof pt === "object") {
+        const lat = parseFloat(pt.lat ?? pt.latitude);
+        const lon = parseFloat(pt.lon ?? pt.lng ?? pt.longitude);
+        if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) {
+            return { lat, lon };
+        }
+    }
+    const cityKey = (p.city || fallbackCity || currentDestination || "").toLowerCase();
+    const baseCoords = resolveCityCoordinates(cityKey);
+    if (baseCoords) {
+        const seed = (p.name || "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        const jitterLat = (((seed % 80) - 40) / 1000) * 0.2;
+        const jitterLon = ((((seed * 13) % 80) - 40) / 1000) * 0.2;
+        return { lat: baseCoords[0] + jitterLat, lon: baseCoords[1] + jitterLon };
+    }
+    return null;
+}
 function initOrInvalidateMap() {
     if (typeof L === "undefined" || !mapContainer)
         return;
+    const targetCoords = resolveCityCoordinates(currentDestination);
     if (!leafletMap) {
         leafletMap = L.map("destination-map", {
             zoomControl: true,
             scrollWheelZoom: false
-        }).setView([48.8566, 2.3522], 12);
+        }).setView(targetCoords, 12);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19
         }).addTo(leafletMap);
+    }
+    else {
+        leafletMap.setView(targetCoords, 12);
     }
     setTimeout(() => {
         leafletMap.invalidateSize();
@@ -507,16 +626,22 @@ function initOrInvalidateMap() {
 function updateMapMarkers() {
     if (typeof L === "undefined" || !leafletMap)
         return;
-    // Clear existing markers
     mapMarkers.forEach((m) => leafletMap.removeLayer(m));
     mapMarkers = [];
-    const placesWithCoords = displayedPlaces.filter((p) => p.point && p.point.lat && p.point.lon);
-    if (placesWithCoords.length === 0)
+    const targetCityCoords = resolveCityCoordinates(currentDestination);
+    const placesWithCoords = [];
+    displayedPlaces.forEach((p) => {
+        const pt = extractPoint(p, currentDestination);
+        if (pt) {
+            placesWithCoords.push({ place: p, lat: pt.lat, lon: pt.lon });
+        }
+    });
+    if (placesWithCoords.length === 0) {
+        leafletMap.setView(targetCityCoords, 12);
         return;
+    }
     const latLngs = [];
-    placesWithCoords.forEach((p) => {
-        const lat = p.point.lat;
-        const lon = p.point.lon;
+    placesWithCoords.forEach(({ place: p, lat, lon }) => {
         latLngs.push([lat, lon]);
         const imgSrc = p.img || p.image || p.preview?.source || "./assets/destination-rome.png";
         const popupHtml = `
@@ -526,7 +651,7 @@ function updateMapMarkers() {
           <h4 class="map-popup-title">${escapeHTML(p.name)}</h4>
           <span style="font-size: 0.75rem; color: #64748B;"><i class="fa-solid fa-star" style="color: #F1A501;"></i> ${p.rating.toFixed(1)} (${p.reviews} reviews)</span>
           <div class="map-popup-price-row">
-            <span class="map-popup-price">${p.price || `$${p.amount}`}</span>
+            <span class="map-popup-price">${p.price || `${p.amount}`}</span>
             <button type="button" class="map-popup-btn" id="mapBookBtn-${escapeHTML(p.name).replace(/\s+/g, '_')}">Book Now</button>
           </div>
         </div>
@@ -559,7 +684,12 @@ function updateMapMarkers() {
         try {
             leafletMap.fitBounds(latLngs, { padding: [50, 50], maxZoom: 15 });
         }
-        catch { }
+        catch {
+            leafletMap.setView(targetCityCoords, 12);
+        }
+    }
+    else {
+        leafletMap.setView(targetCityCoords, 12);
     }
 }
 // Update Pagination
@@ -648,6 +778,41 @@ function openPlaceModal(place) {
             modalWikiLink.style.display = "none";
         }
     }
+    // Sync wishlist button in modal
+    const btnToggleWishlist = document.getElementById("btnToggleWishlistLandmark");
+    const btnToggleWishlistText = document.getElementById("btnToggleWishlistLandmarkText");
+    const btnToggleWishlistIcon = btnToggleWishlist?.querySelector("i");
+    if (btnToggleWishlistText && btnToggleWishlistIcon) {
+        let saved = [];
+        try {
+            saved = JSON.parse(localStorage.getItem("jadoo_saved_wishlist") || "[]");
+        }
+        catch (_) {
+            saved = [];
+        }
+        const placeId = `place-${place.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+        const isSaved = saved.some((item) => item.title === place.name || item.id === placeId);
+        if (isSaved) {
+            btnToggleWishlistText.textContent = "Saved in Wishlist";
+            btnToggleWishlistIcon.className = "fa-solid fa-heart";
+            if (btnToggleWishlist) {
+                btnToggleWishlist.style.background = "rgba(239, 68, 68, 0.12)";
+                btnToggleWishlist.style.color = "#EF4444";
+                btnToggleWishlist.style.borderColor = "rgba(239, 68, 68, 0.35)";
+                btnToggleWishlist.title = "Click to remove from your Saved Wishlist";
+            }
+        }
+        else {
+            btnToggleWishlistText.textContent = "Save to Wishlist";
+            btnToggleWishlistIcon.className = "fa-regular fa-heart";
+            if (btnToggleWishlist) {
+                btnToggleWishlist.style.background = "rgba(241, 165, 1, 0.12)";
+                btnToggleWishlist.style.color = "#D97706";
+                btnToggleWishlist.style.borderColor = "rgba(241, 165, 1, 0.35)";
+                btnToggleWishlist.title = "Save this destination to your Wishlist";
+            }
+        }
+    }
     modalOverlay.classList.add("active");
     modalOverlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -683,6 +848,79 @@ btnShareLandmarkReview?.addEventListener("click", () => {
             destSelect.value = currentDest;
         if (tagInput && currentPlace)
             tagInput.value = `${currentPlace.name} Tour`;
+    }
+});
+const btnToggleWishlistLandmark = document.getElementById("btnToggleWishlistLandmark");
+btnToggleWishlistLandmark?.addEventListener("click", () => {
+    if (!currentModalPlace)
+        return;
+    const place = currentModalPlace;
+    let saved = [];
+    try {
+        saved = JSON.parse(localStorage.getItem("jadoo_saved_wishlist") || "[]");
+    }
+    catch (_) {
+        saved = [];
+    }
+    const placeId = `place-${place.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+    const existingIdx = saved.findIndex((item) => item.title === place.name || item.id === placeId);
+    if (existingIdx >= 0) {
+        if (!confirm(`Are you sure you want to remove "${place.name}" from your saved destinations?`)) {
+            return;
+        }
+        saved.splice(existingIdx, 1);
+        try {
+            localStorage.setItem("jadoo_saved_wishlist", JSON.stringify(saved));
+        }
+        catch (_) { }
+        if (typeof window.JadooToast !== "undefined") {
+            window.JadooToast.show("Removed from Saved", `"${place.name}" was removed from your wishlist.`, "info");
+        }
+    }
+    else {
+        const imgSrc = place.img || place.image || place.preview?.source || "../assets/destination-rome.png";
+        const newItem = {
+            id: placeId,
+            title: place.name,
+            description: place.description || place.kinds || "Curated landmark tour and cultural expedition.",
+            img: imgSrc,
+            rating: place.rating ? place.rating.toFixed(1) : "4.9",
+            reviews: place.reviews ? place.reviews.toLocaleString() : "1,500",
+            price: place.price || `${place.amount || 55} / person`,
+            actionUrl: `./destination-page.html?search=${encodeURIComponent(currentDestination || place.name)}`,
+            actionLabel: "Explore",
+            actionType: "secondary"
+        };
+        saved.unshift(newItem);
+        try {
+            localStorage.setItem("jadoo_saved_wishlist", JSON.stringify(saved));
+        }
+        catch (_) { }
+        if (typeof window.JadooToast !== "undefined") {
+            window.JadooToast.show("Saved to Wishlist", `"${place.name}" has been saved to your wishlist!`, "success");
+        }
+    }
+    // Refresh button state in modal
+    const btnText = document.getElementById("btnToggleWishlistLandmarkText");
+    const btnIcon = btnToggleWishlistLandmark?.querySelector("i");
+    const isSavedNow = saved.some((item) => item.title === place.name || item.id === placeId);
+    if (btnText && btnIcon && btnToggleWishlistLandmark) {
+        if (isSavedNow) {
+            btnText.textContent = "Saved in Wishlist";
+            btnIcon.className = "fa-solid fa-heart";
+            btnToggleWishlistLandmark.style.background = "rgba(239, 68, 68, 0.12)";
+            btnToggleWishlistLandmark.style.color = "#EF4444";
+            btnToggleWishlistLandmark.style.borderColor = "rgba(239, 68, 68, 0.35)";
+            btnToggleWishlistLandmark.title = "Click to remove from your Saved Wishlist";
+        }
+        else {
+            btnText.textContent = "Save to Wishlist";
+            btnIcon.className = "fa-regular fa-heart";
+            btnToggleWishlistLandmark.style.background = "rgba(241, 165, 1, 0.12)";
+            btnToggleWishlistLandmark.style.color = "#D97706";
+            btnToggleWishlistLandmark.style.borderColor = "rgba(241, 165, 1, 0.35)";
+            btnToggleWishlistLandmark.title = "Save this destination to your Wishlist";
+        }
     }
 });
 function escapeHTML(str) {

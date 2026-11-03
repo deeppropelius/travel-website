@@ -468,20 +468,129 @@ serviceRouter.get('/:slug', async (req, res) => {
   }
 });
 
-// POST /api/services/inquire (Separate booking per destination)
+// POST /api/services/attach (Attach service to an existing trip booking)
+serviceRouter.post('/attach', optionalAuth, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { booking_id, booking_ref, service_id, service_title, category, price, notes } = req.body;
+    let targetRef = (booking_id || booking_ref || '').toString().trim();
+
+    const userEmail = (req.user?.email || req.body.customer_email || '').trim().toLowerCase();
+    const userId = req.user?.id || req.body.customer_id || null;
+
+    if (!targetRef) {
+      if (userEmail || userId) {
+        const query = userEmail && userId
+          ? 'SELECT * FROM booking WHERE user_email ILIKE $1 OR customer_id = $2 ORDER BY created_at DESC LIMIT 1'
+          : userEmail
+          ? 'SELECT * FROM booking WHERE user_email ILIKE $1 ORDER BY created_at DESC LIMIT 1'
+          : 'SELECT * FROM booking WHERE customer_id = $1 ORDER BY created_at DESC LIMIT 1';
+        const params = userEmail && userId ? [userEmail, userId] : userEmail ? [userEmail] : [userId];
+        const userTripRes = await pool.query(query, params);
+        if (userTripRes.rows.length) {
+          targetRef = userTripRes.rows[0].id;
+        }
+      }
+    }
+
+    if (!targetRef) {
+      return res.status(400).json({ error: 'Please select an existing trip to attach this service to, or book a destination first.' });
+    }
+
+    const { rows: bRows } = await pool.query(
+      'SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $1 LIMIT 1',
+      [targetRef]
+    );
+
+    if (!bRows.length) {
+      return res.status(404).json({ error: `Trip booking "${targetRef}" not found` });
+    }
+
+    const booking = bRows[0];
+    const service = await ServiceService.getServiceBySlugFromDB(service_id);
+    const resolvedTitle = service_title || service?.title || 'Concierge Service';
+    const resolvedCat = category || service?.category || 'Planning';
+    const addPrice = parseFloat(price !== undefined && price !== '' ? price : (service?.starting_price || '0').replace(/[^0-9.]/g, '')) || 0;
+
+    let currentServices: any[] = [];
+    if (Array.isArray(booking.booked_services)) {
+      currentServices = booking.booked_services;
+    } else if (typeof booking.booked_services === 'string' && booking.booked_services.trim()) {
+      try {
+        currentServices = JSON.parse(booking.booked_services);
+      } catch (_) {
+        currentServices = [];
+      }
+    }
+
+    // Prevent duplicate service on the same trip
+    const alreadyExists = currentServices.some((s: any) => 
+      (s.service_id && (s.service_id === service_id || s.service_id === service?.id)) ||
+      (s.id && (s.id === service_id || s.id === service?.id)) ||
+      (s.title && s.title.toLowerCase() === resolvedTitle.toLowerCase())
+    );
+
+    if (alreadyExists) {
+      return res.status(400).json({
+        error: `"${resolvedTitle}" is already added to this voyage (${booking.booking_ref || booking.id}). Each service can only be booked once per trip.`
+      });
+    }
+
+    const newServiceEntry = {
+      id: service_id || `srv-${Date.now()}`,
+      service_id: service_id || service?.id,
+      title: resolvedTitle,
+      category: resolvedCat,
+      icon: service?.icon || 'fa-solid fa-bell-concierge',
+      price: addPrice,
+      notes: notes ? String(notes).trim() : '',
+      attached_at: new Date().toISOString()
+    };
+
+    currentServices.push(newServiceEntry);
+
+    const currentTotal = parseFloat(booking.total_price || '0') || 0;
+    const newTotal = currentTotal + addPrice;
+
+    const updateRes = await pool.query(`
+      UPDATE booking 
+      SET booked_services = $1::jsonb, 
+          total_price = $2, 
+          service_id = COALESCE(service_id, $3),
+          service_name = COALESCE(service_name, $4),
+          updated_at = NOW()
+      WHERE id = $5
+      RETURNING *
+    `, [
+      JSON.stringify(currentServices),
+      newTotal,
+      service_id || null,
+      resolvedTitle,
+      booking.id
+    ]);
+
+    res.json({
+      success: true,
+      message: `Attached "${resolvedTitle}" to booking ${booking.booking_ref || booking.id}`,
+      booking: updateRes.rows[0],
+      attached_service: newServiceEntry
+    });
+  } catch (err) {
+    console.error('POST /api/services/attach error:', err);
+    res.status(500).json({ error: 'Failed to attach service to booking', details: String(err) });
+  }
+});
+
+// POST /api/services/inquire (Attach to selected trip or user's active voyage)
 serviceRouter.post('/inquire', optionalAuth, async (req: AuthenticatedRequest, res) => {
   try {
     let {
+      booking_id,
+      booking_ref,
       service_id,
       service_title,
       customer_name,
       customer_email,
       customer_phone,
-      travel_destination,
-      destinations,
-      travel_date,
-      guests_count,
-      package_type,
       message,
       customer_id
     } = req.body;
@@ -492,149 +601,127 @@ serviceRouter.post('/inquire', optionalAuth, async (req: AuthenticatedRequest, r
       customer_name = customer_name || req.user.full_name;
     }
 
-    if (!service_id || !customer_name || !customer_email) {
-      return res.status(400).json({ error: 'service_id, customer_name, and customer_email are required' });
+    if (!service_id || !customer_email) {
+      return res.status(400).json({ error: 'service_id and customer_email are required' });
     }
 
     // 1. Resolve service
     const service = await ServiceService.getServiceBySlugFromDB(service_id);
     const resolvedTitle = service_title || service?.title || 'Jadoo Travel Service';
 
-    // 2. Extract destinations list - every destination gets a separate booking
-    let destList: string[] = [];
-    if (Array.isArray(destinations) && destinations.length > 0) {
-      destList = destinations.map((d: any) => String(d).trim()).filter(Boolean);
-    } else if (typeof travel_destination === 'string' && travel_destination.trim()) {
-      destList = travel_destination
-        .split(/[,;&\/]|\band\b/i)
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-    }
-
-    if (destList.length === 0) {
-      destList = ['Rome']; // default destination fallback
-    }
-
-    // 3. Resolve / create customer in PostgreSQL
-    let custId = customer_id;
-    if (!custId || !isUUID(custId)) {
-      const custCheck = await pool.query('SELECT id, full_name FROM customer WHERE email ILIKE $1 LIMIT 1', [customer_email.trim()]);
-      if (custCheck.rows.length) {
-        custId = custCheck.rows[0].id;
-      } else {
-        custId = generateUUID();
-        await pool.query(
-          'INSERT INTO customer (id, full_name, email, phone) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name RETURNING id',
-          [custId, customer_name.trim(), customer_email.trim().toLowerCase(), customer_phone ? customer_phone.trim() : null]
-        );
-      }
-    }
-
-    // Pricing calculation
-    const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
-    const pricePerPerson = rawPrice > 0 ? rawPrice : 45.00;
-    const guests = parseInt(String(guests_count || '1'), 10) || 1;
-    const totalPrice = pricePerPerson * guests;
-
-    // Package Type
-    const rawPkg = String(package_type || 'VIP').toLowerCase();
-    const pkg = rawPkg.includes('vip') ? 'VIP' : rawPkg.includes('lux') ? 'luxury' : 'standard';
-
-    // Travel Date
-    const validDate = travel_date && /^\d{4}-\d{2}-\d{2}$/.test(travel_date)
-      ? travel_date
-      : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-    // 4. Create a SEPARATE booking record for EVERY destination in PostgreSQL
-    const createdBookings: any[] = [];
-
-    for (const destName of destList) {
-      let destId: string;
-      let resolvedDestName = destName;
-      let destHeroImg = service?.banner_image || './assets/destination-rome.png';
-
-      const destCheck = await pool.query(
-        'SELECT id, name, country, hero_img FROM destination WHERE name ILIKE $1 LIMIT 1',
-        [destName.trim()]
+    // 2. Identify target booking
+    let targetBooking: any = null;
+    const directRef = (booking_id || booking_ref || '').toString().trim();
+    if (directRef) {
+      const bRes = await pool.query(
+        'SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $1 LIMIT 1',
+        [directRef]
       );
-
-      if (destCheck.rows.length > 0) {
-        destId = destCheck.rows[0].id;
-        resolvedDestName = destCheck.rows[0].name;
-        if (destCheck.rows[0].hero_img) destHeroImg = destCheck.rows[0].hero_img;
-      } else {
-        destId = generateUUID();
-        const insDest = await pool.query(
-          'INSERT INTO destination (id, name, country, latitude, longitude, hero_img) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id, hero_img',
-          [destId, destName.trim(), 'International', 0, 0, destHeroImg]
-        );
-        if (insDest.rows.length) {
-          destId = insDest.rows[0].id;
-          if (insDest.rows[0].hero_img) destHeroImg = insDest.rows[0].hero_img;
-        }
-      }
-
-      const bookingId = generateUUID();
-      const bookingRef = generateBookingRef();
-      const attractionName = `Service: ${resolvedTitle}`;
-
-      const bookingResult = await pool.query(`
-        INSERT INTO booking (
-          id, booking_ref, name, customer_id, destination_id, destination_name, attraction_name,
-          user_name, user_email, phone_number, travel_date, guests_count, package_type,
-          price_per_person, total_price, special_request, status, image_url,
-          service_id, service_name
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-        RETURNING *
-      `, [
-        bookingId,
-        bookingRef,
-        attractionName,
-        custId,
-        destId,
-        resolvedDestName,
-        attractionName,
-        customer_name.trim(),
-        customer_email.trim().toLowerCase(),
-        customer_phone ? customer_phone.trim() : null,
-        validDate,
-        guests,
-        pkg,
-        pricePerPerson,
-        totalPrice,
-        message ? `[Service Booking: ${resolvedTitle}] ${message.trim()}` : `Service booking for ${resolvedDestName}`,
-        'confirmed',
-        destHeroImg,
-        service_id,
-        resolvedTitle
-      ]);
-
-      createdBookings.push(bookingResult.rows[0]);
+      if (bRes.rows.length) targetBooking = bRes.rows[0];
     }
 
-    // 5. Record inquiry tracking object
+    if (!targetBooking) {
+      const bRes = await pool.query(
+        'SELECT * FROM booking WHERE user_email ILIKE $1 ORDER BY created_at DESC LIMIT 1',
+        [customer_email.trim().toLowerCase()]
+      );
+      if (bRes.rows.length) targetBooking = bRes.rows[0];
+    }
+
+    if (!targetBooking) {
+      return res.status(400).json({
+        error: 'No active voyage found for this traveler. Services can only be added to a booked trip. Please book a destination first!'
+      });
+    }
+
+    // 3. Attach service to the trip
+    let currentServices: any[] = [];
+    if (Array.isArray(targetBooking.booked_services)) {
+      currentServices = targetBooking.booked_services;
+    } else if (typeof targetBooking.booked_services === 'string' && targetBooking.booked_services.trim()) {
+      try {
+        currentServices = JSON.parse(targetBooking.booked_services);
+      } catch (_) {
+        currentServices = [];
+      }
+    }
+
+    const rawPrice = parseFloat((service?.starting_price || '').replace(/[^0-9.]/g, '')) || 0;
+    const addPrice = rawPrice > 0 ? rawPrice : 0;
+
+    // Prevent duplicate service on the same trip
+    const alreadyExists = currentServices.some((s: any) => 
+      (s.service_id && (s.service_id === service_id || s.service_id === service?.id)) ||
+      (s.id && (s.id === service_id || s.id === service?.id)) ||
+      (s.title && s.title.toLowerCase() === resolvedTitle.toLowerCase())
+    );
+
+    if (alreadyExists) {
+      return res.status(400).json({
+        error: `"${resolvedTitle}" is already added to this voyage (${targetBooking.booking_ref || targetBooking.id}). Each service can only be booked once per trip.`
+      });
+    }
+
+    const newServiceEntry = {
+      id: service_id || `srv-${Date.now()}`,
+      service_id: service_id || service?.id,
+      title: resolvedTitle,
+      category: service?.category || 'Planning',
+      icon: service?.icon || 'fa-solid fa-bell-concierge',
+      price: addPrice,
+      notes: message ? message.trim() : '',
+      attached_at: new Date().toISOString()
+    };
+
+    currentServices.push(newServiceEntry);
+
+    const currentTotal = parseFloat(targetBooking.total_price || '0') || 0;
+    const newTotal = currentTotal + addPrice;
+
+    const updateRes = await pool.query(`
+      UPDATE booking 
+      SET booked_services = $1::jsonb, 
+          total_price = $2, 
+          service_id = COALESCE(service_id, $3),
+          service_name = COALESCE(service_name, $4),
+          updated_at = NOW()
+      WHERE id = $5
+      RETURNING *
+    `, [
+      JSON.stringify(currentServices),
+      newTotal,
+      service_id || null,
+      resolvedTitle,
+      targetBooking.id
+    ]);
+
+    const updatedBooking = updateRes.rows[0];
+
+    // 4. Record inquiry tracking object
     const record = ServiceService.recordInquiry({
-      customer_id: custId,
+      customer_id: targetBooking.customer_id,
       service_id,
       service_title: resolvedTitle,
-      customer_name,
-      customer_email,
-      customer_phone,
-      travel_destination: destList.join(', '),
-      travel_date: validDate,
-      message
+      customer_name: targetBooking.user_name || customer_name,
+      customer_email: targetBooking.user_email || customer_email,
+      customer_phone: targetBooking.phone_number || customer_phone,
+      travel_destination: targetBooking.destination_name,
+      travel_date: targetBooking.travel_date,
+      message: message ? `[Attached to ${targetBooking.booking_ref}] ${message}` : `Attached to ${targetBooking.booking_ref}`
     });
 
-    res.status(201).json({
-      message: `Confirmed ${createdBookings.length} separate destination booking(s) for ${resolvedTitle}`,
+    res.status(200).json({
+      success: true,
+      message: `Attached "${resolvedTitle}" to your trip to ${targetBooking.destination_name} (${targetBooking.booking_ref})`,
       inquiry: record,
-      bookings: createdBookings,
-      count: createdBookings.length,
-      destinations: destList
+      booking: updatedBooking,
+      bookings: [updatedBooking],
+      count: 1,
+      destinations: [targetBooking.destination_name]
     });
   } catch (err) {
     console.error('POST /api/services/inquire error:', err);
-    res.status(500).json({ error: 'Server error processing service inquiry and bookings' });
+    res.status(500).json({ error: 'Server error processing service attachment', details: String(err) });
   }
 });
 
@@ -663,3 +750,75 @@ serviceRouter.post('/', optionalAuth, async (req: AuthenticatedRequest, res) => 
     res.status(500).json({ error: 'Server error creating service' });
   }
 });
+
+// DELETE /api/services/detach & POST /api/services/detach
+const handleDetach = async (req: AuthenticatedRequest, res: express.Response) => {
+  const { booking_id, booking_ref, service_id, service_title } = req.body || {};
+  const directRef = (booking_id || booking_ref || req.query.booking_id || req.query.booking_ref || '').toString().trim();
+  const targetService = (service_id || service_title || req.query.service_id || '').toString().trim();
+
+  if (!directRef || !targetService) {
+    return res.status(400).json({ error: 'booking_id and service_id are required' });
+  }
+
+  try {
+    const bRes = await pool.query(
+      'SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $1 LIMIT 1',
+      [directRef]
+    );
+    if (!bRes.rows.length) {
+      return res.status(404).json({ error: `Trip booking "${directRef}" not found` });
+    }
+    const booking = bRes.rows[0];
+
+    // If authenticated, check ownership
+    if (req.user && booking.customer_id && booking.customer_id !== req.user.id && booking.user_email?.toLowerCase() !== req.user.email?.toLowerCase()) {
+      return res.status(403).json({ error: 'You are not authorized to modify this booking' });
+    }
+
+    let currentServices: any[] = [];
+    if (Array.isArray(booking.booked_services)) {
+      currentServices = booking.booked_services;
+    } else if (typeof booking.booked_services === 'string' && booking.booked_services.trim()) {
+      try { currentServices = JSON.parse(booking.booked_services); } catch (_) { currentServices = []; }
+    }
+
+    const removedItem = currentServices.find((s: any) => 
+      s.id === targetService || s.service_id === targetService || (s.title && s.title.toLowerCase() === targetService.toLowerCase())
+    );
+
+    if (!removedItem) {
+      return res.status(404).json({ error: `Service "${targetService}" is not attached to this booking.` });
+    }
+
+    const updatedServices = currentServices.filter((s: any) => s !== removedItem);
+    const priceReduction = parseFloat(removedItem.price) || 0;
+    const currentTotal = parseFloat(booking.total_price || '0') || 0;
+    const newTotal = Math.max(0, currentTotal - priceReduction);
+
+    const updateRes = await pool.query(`
+      UPDATE booking 
+      SET booked_services = $1::jsonb, 
+          total_price = $2, 
+          updated_at = NOW()
+      WHERE id = $3
+      RETURNING *
+    `, [
+      JSON.stringify(updatedServices),
+      newTotal,
+      booking.id
+    ]);
+
+    res.json({
+      success: true,
+      message: `Successfully cancelled and removed "${removedItem.title}" from your voyage!`,
+      booking: updateRes.rows[0]
+    });
+  } catch (err: any) {
+    console.error('Service detach error:', err);
+    res.status(500).json({ error: 'Server error cancelling service', details: err.message });
+  }
+};
+
+serviceRouter.delete('/detach', optionalAuth, handleDetach);
+serviceRouter.post('/detach', optionalAuth, handleDetach);

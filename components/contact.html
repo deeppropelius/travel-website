@@ -255,10 +255,10 @@
                         </div>
 
                         <div class="booking-field-group">
-                            <label for="contactBookingRef">Booking Reference (Optional)</label>
+                            <label for="contactBookingRef">Phone or Booking Ref (Optional)</label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-ticket input-icon"></i>
-                                <input type="text" id="contactBookingRef" placeholder="e.g. BK-92841">
+                                <input type="text" id="contactBookingRef" placeholder="e.g. +1 555-0199 or BK-92841">
                             </div>
                         </div>
 
@@ -312,7 +312,7 @@
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
                     <div class="faq-answer-body">
-                        All reservations can be cancelled directly through your Traveler Profile under "My Bookings". Cancellations made at least 48 hours prior to your scheduled departure date qualify for a 100% full refund with zero administrative penalty.
+                        All reservations can be cancelled directly through your Traveler Profile under "My Bookings" or the E-Ticket page. Cancellations made at least 48 hours prior to your scheduled departure date qualify for a 100% full refund with zero administrative penalty.
                     </div>
                 </div>
 
@@ -406,6 +406,9 @@
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooToast, JadooTheme, JadooNavAuth } from '../scripts/features.js';
+        import { JadooDB, getApiBase } from '../scripts/db.js';
+
+        const API_BASE = getApiBase();
 
         if (typeof window !== 'undefined') {
             window.JadooTheme = JadooTheme;
@@ -421,6 +424,20 @@
         function initContactPage() {
             JadooTheme.init();
             JadooNavAuth.init();
+
+            // Prefill traveler info if authenticated
+            const currentUser = typeof JadooDB !== 'undefined' ? JadooDB.getCurrentUser() : null;
+            if (currentUser) {
+                const nameInput = document.getElementById('contactFullName');
+                const emailInput = document.getElementById('contactEmail');
+                if (nameInput && !nameInput.value && (currentUser.fullName || currentUser.full_name)) {
+                    nameInput.value = currentUser.fullName || currentUser.full_name;
+                }
+                if (emailInput && !emailInput.value && currentUser.email) {
+                    emailInput.value = currentUser.email;
+                }
+            }
+
             // FAQ Accordion toggles
             const faqItems = document.querySelectorAll('.faq-accordion-item');
             faqItems.forEach(item => {
@@ -434,13 +451,68 @@
                 });
             });
 
-            // Contact Form
+            // Contact Form connected to PostgreSQL
             const form = document.getElementById('contactInquiryForm');
-            form?.addEventListener('submit', (e) => {
+            const submitBtn = form?.querySelector('button[type="submit"]');
+
+            form?.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const name = document.getElementById('contactFullName').value.trim();
-                form.reset();
-                JadooToast.show('Inquiry Submitted', `Thank you, ${name}! Our concierge team will reach out via email within 2 hours.`, 'success');
+                const name = document.getElementById('contactFullName')?.value.trim();
+                const email = document.getElementById('contactEmail')?.value.trim();
+                const phone = document.getElementById('contactBookingRef')?.value.trim();
+                const subject = document.getElementById('contactSubject')?.value.trim();
+                const message = document.getElementById('contactMessage')?.value.trim();
+
+                if (!name || !email || !message) {
+                    JadooToast.show('Inquiry Incomplete', 'Please fill in all required fields.', 'warning');
+                    return;
+                }
+
+                const origHtml = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Saving to Database...</span>';
+                }
+
+                try {
+                    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('jadoo_auth_token') : null;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/contact`, {
+                        method: 'POST',
+                        headers,
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            full_name: name,
+                            email,
+                            phone,
+                            subject,
+                            message
+                        })
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.ok && data.success) {
+                        form.reset();
+                        JadooToast.show(
+                            'Inquiry Saved!',
+                            data.message || `Thank you, ${name}! Your inquiry has been stored in our system.`,
+                            'success'
+                        );
+                    } else {
+                        throw new Error(data.error || 'Failed to submit inquiry to server.');
+                    }
+                } catch (err) {
+                    console.error('Contact submission error:', err);
+                    JadooToast.show('Submission Error', err.message || 'Could not connect to database. Please try again.', 'error');
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origHtml;
+                    }
+                }
             });
         }
 

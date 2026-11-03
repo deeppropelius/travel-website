@@ -174,26 +174,52 @@ export const JadooToast = {
             container.className = 'jadoo-toast-container';
             document.body.appendChild(container);
         }
+        const normType = (type || 'info').toLowerCase();
         const toast = document.createElement('div');
-        toast.className = `jadoo-toast toast-${type}`;
-        const iconClass = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info';
+        toast.className = `jadoo-toast toast-${normType}`;
+        let iconClass = 'fa-circle-info';
+        if (normType === 'success')
+            iconClass = 'fa-circle-check';
+        else if (normType === 'error')
+            iconClass = 'fa-circle-xmark';
+        else if (normType === 'warning')
+            iconClass = 'fa-triangle-exclamation';
+        else if (normType === 'info')
+            iconClass = 'fa-circle-info';
+        else
+            iconClass = 'fa-bell';
         toast.innerHTML = `
             <div class="toast-icon"><i class="fa-solid ${iconClass}"></i></div>
             <div class="toast-content">
                 <h4 class="toast-title">${escapeHTML(title)}</h4>
                 ${desc ? `<p class="toast-desc">${escapeHTML(desc)}</p>` : ''}
             </div>
+            <button type="button" class="toast-close" aria-label="Close notification" title="Dismiss">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         `;
+        const closeBtn = toast.querySelector('.toast-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toast.classList.remove('is-show');
+                toast.classList.add('is-hiding');
+                setTimeout(() => toast.remove(), 320);
+            });
+        }
         container.appendChild(toast);
-        // Force reflow for CSS transition
+        // Force reflow for bottom-center slide-up transition
         requestAnimationFrame(() => {
             toast.classList.add('is-show');
         });
         setTimeout(() => {
-            toast.classList.remove('is-show');
-            setTimeout(() => {
-                toast.remove();
-            }, 350);
+            if (toast.parentElement) {
+                toast.classList.remove('is-show');
+                toast.classList.add('is-hiding');
+                setTimeout(() => {
+                    toast.remove();
+                }, 350);
+            }
         }, duration);
     }
 };
@@ -216,6 +242,10 @@ export class TestimonialReviewController {
         this.init();
     }
     init() {
+        // Skip review modal wiring on profile page where profile.html provides dedicated controller
+        if (typeof window !== 'undefined' && window.location.pathname.includes('profile.html')) {
+            return;
+        }
         this.modal = document.getElementById('reviewModalOverlay');
         const openBtn = document.getElementById('openReviewModalBtn');
         const closeBtn = document.getElementById('reviewModalClose');
@@ -245,12 +275,16 @@ export class TestimonialReviewController {
         if (!this.modal)
             return;
         this.populateDestinations();
-        // Autofill current user name if logged in
+        // Autofill current user name and sync profile avatar if logged in
         const currentUser = JadooDB.getCurrentUser();
         const authorInput = document.getElementById('reviewAuthorName');
         if (currentUser && authorInput && !authorInput.value) {
             authorInput.value = currentUser.full_name;
         }
+        if (currentUser && currentUser.avatar_url) {
+            this.selectedAvatar = currentUser.avatar_url;
+        }
+        this.syncAvatarSelection();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
@@ -317,19 +351,132 @@ export class TestimonialReviewController {
         });
         updateStars(this.currentRating);
     }
+    syncAvatarSelection() {
+        const avatarGrid = document.getElementById('avatarSelectionGrid');
+        if (!avatarGrid)
+            return;
+        const currentUser = JadooDB.getCurrentUser();
+        const userAvatar = currentUser?.avatar_url;
+        const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
+        const resolveUrl = (u) => {
+            if (!u)
+                return isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png';
+            if (u.startsWith('data:') || u.startsWith('http://') || u.startsWith('https://'))
+                return u;
+            if (isComp && u.startsWith('./assets/'))
+                return '.' + u;
+            if (!isComp && u.startsWith('../assets/'))
+                return u.replace(/^\.\.\//, './');
+            return u;
+        };
+        if (userAvatar) {
+            const resolved = resolveUrl(userAvatar);
+            let userChip = avatarGrid.querySelector('.user-synced-avatar-chip');
+            if (!userChip) {
+                userChip = document.createElement('div');
+                userChip.className = 'avatar-chip user-synced-avatar-chip is-selected';
+                userChip.setAttribute('data-avatar', resolved);
+                userChip.title = 'My Current Profile Photo';
+                userChip.innerHTML = `<img src="${resolved}" alt="My Avatar">`;
+                avatarGrid.insertBefore(userChip, avatarGrid.firstChild);
+                this.selectedAvatar = resolved;
+            }
+            else {
+                userChip.setAttribute('data-avatar', resolved);
+                const img = userChip.querySelector('img');
+                if (img)
+                    img.src = resolved;
+            }
+        }
+        const chips = Array.from(avatarGrid.querySelectorAll('.avatar-chip:not(.avatar-upload-chip)'));
+        chips.forEach(chip => {
+            const av = chip.getAttribute('data-avatar');
+            if (av === this.selectedAvatar) {
+                chip.classList.add('is-selected');
+            }
+            else {
+                chip.classList.remove('is-selected');
+            }
+        });
+    }
     initAvatarSelection() {
         const avatarGrid = document.getElementById('avatarSelectionGrid');
         if (!avatarGrid)
             return;
-        const chips = Array.from(avatarGrid.querySelectorAll('.avatar-chip'));
-        chips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                chips.forEach(c => c.classList.remove('is-selected'));
-                chip.classList.add('is-selected');
-                const avatar = chip.getAttribute('data-avatar');
-                if (avatar)
-                    this.selectedAvatar = avatar;
+        // Insert custom image upload chip if not yet added
+        if (!document.getElementById('reviewAvatarUploadChip')) {
+            const uploadChip = document.createElement('label');
+            uploadChip.id = 'reviewAvatarUploadChip';
+            uploadChip.className = 'avatar-chip avatar-upload-chip';
+            uploadChip.title = 'Upload Photo from Device';
+            uploadChip.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: rgba(223, 105, 81, 0.1); border: 2px dashed #DF6951; cursor: pointer; color: #DF6951;';
+            uploadChip.innerHTML = '<i class="fa-solid fa-camera"></i><input type="file" id="reviewAvatarFileInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">';
+            avatarGrid.appendChild(uploadChip);
+            const fileInput = uploadChip.querySelector('input');
+            fileInput?.addEventListener('change', (e) => {
+                const file = e.target.files?.[0];
+                if (!file)
+                    return;
+                if (!file.type.startsWith('image/')) {
+                    JadooToast.show('Invalid Image', 'Please select a valid image file.', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const maxDim = 260;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > h) {
+                            if (w > maxDim) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            }
+                        }
+                        else {
+                            if (h > maxDim) {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0, w, h);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                            this.selectedAvatar = dataUrl;
+                            let customChip = document.getElementById('reviewCustomUploadedChip');
+                            if (!customChip) {
+                                customChip = document.createElement('div');
+                                customChip.id = 'reviewCustomUploadedChip';
+                                customChip.className = 'avatar-chip is-selected';
+                                customChip.title = 'Uploaded Photo';
+                                avatarGrid.insertBefore(customChip, avatarGrid.firstChild);
+                            }
+                            customChip.setAttribute('data-avatar', dataUrl);
+                            customChip.innerHTML = `<img src="${dataUrl}" alt="Uploaded Avatar">`;
+                            avatarGrid.querySelectorAll('.avatar-chip').forEach(c => c.classList.remove('is-selected'));
+                            customChip.classList.add('is-selected');
+                            JadooToast.show('Photo Attached', 'Your custom photo is selected for this review.', 'info');
+                        }
+                    };
+                    img.src = evt.target?.result;
+                };
+                reader.readAsDataURL(file);
             });
+        }
+        avatarGrid.addEventListener('click', (e) => {
+            const target = e.target.closest('.avatar-chip:not(.avatar-upload-chip)');
+            if (!target)
+                return;
+            avatarGrid.querySelectorAll('.avatar-chip').forEach(c => c.classList.remove('is-selected'));
+            target.classList.add('is-selected');
+            const avatar = target.getAttribute('data-avatar');
+            if (avatar)
+                this.selectedAvatar = avatar;
         });
     }
     populateDestinations() {
@@ -343,30 +490,84 @@ export class TestimonialReviewController {
         if (currentVal)
             select.value = currentVal;
     }
-    handleSubmit(form) {
+    async handleSubmit(form) {
         const authorName = document.getElementById('reviewAuthorName')?.value.trim();
         const destination = document.getElementById('reviewDestinationSelect')?.value.trim();
         const authorLocation = document.getElementById('reviewAuthorLocation')?.value.trim() || 'Global Traveler';
         const roleTitle = document.getElementById('reviewRoleTitle')?.value.trim() || 'Verified Explorer';
-        const tripTag = document.getElementById('reviewTripTag')?.value.trim() || 'Grand Tour Experience';
+        const tripTag = document.getElementById('reviewTripTag')?.value.trim() || `${destination} Voyage`;
         const quote = document.getElementById('reviewQuote')?.value.trim();
-        if (!authorName) {
-            JadooToast.show('Name Required', 'Please enter your name.', 'error');
+        if (!authorName || authorName.length < 2) {
+            JadooToast.show('Validation Error', 'Please enter your full name (minimum 2 characters).', 'error');
             return;
         }
         if (!destination) {
-            JadooToast.show('Destination Required', 'Please select a destination.', 'error');
+            JadooToast.show('Destination Required', 'Please select which destination you visited.', 'error');
             return;
         }
         if (!quote || quote.length < 10) {
-            JadooToast.show('Review Required', 'Please write a review with at least 10 characters.', 'error');
+            JadooToast.show('Review Too Short', 'Please write a review with at least 10 characters.', 'error');
             return;
         }
+        const editingId = document.getElementById('editingReviewId')?.value.trim();
         const currentUser = JadooDB.getCurrentUser();
-        // Add to Database
+        const customerId = currentUser?.id || null;
+        if (editingId) {
+            if (!confirm(`Are you sure you want to update review #${editingId.slice(0, 8)} for "${destination}"?`)) {
+                return;
+            }
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Updating Review...</span>';
+            }
+            const updatedData = {
+                id: editingId,
+                author_name: authorName,
+                destination_name: destination,
+                author_location: authorLocation,
+                role_title: roleTitle,
+                author_role: roleTitle,
+                trip_tag: tripTag,
+                quote,
+                rating: this.currentRating,
+                avatar_url: this.selectedAvatar,
+                user_id: customerId || undefined,
+                customer_id: customerId || undefined,
+                costumer_id: customerId || undefined,
+                author_email: currentUser?.email || undefined
+            };
+            await JadooDB.updateTestimonialAsync(editingId, updatedData);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origBtnHtml;
+            }
+            this.close();
+            form.reset();
+            const editInp = document.getElementById('editingReviewId');
+            if (editInp)
+                editInp.value = '';
+            window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'testimonial_update', key: 'testimonials' } }));
+            window.dispatchEvent(new CustomEvent('jadoo:new_testimonial'));
+            JadooToast.show('Review Updated!', `Review #${editingId.slice(0, 8)} updated and synced with User ID.`, 'success');
+            return;
+        }
+        // User Confirmation Prompt prior to publishing
+        if (!confirm(`Are you sure you want to publish your ${this.currentRating}-star review for "${destination}"?`)) {
+            return;
+        }
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Publishing Story...</span>';
+        }
+        // Add to Database cache and sync with User ID
         const newTestimonial = JadooDB.addTestimonial({
-            user_id: currentUser?.id,
-            costumer_id: currentUser?.id,
+            user_id: customerId || undefined,
+            customer_id: customerId || undefined,
+            costumer_id: customerId || undefined,
             author_email: currentUser?.email,
             destination_name: destination,
             author_name: authorName,
@@ -377,11 +578,29 @@ export class TestimonialReviewController {
             avatar_url: this.selectedAvatar,
             trip_tag: tripTag
         });
+        // Persist to Backend API
+        try {
+            await fetch('/api/testimonials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTestimonial)
+            });
+        }
+        catch (err) {
+            console.warn('API sync error:', err);
+        }
         // Live inject into Testimonial 3D Stack on index.html if present
         this.injectTestimonialCard(newTestimonial);
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'testimonial' } }));
+        }
         this.close();
         form.reset();
-        JadooToast.show('Thank You, Explorer!', 'Your travel story has been published to our testimonials.', 'success');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+        }
+        JadooToast.show('Review Published!', 'Thank you for sharing your journey. Your review is now live!', 'success');
     }
     injectTestimonialCard(t) {
         const cardsContainer = document.querySelector('.coms');
@@ -1793,11 +2012,13 @@ export const JadooNavAuth = {
                 dropdownUserEmail.textContent = userEmail;
             const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
             let avatarSrc = currentUser.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
-            if (isComp && avatarSrc.startsWith('./assets/')) {
-                avatarSrc = '.' + avatarSrc;
-            }
-            else if (!isComp && avatarSrc.startsWith('../assets/')) {
-                avatarSrc = avatarSrc.replace(/^\.\.\//, './');
+            if (!avatarSrc.startsWith('data:') && !avatarSrc.startsWith('http://') && !avatarSrc.startsWith('https://')) {
+                if (isComp && avatarSrc.startsWith('./assets/')) {
+                    avatarSrc = '.' + avatarSrc;
+                }
+                else if (!isComp && avatarSrc.startsWith('../assets/')) {
+                    avatarSrc = avatarSrc.replace(/^\.\.\//, './');
+                }
             }
             const navAvatarImg = document.getElementById('navUserAvatarImg');
             if (navAvatarImg) {
@@ -1905,6 +2126,9 @@ export const JadooNavAuth = {
                 if (typeof e.stopImmediatePropagation === 'function') {
                     e.stopImmediatePropagation();
                 }
+            }
+            if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
+                return;
             }
             const dropdowns = document.querySelectorAll('.user-profile-dropdown, #userProfileDropdown, #destUserProfileDropdown');
             dropdowns.forEach(d => d.classList.remove('open'));

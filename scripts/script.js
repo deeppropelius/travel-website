@@ -1,6 +1,70 @@
 "use strict";
 (function () {
     'use strict';
+    // ========================================== 
+    // GLOBAL BOTTOM-CENTER TOAST NOTIFICATION HELPER
+    // ========================================== 
+    function showToastNotification(title, desc = '', type = 'info', duration = 4000) {
+        const jToast = window.JadooToast;
+        if (jToast && typeof jToast.show === 'function') {
+            jToast.show(title, desc, type, duration);
+            return;
+        }
+        let container = document.getElementById('jadooToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'jadooToastContainer';
+            container.className = 'jadoo-toast-container';
+            document.body.appendChild(container);
+        }
+        const normType = (type || 'info').toLowerCase();
+        const toast = document.createElement('div');
+        toast.className = `jadoo-toast toast-${normType}`;
+        let iconClass = 'fa-circle-info';
+        if (normType === 'success')
+            iconClass = 'fa-circle-check';
+        else if (normType === 'error')
+            iconClass = 'fa-circle-xmark';
+        else if (normType === 'warning')
+            iconClass = 'fa-triangle-exclamation';
+        else if (normType === 'info')
+            iconClass = 'fa-circle-info';
+        else
+            iconClass = 'fa-bell';
+        const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="fa-solid ${iconClass}"></i></div>
+            <div class="toast-content">
+                <h4 class="toast-title">${esc(title)}</h4>
+                ${desc ? `<p class="toast-desc">${esc(desc)}</p>` : ''}
+            </div>
+            <button type="button" class="toast-close" aria-label="Close notification" title="Dismiss">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+        const closeBtn = toast.querySelector('.toast-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toast.classList.remove('is-show');
+                toast.classList.add('is-hiding');
+                setTimeout(() => toast.remove(), 320);
+            });
+        }
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('is-show'));
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.classList.remove('is-show');
+                toast.classList.add('is-hiding');
+                setTimeout(() => toast.remove(), 350);
+            }
+        }, duration);
+    }
+    window.showToastNotification = showToastNotification;
+    if (typeof window.JadooToast === 'undefined') {
+        window.JadooToast = { show: showToastNotification };
+    }
     // ==========================================
     // 1. COOKIE STORAGE SERVICE
     // ==========================================
@@ -255,7 +319,7 @@
                     id: 'user_' + Date.now(),
                     fullName: cleanName,
                     email: cleanEmail,
-                    password: password,
+                    password: '',
                     createdAt: new Date().toISOString()
                 };
                 users.push(fallbackUser);
@@ -369,6 +433,10 @@
                 if (typeof window.JadooDB !== 'undefined') {
                     window.JadooDB.logout();
                 }
+            }
+            catch (_) { }
+            try {
+                fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => { });
             }
             catch (_) { }
             updateNavbarAuthState();
@@ -579,24 +647,281 @@
         catch (e) {
             console.error('Drawer init error:', e);
         }
-        // --- C. Language Preference Persistence ---
-        try {
-            const langSelect = document.getElementById('lang');
-            if (langSelect) {
-                const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE);
-                if (savedLang) {
-                    langSelect.value = savedLang;
+        // --- C. Functional Multilingual Translation System ---
+        const I18N_DICTIONARY = {
+            eng: {
+                home: 'Home',
+                destinations: 'Destinations',
+                services: 'Services',
+                bookings: 'Bookings',
+                testimonials: 'Testimonials',
+                login: 'Login',
+                signup: 'Sign Up',
+                logout: 'Log Out',
+                my_profile: 'My Profile',
+                my_tickets: 'My E-Tickets',
+                explore_dest: 'Explore Destinations',
+                hero_badge: 'Best Destinations around the world',
+                hero_title: 'Travel, enjoy and live a new and full life',
+                hero_sub: 'Discover handcrafted luxury journeys, verified VIP admission passes, and authentic destination experiences tailored for the modern voyager.',
+                find_out_more: 'Find out more',
+                play_demo: 'Play Demo',
+                cat_sub: 'CATEGORY',
+                cat_title: 'We Offer Best Services',
+                top_sub: 'Top Selling',
+                top_title: 'Top Destinations',
+                book_sub: 'Easy and Fast',
+                book_title: 'Book Your Next Trip In 3 Easy Steps',
+                test_sub: 'Testimonials',
+                test_title: 'What People Say About Us',
+                subs_title: 'Subscribe to get information, latest news and other interesting offers about Jadoo',
+                subs_btn: 'Subscribe',
+                back_popular: 'Back to Popular Locations',
+                search_placeholder: 'Search city, landmark, or category...',
+                filter_all: 'All',
+                filter_landmarks: 'Landmarks',
+                filter_museums: 'Museums',
+                filter_architecture: 'Architecture',
+                filter_nature: 'Nature',
+                filter_entertainment: 'Entertainment',
+                switched_msg: 'Language switched to English'
+            },
+            Guj: {
+                home: 'મુખ્ય પૃષ્ઠ',
+                destinations: 'પ્રવાસન સ્થળો',
+                services: 'સેવાઓ',
+                bookings: 'મારા બુકિંગ',
+                testimonials: 'અભિપ્રાયો',
+                login: 'પ્રવેશ કરો',
+                signup: 'સાઇન અપ',
+                logout: 'બહાર નીકળો',
+                my_profile: 'મારી પ્રોફાઇલ',
+                my_tickets: 'મારી ઈ-ટિકિટ્સ',
+                explore_dest: 'નવા સ્થળો શોધો',
+                hero_badge: 'સમગ્ર વિશ્વમાં શ્રેષ્ઠ પ્રવાસન સ્થળો',
+                hero_title: 'મુસાફરી કરો, આનંદ માણો અને નવું જીવન જીવો',
+                hero_sub: 'વિશ્વના સુંદર પ્રવાસ સ્થળો, માન્ય વીઆઇપી પાસ અને અવિસ્મરણીય યાદો સાથે તમારી યાત્રા શરૂ કરો.',
+                find_out_more: 'વધુ જાણો',
+                play_demo: 'ડેમો જુઓ',
+                cat_sub: 'શ્રેણીઓ',
+                cat_title: 'અમે શ્રેષ્ઠ સેવાઓ પ્રદાન કરીએ છીએ',
+                top_sub: 'લોકપ્રિય સ્થળો',
+                top_title: 'શ્રેષ્ઠ પ્રવાસન સ્થળો',
+                book_sub: 'સરળ અને ઝડપી',
+                book_title: 'માત્ર ૩ સરળ પગલાંમાં તમારી યાત્રા બુક કરો',
+                test_sub: 'અભિપ્રાયો',
+                test_title: 'મુસાફરો અમારા વિશે શું કહે છે',
+                subs_title: 'જાડૂ તરફથી નવીનતમ ઑફરો, પ્રવાસ માહિતી અને સમાચાર મેળવો',
+                subs_btn: 'જોડાઓ',
+                back_popular: 'લોકપ્રિય સ્થળો પર પાછા જાઓ',
+                search_placeholder: 'શહેર, પ્રવાસ સ્થળ અથવા કેટેગરી શોધો...',
+                filter_all: 'બધા',
+                filter_landmarks: 'ઐતિહાસિક સ્થળો',
+                filter_museums: 'સંગ્રહાલયો',
+                filter_architecture: 'સ્થાપત્ય',
+                filter_nature: 'કુદરતી સૌંદર્ય',
+                filter_entertainment: 'મનોરંજન',
+                switched_msg: 'ભાષા સફળતાપૂર્વક ગુજરાતીમાં બદલાઈ ગઈ છે'
+            },
+            Hi: {
+                home: 'होम',
+                destinations: 'गंतव्य स्थल',
+                services: 'सेवाएं',
+                bookings: 'मेरी बुकिंग्स',
+                testimonials: 'प्रशंसापत्र',
+                login: 'लॉग इन',
+                signup: 'साइन अप',
+                logout: 'लॉग आउट',
+                my_profile: 'मेरी प्रोफ़ाइल',
+                my_tickets: 'मेरी ई-टिकटें',
+                explore_dest: 'गंतव्य स्थल खोजें',
+                hero_badge: 'दुनिया भर के सर्वोत्तम गंतव्य स्थल',
+                hero_title: 'यात्रा करें, आनंद लें और नया जीवन जिएं',
+                hero_sub: 'दुनिया के मनमोहक पर्यटन स्थलों, वीआईपी पासेज और अविस्मरणीय अनुभवों के साथ अपनी यात्रा की योजना बनाएं।',
+                find_out_more: 'और जानें',
+                play_demo: 'डेमो देखें',
+                cat_sub: 'श्रेणियां',
+                cat_title: 'हम सर्वोत्तम सेवाएं प्रदान करते हैं',
+                top_sub: 'सर्वश्रेष्ठ बिक्री',
+                top_title: 'शीर्ष गंतव्य स्थल',
+                book_sub: 'आसान और तेज़',
+                book_title: 'केवल ३ आसान चरणों में अपनी यात्रा बुक करें',
+                test_sub: 'प्रशंसापत्र',
+                test_title: 'यात्री हमारे बारे में क्या कहते हैं',
+                subs_title: 'जादू से नवीनतम ऑफ़र, यात्रा युक्तियाँ और समाचार प्राप्त करने के लिए सदस्यता लें',
+                subs_btn: 'सब्सक्राइब',
+                back_popular: 'लोकप्रिय स्थानों पर वापस जाएं',
+                search_placeholder: 'शहर, स्मारक या श्रेणी खोजें...',
+                filter_all: 'सभी',
+                filter_landmarks: 'ऐतिहासिक स्थल',
+                filter_museums: 'संग्रहालय',
+                filter_architecture: 'स्थापत्य',
+                filter_nature: 'प्राकृतिक दृश्य',
+                filter_entertainment: 'मनोरंजन',
+                switched_msg: 'भाषा सफलतापूर्वक हिंदी में बदल दी गई है'
+            }
+        };
+        function applyLanguage(lang, notify = false) {
+            const dict = I18N_DICTIONARY[lang] || I18N_DICTIONARY.eng;
+            document.documentElement.lang = lang === 'Guj' ? 'gu' : lang === 'Hi' ? 'hi' : 'en';
+            // 1. Update Navigation Items
+            document.querySelectorAll('.navlink').forEach(link => {
+                const href = (link.getAttribute('href') || '').toLowerCase();
+                const id = link.getAttribute('id') || '';
+                if (href.includes('index.html') || href === '#home')
+                    link.textContent = dict.home;
+                else if (href.includes('destination'))
+                    link.textContent = dict.destinations;
+                else if (href.includes('service'))
+                    link.textContent = dict.services;
+                else if (href.includes('booking') || id === 'navBookingsTrigger')
+                    link.textContent = dict.bookings;
+                else if (href.includes('testimonial'))
+                    link.textContent = dict.testimonials;
+                else if (id === 'nav-login-link')
+                    link.textContent = dict.login;
+            });
+            const signupBtn = document.getElementById('nav-signup-btn');
+            if (signupBtn)
+                signupBtn.textContent = dict.signup;
+            // 2. Dropdown items
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                const span = item.querySelector('span');
+                if (!span)
+                    return;
+                const href = (item.getAttribute('href') || '').toLowerCase();
+                if (href.includes('profile'))
+                    span.textContent = dict.my_profile;
+                else if (href.includes('ticket'))
+                    span.textContent = dict.my_tickets;
+                else if (href.includes('destination'))
+                    span.textContent = dict.explore_dest;
+                else if (item.id === 'navLogoutBtn')
+                    span.textContent = dict.logout;
+            });
+            // 3. Main Landing Page Headlines & Content
+            const heroBadge = document.querySelector('.dtexts h4');
+            if (heroBadge)
+                heroBadge.textContent = dict.hero_badge;
+            const heroTitle = document.querySelector('.dtexts h1');
+            if (heroTitle) {
+                if (lang === 'Guj') {
+                    heroTitle.innerHTML = `મુસાફરી કરો, <span class="highlight-word">આનંદ માણો<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> અને નવું જીવન જીવો`;
                 }
-                langSelect.addEventListener('change', (e) => {
+                else if (lang === 'Hi') {
+                    heroTitle.innerHTML = `यात्रा करें, <span class="highlight-word">आनंद लें<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> और नया जीवन जिएं`;
+                }
+                else {
+                    heroTitle.innerHTML = `Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> and live a new and full life`;
+                }
+            }
+            const heroSub = document.querySelector('.dtexts p');
+            if (heroSub && dict.hero_sub)
+                heroSub.textContent = dict.hero_sub;
+            const dobut = document.querySelector('.dobut');
+            if (dobut)
+                dobut.textContent = dict.find_out_more;
+            const demoText = document.querySelector('.playdemo p');
+            if (demoText)
+                demoText.textContent = dict.play_demo;
+            const catSub = document.querySelector('.firsttext h4');
+            if (catSub)
+                catSub.textContent = dict.cat_sub;
+            const catTitle = document.querySelector('.firsttext h1');
+            if (catTitle)
+                catTitle.textContent = dict.cat_title;
+            const topSub = document.querySelector('.secondtext h4');
+            if (topSub)
+                topSub.textContent = dict.top_sub;
+            const topTitle = document.querySelector('.secondtext h1');
+            if (topTitle)
+                topTitle.textContent = dict.top_title;
+            const bookSub = document.querySelector('.fleft-head h4');
+            if (bookSub)
+                bookSub.textContent = dict.book_sub;
+            const bookTitle = document.querySelector('.fleft-head h1');
+            if (bookTitle)
+                bookTitle.textContent = dict.book_title;
+            const testSub = document.querySelector('.tleft-head h4');
+            if (testSub)
+                testSub.textContent = dict.test_sub;
+            const testTitle = document.querySelector('.tleft-head h1');
+            if (testTitle)
+                testTitle.textContent = dict.test_title;
+            const subsH2 = document.querySelector('.subs-content h2');
+            if (subsH2)
+                subsH2.textContent = dict.subs_title;
+            const subsBtn = document.querySelector('.mailtext button');
+            if (subsBtn)
+                subsBtn.textContent = dict.subs_btn;
+            // 4. Destination Page Elements
+            const backPopBtn = document.querySelector('.btn-back-popular span');
+            if (backPopBtn)
+                backPopBtn.textContent = dict.back_popular;
+            const destInput = document.getElementById('dest-input');
+            if (destInput)
+                destInput.placeholder = dict.search_placeholder;
+            const chipAll = document.querySelector('.category-chip[data-category="all"]');
+            if (chipAll)
+                chipAll.innerHTML = `<i class="fa-solid fa-shapes"></i> ${dict.filter_all}`;
+            const chipLandmarks = document.querySelector('.category-chip[data-category="landmarks"]');
+            if (chipLandmarks)
+                chipLandmarks.innerHTML = `<i class="fa-solid fa-monument"></i> ${dict.filter_landmarks}`;
+            const chipMuseums = document.querySelector('.category-chip[data-category="museums"]');
+            if (chipMuseums)
+                chipMuseums.innerHTML = `<i class="fa-solid fa-palette"></i> ${dict.filter_museums}`;
+            const chipArch = document.querySelector('.category-chip[data-category="architecture"]');
+            if (chipArch)
+                chipArch.innerHTML = `<i class="fa-solid fa-landmark-dome"></i> ${dict.filter_architecture}`;
+            const chipNature = document.querySelector('.category-chip[data-category="nature"]');
+            if (chipNature)
+                chipNature.innerHTML = `<i class="fa-solid fa-mountain-sun"></i> ${dict.filter_nature}`;
+            const chipEnt = document.querySelector('.category-chip[data-category="entertainment"]');
+            if (chipEnt)
+                chipEnt.innerHTML = `<i class="fa-solid fa-film"></i> ${dict.filter_entertainment}`;
+            // Synchronize all select#lang on the page
+            document.querySelectorAll('select#lang').forEach(sel => {
+                sel.value = lang;
+            });
+            if (notify && typeof window.JadooToast !== 'undefined') {
+                window.JadooToast.show('Language Updated', dict.switched_msg, 'info');
+            }
+        }
+        try {
+            const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE) || 'eng';
+            applyLanguage(savedLang, false);
+            const langSelects = document.querySelectorAll('select#lang, select[name="Language"]');
+            langSelects.forEach(sel => {
+                sel.value = savedLang;
+                sel.addEventListener('change', (e) => {
                     const target = e.target;
                     if (target) {
                         Storage.set(STORAGE_KEYS.LANGUAGE, target.value);
+                        applyLanguage(target.value, true);
                     }
                 });
-            }
+            });
         }
         catch (e) {
             console.error('Language select init error:', e);
+        }
+        // --- Prevent Booking from Previous Days (Dynamic Date Picker Min Validator) ---
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(inp => {
+                inp.min = todayStr;
+                inp.addEventListener('change', () => {
+                    if (inp.value && inp.value < todayStr) {
+                        inp.value = todayStr;
+                        if (typeof window.JadooToast !== 'undefined') {
+                            window.JadooToast.show('Invalid Date', 'Travel date cannot be in the past.', 'warning');
+                        }
+                    }
+                });
+            });
+        }
+        catch (e) {
+            console.error('Date input constraint error:', e);
         }
         // --- D. Update Navbar for Logged-In User ---
         try {
@@ -718,7 +1043,15 @@
             if (dropdownUserEmail)
                 dropdownUserEmail.textContent = userEmail;
             const isComp = typeof window !== 'undefined' && window.location.pathname.includes('/components/');
-            const avatarSrc = currentUser.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
+            let avatarSrc = currentUser.avatar_url || (isComp ? '../assets/testimonials-avatar-1.png' : './assets/testimonials-avatar-1.png');
+            if (!avatarSrc.startsWith('data:') && !avatarSrc.startsWith('http://') && !avatarSrc.startsWith('https://')) {
+                if (isComp && avatarSrc.startsWith('./assets/')) {
+                    avatarSrc = '.' + avatarSrc;
+                }
+                else if (!isComp && avatarSrc.startsWith('../assets/')) {
+                    avatarSrc = avatarSrc.replace(/^\.\.\//, './');
+                }
+            }
             const navAvatarImg = document.getElementById('navUserAvatarImg');
             if (navAvatarImg) {
                 navAvatarImg.src = avatarSrc;
@@ -846,6 +1179,9 @@
         const logoutBtns = document.querySelectorAll('.dropdown-logout-btn, #navLogoutBtn, #destNavLogoutBtn');
         const handleLogout = (e) => {
             e.preventDefault();
+            if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
+                return;
+            }
             userProfileDropdown?.classList.remove('open');
             destUserProfileDropdown?.classList.remove('open');
             userProfileBtn?.setAttribute('aria-expanded', 'false');
@@ -1148,6 +1484,8 @@
         const bookingCancel = document.getElementById('bookingCancelBtn');
         const bookingBackdrop = document.getElementById('bookingModalBackdrop');
         const tripBookingForm = document.getElementById('tripBookingForm');
+        const todayIso = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('input[type="date"]').forEach(dInp => { dInp.min = todayIso; });
         const myBookingsModal = document.getElementById('myBookingsModalOverlay');
         const myBookingsClose = document.getElementById('myBookingsClose');
         const myBookingsBackdrop = document.getElementById('myBookingsBackdrop');
@@ -1198,9 +1536,11 @@
             e.preventDefault();
             const currentUser = AuthService.getCurrentUser();
             if (!currentUser) {
-                alert('You must be logged in to book a trip.');
+                showToastNotification('Authentication Required', 'You must be logged in to book a trip.', 'warning');
                 const isComponent = window.location.pathname.toLowerCase().includes('components');
-                window.location.href = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
+                setTimeout(() => {
+                    window.location.href = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
+                }, 1000);
                 return;
             }
             const fullNameInput = document.getElementById('bookingFullName');
@@ -1233,9 +1573,12 @@
                 if (emailError)
                     emailError.classList.remove('visible');
             }
-            if (!dateVal) {
-                if (dateError)
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (!dateVal || dateVal < todayStr) {
+                if (dateError) {
+                    dateError.textContent = !dateVal ? 'Please choose a travel date.' : 'Travel date cannot be in the past.';
                     dateError.classList.add('visible');
+                }
                 isValid = false;
             }
             else {
@@ -1247,6 +1590,14 @@
             const guests = parseInt(guestsInput?.value || '1', 10);
             const packageVal = packageSelect?.value || 'Standard';
             const total = updateBookingPriceCalculation();
+            const destName = activeBookingDetails.destination || 'your destination';
+            const placeName = activeBookingDetails.placeName || '';
+            const targetLabel = placeName ? `${placeName} (${destName})` : destName;
+            const dateLabel = formatDateDisplay(dateVal);
+            const guestLabel = `${guests} ${guests > 1 ? 'guests' : 'guest'}`;
+            if (!confirm(`Are you sure you want to confirm your booking for ${targetLabel} on ${dateLabel} for ${guestLabel}? (Total: ${total.toFixed(2)})`)) {
+                return;
+            }
             const newBooking = BookingService.createBooking({
                 userId: currentUser?.id,
                 userEmail: emailVal,
@@ -1711,10 +2062,13 @@
                 const bannerLogoutBtn = document.getElementById('bannerLogoutBtn');
                 if (bannerLogoutBtn) {
                     bannerLogoutBtn.addEventListener('click', () => {
+                        if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
+                            return;
+                        }
                         AuthService.logout();
                         banner.style.display = 'none';
-                        alert('You have logged out successfully.');
-                        window.location.reload();
+                        showToastNotification('Logged Out', 'You have logged out successfully.', 'info');
+                        setTimeout(() => window.location.reload(), 1000);
                     });
                 }
             }
@@ -1747,12 +2101,14 @@
                         const drafts = Storage.get(STORAGE_KEYS.DRAFTS, {}) ?? {};
                         drafts['user-id'] = email;
                         Storage.set(STORAGE_KEYS.DRAFTS, drafts);
-                        alert(`Welcome, ${name}! Your account has been saved in PostgreSQL.`);
+                        showToastNotification('Account Created!', `Welcome, ${name}! Your account has been saved.`, 'success');
                         const isComponent = window.location.pathname.toLowerCase().includes('components');
-                        window.location.href = isComponent ? '../index.html' : 'index.html';
+                        setTimeout(() => {
+                            window.location.href = isComponent ? '../index.html' : 'index.html';
+                        }, 1000);
                     }
                     else {
-                        alert(result.message);
+                        showToastNotification('Registration Incomplete', result.message, 'warning');
                     }
                 }
                 finally {
@@ -1781,12 +2137,14 @@
                 try {
                     const result = await AuthService.signIn(identifier, password);
                     if (result.success && result.user) {
-                        alert(`Welcome back, ${result.user.fullName}!`);
+                        showToastNotification('Welcome Back!', `Glad to see you again, ${result.user.fullName}!`, 'success');
                         const isComponent = window.location.pathname.toLowerCase().includes('components');
-                        window.location.href = isComponent ? '../index.html' : 'index.html';
+                        setTimeout(() => {
+                            window.location.href = isComponent ? '../index.html' : 'index.html';
+                        }, 1000);
                     }
                     else {
-                        alert(result.message);
+                        showToastNotification('Sign In Failed', result.message, 'error');
                     }
                 }
                 finally {
@@ -1934,7 +2292,7 @@
             }
             catch (_) { }
             emailInput.value = '';
-            alert(`Thank you for subscribing to Jadoo updates! (${email})`);
+            showToastNotification('Subscribed!', `Thank you for subscribing to Jadoo updates! (${email})`, 'success');
         });
     }
     function initDemoPlayer() {
@@ -1942,7 +2300,7 @@
         if (!demoBtn)
             return;
         demoBtn.addEventListener('click', () => {
-            alert('Jadoo Experience Demo: Explore top destinations, book curated flights & hotels, and manage your travel itineraries in one click!');
+            showToastNotification('Jadoo Experience Demo', 'Explore top destinations, book curated flights & hotels, and manage your travel itineraries in one click!', 'info', 5000);
         });
     }
     // Scroll Reveal Observer Engine
@@ -2647,10 +3005,67 @@
                 }
                 setTestimonial(0, true);
             }
-            // Real-time update when user shares journey/trip review
-            window.addEventListener('jadoo:new_testimonial', () => {
+            function syncTestimonialCardsFromDB() {
+                if (!cardsContainer || typeof window.JadooDB === 'undefined')
+                    return;
+                const items = window.JadooDB.getTestimonials();
+                if (!Array.isArray(items) || items.length === 0)
+                    return;
+                cardsContainer.innerHTML = items.map((t, idx) => {
+                    const ratingNum = parseFloat(t.rating) || 5.0;
+                    const fullStars = Math.floor(ratingNum);
+                    const hasHalf = ratingNum % 1 !== 0;
+                    let starsHtml = '';
+                    for (let s = 0; s < fullStars; s++)
+                        starsHtml += '<i class="fa-solid fa-star"></i>';
+                    if (hasHalf)
+                        starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+                    const avatar = t.avatar_url || './assets/testimonials-avatar-1.png';
+                    const role = t.author_role || t.role_title || 'Verified Traveler';
+                    const initialClass = idx === 0 ? 'is-front' : idx === 1 ? 'is-middle' : 'is-back';
+                    return `
+                        <div class="com ${initialClass}" data-testimonial="${idx}">
+                          <div class="ficimg">
+                            <img src="${avatar}" alt="${t.author_name} portrait" draggable="false" onerror="this.src='./assets/testimonials-avatar-1.png'">
+                          </div>
+                          <div class="ctext">
+                            <div class="cmeta">
+                              <div class="crating">
+                                ${starsHtml}
+                                <span>${ratingNum.toFixed(1)}</span>
+                              </div>
+                              <span class="cbadge"><i class="fa-solid fa-shield-heart"></i> ${t.role_title || role}</span>
+                            </div>
+                            <div class="cp">&ldquo;${t.quote}&rdquo;</div>
+                            <div class="cauthor-row">
+                              <div class="cauthor-info">
+                                <div class="cn">${t.author_name}</div>
+                                <div class="cl">${t.author_location || ''}</div>
+                              </div>
+                              <div class="ctrip-tag">
+                                <i class="fa-solid fa-location-dot"></i> ${t.trip_tag || t.destination_name || 'World Tour'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    `;
+                }).join('');
                 refreshStack();
+            }
+            // Sync with DB/localStorage if available
+            if (typeof window.JadooDB !== 'undefined') {
+                syncTestimonialCardsFromDB();
+            }
+            // Real-time update when user shares or updates review
+            window.addEventListener('jadoo:new_testimonial', () => {
+                syncTestimonialCardsFromDB();
                 resetAuto();
+            });
+            window.addEventListener('jadoo:db_change', (e) => {
+                if (!e?.detail || e.detail.key === 'testimonials') {
+                    syncTestimonialCardsFromDB();
+                    resetAuto();
+                }
             });
             // Window resize
             window.addEventListener('resize', () => {
