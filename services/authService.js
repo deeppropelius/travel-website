@@ -65,6 +65,41 @@ export function optionalAuth(req, _res, next) {
     }
     next();
 }
+export function isValidPhone(phone) {
+    const trimmed = (phone || '').trim();
+    if (!trimmed)
+        return false;
+    if (/[a-zA-Z]/.test(trimmed))
+        return false;
+    const plusCount = (trimmed.match(/\+/g) || []).length;
+    if (plusCount > 1 || (plusCount === 1 && !trimmed.startsWith('+')))
+        return false;
+    if (!/^\+?[0-9\s\-().]+$/.test(trimmed))
+        return false;
+    const digits = trimmed.replace(/\D/g, '');
+    if (digits.length < 7 || digits.length > 15)
+        return false;
+    if (trimmed.startsWith('+0'))
+        return false;
+    if (/^(\d)\1+$/.test(digits))
+        return false;
+    const asc = '0123456789012345';
+    const desc = '9876543210987654';
+    if (asc.includes(digits) || desc.includes(digits))
+        return false;
+    return true;
+}
+export function isValidFullName(name) {
+    const trimmed = (name || '').trim();
+    if (/\d/.test(trimmed))
+        return false;
+    if (trimmed.length < 2 || trimmed.length > 60)
+        return false;
+    if (!/^[a-zA-Z\u00C0-\u024F\s'.-]+$/.test(trimmed))
+        return false;
+    const letters = (trimmed.match(/[a-zA-Z\u00C0-\u024F]/g) || []).length;
+    return letters >= 2;
+}
 // ── Router ───────────────────────────────────────────────────
 export const authRouter = express.Router();
 /**
@@ -75,6 +110,12 @@ authRouter.post('/register', async (req, res) => {
         const { full_name, email, password, phone, avatar_url } = req.body;
         if (!email || !full_name)
             return res.status(400).json({ error: 'full_name and email are required' });
+        if (!isValidFullName(full_name)) {
+            return res.status(400).json({ error: 'Full name must contain only letters (min 2 characters).' });
+        }
+        if (phone && !isValidPhone(phone)) {
+            return res.status(400).json({ error: 'Please enter a valid phone number (7-15 digits, international E.164 standard).' });
+        }
         // Check duplicate
         const exists = await pool.query('SELECT id FROM customer WHERE email ILIKE $1', [email]);
         if (exists.rows.length)
@@ -229,16 +270,16 @@ authRouter.patch('/profile', authenticateToken, async (req, res) => {
         const params = [];
         if (full_name !== undefined) {
             const trimmed = String(full_name).trim();
-            if (trimmed.length < 2 || trimmed.length > 80) {
-                return res.status(400).json({ error: 'Full name must be between 2 and 80 characters.' });
+            if (!isValidFullName(trimmed)) {
+                return res.status(400).json({ error: 'Full name must contain only letters (min 2 characters, no digits).' });
             }
             params.push(trimmed);
             sets.push(`full_name=$${params.length}`);
         }
         if (phone !== undefined) {
             const cleanPhone = phone ? String(phone).trim() : null;
-            if (cleanPhone && !/^[\d\s+\-().]{6,25}$/.test(cleanPhone)) {
-                return res.status(400).json({ error: 'Please enter a valid phone number (6-25 digits/symbols).' });
+            if (cleanPhone && !isValidPhone(cleanPhone)) {
+                return res.status(400).json({ error: 'Please enter a valid phone number (7-15 digits, international E.164 standard).' });
             }
             params.push(cleanPhone);
             sets.push(`phone=$${params.length}`);

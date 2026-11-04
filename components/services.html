@@ -515,6 +515,7 @@
 
     <!-- Scripts -->
     <script type="module" src="../scripts/db.js"></script>
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB, getApiBase } from '../scripts/db.js';
@@ -966,7 +967,7 @@
                         const cancelBtn = document.getElementById('btnCancelServiceInModal');
                         if (cancelBtn) {
                             cancelBtn.onclick = async () => {
-                                if (!confirm(`Are you sure you want to cancel and remove "${sTitle}" from this voyage?`)) return;
+                                // Direct service removal with bottom-center toast
                                 try {
                                     cancelBtn.disabled = true;
                                     cancelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing...';
@@ -1233,6 +1234,10 @@
             initServices();
         }
     </script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 
 </html>

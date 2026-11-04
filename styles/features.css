@@ -1318,3 +1318,1465 @@
   background: #2A3854;
   color: #FFFFFF;
 }
+
+
+/* ==========================================================================
+   7. UNIVERSAL LIVE FORM VALIDATION & FIELD FEEDBACK ENGINE
+   ========================================================================== */
+
+/* Error highlights for all input types */
+input.input-error,
+textarea.input-error,
+select.input-error,
+.booking-input-wrap:has(input.input-error),
+.booking-input-wrap:has(select.input-error),
+.input-with-icon:has(input.input-error),
+.password-input-wrapper:has(input.input-error) {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important;
+  animation: jadooFieldShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Success highlights when valid */
+input.input-success,
+textarea.input-success,
+select.input-success,
+.booking-input-wrap:has(input.input-success),
+.input-with-icon:has(input.input-success) {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12) !important;
+}
+
+@keyframes jadooFieldShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-3px); }
+  40%, 60% { transform: translateX(3px); }
+}
+
+/* Live error message beneath inputs */
+.field-error-msg,
+.booking-field-error {
+  display: none;
+  font-size: 0.78rem;
+  color: #EF4444;
+  font-weight: 500;
+  margin-top: 5px;
+  margin-bottom: 2px;
+  padding-left: 3px;
+  text-align: left;
+  width: 100%;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.field-error-msg.visible,
+.booking-field-error.visible {
+  display: block !important;
+  animation: jadooFadeInError 0.22s ease-in-out;
+}
+
+@keyframes jadooFadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode overrides for live validation */
+[data-theme="dark"] input.input-error,
+[data-theme="dark"] textarea.input-error,
+[data-theme="dark"] select.input-error,
+[data-theme="dark"] .booking-input-wrap:has(input.input-error),
+[data-theme="dark"] .booking-input-wrap:has(select.input-error),
+[data-theme="dark"] .input-with-icon:has(input.input-error),
+[data-theme="dark"] .password-input-wrapper:has(input.input-error) {
+  border-color: #F87171 !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+  color: #FEE2E2 !important;
+}
+
+[data-theme="dark"] input.input-success,
+[data-theme="dark"] textarea.input-success,
+[data-theme="dark"] select.input-success,
+[data-theme="dark"] .booking-input-wrap:has(input.input-success),
+[data-theme="dark"] .input-with-icon:has(input.input-success) {
+  border-color: #34D399 !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2) !important;
+}
+
+[data-theme="dark"] .field-error-msg,
+[data-theme="dark"] .booking-field-error {
+  color: #FCA5A5;
+}
+
+
+.sbox .field-error-msg {
+  color: #FFF;
+  background: rgba(225, 29, 72, 0.85);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* High-specificity overrides for .booking-input-wrap inputs in light and dark mode */
+.booking-input-wrap input.input-error,
+.booking-input-wrap select.input-error,
+.booking-field-group textarea.input-error {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+  animation: jadooFieldShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+}
+
+.booking-input-wrap input.input-success,
+.booking-input-wrap select.input-success,
+.booking-field-group textarea.input-success {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+[data-theme="dark"] .booking-input-wrap input.input-error,
+[data-theme="dark"] .booking-input-wrap select.input-error,
+[data-theme="dark"] .booking-field-group textarea.input-error {
+  border-color: #EF4444 !important;
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+  color: #FFFFFF !important;
+  animation: jadooFieldShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+}
+
+[data-theme="dark"] .booking-input-wrap input.input-success,
+[data-theme="dark"] .booking-input-wrap select.input-success,
+[data-theme="dark"] .booking-field-group textarea.input-success {
+  border-color: #10B981 !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+}
+
+[data-theme="dark"] .booking-field-group .field-error-msg {
+  color: #F87171 !important;
+  font-weight: 500;
+  display: none;
+  font-size: 0.82rem;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+[data-theme="dark"] .booking-field-group .field-error-msg.visible {
+  display: block !important;
+}
+
+
+/* ==========================================================================
+   NEW ADVANCED UI ELEMENTS (Jadoo Travel v2.5)
+   1. Testimonial Modal Identity Bar
+   2. Travel Style Category Quick Chips
+   3. Live Character Counter & Progress Meter
+   4. Recommendation Pills Selector
+   5. Upcoming Journey Countdown Hero Card
+   6. Digital Traveler Passport & Achievements Showcase
+   7. Currency Switcher in Header Navigation
+   8. Floating Back to Top Button
+   ========================================================================== */
+
+/* 1. Reviewer Identity Bar */
+.reviewer-identity-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--bg-card-subtle, rgba(24, 30, 75, 0.03));
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.08));
+  border-radius: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.reviewer-avatar-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #DF6951;
+  flex-shrink: 0;
+  background: #FFF;
+}
+
+.reviewer-mini-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reviewer-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewer-name-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reviewer-active-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-heading, #181E4B);
+}
+
+.verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 1rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.reviewer-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted, #686D77);
+  margin-top: 2px;
+}
+
+/* 2. Travel Style Quick Tag Chips */
+.travel-type-chips-wrap {
+  margin-top: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.travel-type-chips-wrap .sub-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #5E6282);
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.travel-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.travel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  background: var(--bg-card-subtle, rgba(24, 30, 75, 0.04));
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.1));
+  color: var(--text-body, #394152);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.travel-chip:hover {
+  border-color: #DF6951;
+  background: rgba(223, 105, 81, 0.08);
+  color: #DF6951;
+  transform: translateY(-1px);
+}
+
+.travel-chip.is-selected {
+  background: linear-gradient(135deg, #DF6951 0%, #F15A24 100%);
+  color: #FFFFFF !important;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(223, 105, 81, 0.3);
+}
+
+/* 3. Live Character Counter & Progress Bar */
+.quote-counter-bar {
+  margin-top: 0.4rem;
+}
+
+.quote-counter-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(24, 30, 75, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.quote-counter-fill {
+  height: 100%;
+  width: 0%;
+  background: #DF6951;
+  border-radius: 2px;
+  transition: width 0.15s ease, background-color 0.2s ease;
+}
+
+.quote-counter-fill.is-valid {
+  background: #10B981;
+}
+
+.quote-counter-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #7E8299);
+}
+
+.quote-min-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-muted, #7E8299);
+}
+
+.quote-min-badge.is-satisfied {
+  color: #10B981;
+}
+
+/* 4. Recommendation Switch */
+.recommendation-box {
+  margin-top: 0.75rem;
+}
+
+.recommend-pill-selector {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.rec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.12));
+  background: var(--bg-card, #FFFFFF);
+  color: var(--text-body, #4B5563);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rec-pill:hover {
+  border-color: #DF6951;
+  background: rgba(223, 105, 81, 0.05);
+}
+
+.rec-pill.is-active[data-val="yes"] {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10B981;
+  color: #059669;
+  font-weight: 600;
+}
+
+.rec-pill.is-active[data-val="maybe"] {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: #F59E0B;
+  color: #D97706;
+  font-weight: 600;
+}
+
+.rec-pill.is-active[data-val="no"] {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: #EF4444;
+  color: #DC2626;
+  font-weight: 600;
+}
+
+/* 5. Upcoming Journey Countdown Hero Card */
+.profile-countdown-hero {
+  background: linear-gradient(135deg, rgba(24, 30, 75, 0.04) 0%, rgba(223, 105, 81, 0.07) 100%);
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.1));
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-countdown-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(223, 105, 81, 0.08);
+  pointer-events: none;
+}
+
+.countdown-hero-media {
+  width: 110px;
+  height: 110px;
+  border-radius: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.countdown-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.countdown-hero-body {
+  flex: 1;
+  min-width: 250px;
+}
+
+.countdown-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 2rem;
+  background: rgba(223, 105, 81, 0.15);
+  color: #DF6951;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+}
+
+.countdown-destination-title {
+  font-family: 'Volkhov', serif;
+  font-size: 1.45rem;
+  color: var(--text-heading, #181E4B);
+  margin: 0 0 0.35rem 0;
+}
+
+.countdown-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted, #5E6282);
+  margin-bottom: 0.75rem;
+}
+
+.countdown-timer-grid {
+  display: inline-flex;
+  gap: 0.6rem;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.1));
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.6rem;
+  min-width: 52px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.countdown-digit {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #DF6951;
+  line-height: 1.1;
+}
+
+.countdown-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted, #7E8299);
+  margin-top: 2px;
+}
+
+.countdown-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #DF6951 0%, #F15A24 100%);
+  color: #FFFFFF !important;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(223, 105, 81, 0.3);
+  transition: all 0.25s ease;
+  align-self: center;
+}
+
+.countdown-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(223, 105, 81, 0.45);
+}
+
+/* 6. Digital Traveler Passport & Achievements Showcase */
+.passport-achievements-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.08));
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.achievements-title-wrap h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-heading, #181E4B);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.achievements-title-wrap p {
+  font-size: 0.8rem;
+  color: var(--text-muted, #7E8299);
+  margin: 2px 0 0 0;
+}
+
+.achievements-progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 2rem;
+  background: rgba(241, 165, 1, 0.12);
+  color: #B45309;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.achievement-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  background: var(--bg-card-subtle, rgba(24, 30, 75, 0.02));
+  border: 1px solid var(--border-subtle, rgba(24, 30, 75, 0.08));
+  border-radius: 1rem;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement-badge-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(223, 105, 81, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.badge-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  background: rgba(24, 30, 75, 0.06);
+  color: #64748B;
+}
+
+.achievement-badge-item.is-unlocked .badge-icon-wrap.gold {
+  background: linear-gradient(135deg, rgba(241, 165, 1, 0.2) 0%, rgba(245, 158, 11, 0.3) 100%);
+  color: #D97706;
+}
+
+.achievement-badge-item.is-unlocked .badge-icon-wrap.coral {
+  background: linear-gradient(135deg, rgba(223, 105, 81, 0.2) 0%, rgba(241, 90, 36, 0.3) 100%);
+  color: #DF6951;
+}
+
+.achievement-badge-item.is-unlocked .badge-icon-wrap.emerald {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
+  color: #10B981;
+}
+
+.achievement-badge-item.is-unlocked .badge-icon-wrap.purple {
+  background: linear-gradient(135deg, rgba(138, 121, 223, 0.2) 0%, rgba(109, 40, 217, 0.3) 100%);
+  color: #8A79DF;
+}
+
+.badge-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-title {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-heading, #181E4B);
+  line-height: 1.2;
+}
+
+.badge-desc {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted, #7E8299);
+  margin-top: 2px;
+}
+
+.badge-status-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.achievement-badge-item.is-unlocked .badge-status-tag {
+  color: #10B981;
+}
+
+.achievement-badge-item.is-locked {
+  opacity: 0.6;
+}
+
+.achievement-badge-item.is-locked .badge-status-tag {
+  color: #94A3B8;
+}
+
+/* 7. Header Currency Switcher */
+
+
+[data-theme="dark"] 
+/* 8. Floating Back To Top Button */
+.jadoo-back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #DF6951 0%, #F15A24 100%);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(223, 105, 81, 0.4);
+  z-index: 990;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jadoo-back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.jadoo-back-to-top:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(223, 105, 81, 0.55);
+}
+
+/* Dark Theme Adaptations for New UI Elements */
+[data-theme="dark"] .reviewer-identity-bar,
+[data-theme="dark"] .profile-countdown-hero,
+[data-theme="dark"] .passport-achievements-card {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .rec-pill,
+[data-theme="dark"] .countdown-unit,
+[data-theme="dark"] .achievement-badge-item {
+  background: #111827;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .reviewer-active-name,
+[data-theme="dark"] .countdown-destination-title,
+[data-theme="dark"] .achievements-title-wrap h3,
+[data-theme="dark"] .badge-title {
+  color: #F9FAFB !important;
+}
+
+[data-theme="dark"] .reviewer-sub,
+[data-theme="dark"] .countdown-subtitle,
+[data-theme="dark"] .achievements-title-wrap p,
+[data-theme="dark"] .badge-desc {
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .travel-chip {
+  background: #111827;
+  border-color: #374151;
+  color: #E5E7EB;
+}
+
+/* --------------------------------------------------------------------------
+   RICH UI EXPANSION: TOAST PROGRESS, SPEED DIAL, FIELD SHAKE & CHIPS
+   -------------------------------------------------------------------------- */
+
+/* Toast Progress Bar */
+.jadoo-toast {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: jadooToastProgress linear forwards;
+}
+
+@keyframes jadooToastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Floating Speed Dial Explorer Widget */
+.jadoo-speed-dial {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 99990;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+.speed-dial-main-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 10px 28px rgba(223, 105, 81, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.speed-dial-main-btn:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 14px 34px rgba(223, 105, 81, 0.6);
+}
+
+.speed-dial-menu {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.65rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(15px) scale(0.88);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jadoo-speed-dial.is-open .speed-dial-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.speed-dial-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0.95rem;
+  border-radius: 2rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.speed-dial-item:hover {
+  transform: translateX(-5px) scale(1.02);
+  background: #DF6951;
+  color: #FFFFFF !important;
+  border-color: #DF6951;
+  box-shadow: 0 8px 24px rgba(223, 105, 81, 0.35);
+}
+
+.speed-dial-item:hover i {
+  color: #FFFFFF !important;
+}
+
+.speed-dial-badge {
+  background: #DF6951;
+  color: #FFFFFF;
+  border-radius: 1rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 0.2rem;
+  transition: background 0.2s;
+}
+
+.speed-dial-item:hover .speed-dial-badge {
+  background: #FFFFFF;
+  color: #DF6951;
+}
+
+[data-theme="dark"] .speed-dial-item {
+  background: #1E293B;
+  color: #F8FAFC;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Shake Animation on Validation Failure */
+.input-error-shake {
+  animation: jadooFieldShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes jadooFieldShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@media (max-width: 640px) {
+  .jadoo-speed-dial {
+    bottom: 1.25rem;
+    right: 1.25rem;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   PREMIUM WEBSITE UPGRADES: PROGRESS BAR, HERO SEARCH, CONCIERGE & CONFETTI
+   -------------------------------------------------------------------------- */
+
+/* 2. Fullscreen Confetti Canvas */
+.jadoo-confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1000000;
+}
+
+/* 3. Hero Quick Search Explorer Widget */
+.hero-search-card {
+  margin-top: 1.75rem;
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+  z-index: 50;
+}
+
+.hero-search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 3rem;
+  padding: 0.4rem 0.5rem 0.4rem 1.25rem;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-search-input-wrap:focus-within {
+  border-color: #DF6951;
+  box-shadow: 0 18px 45px rgba(223, 105, 81, 0.18), 0 0 0 3px rgba(223, 105, 81, 0.12);
+}
+
+.hero-pin-icon {
+  color: #DF6951;
+  font-size: 1.15rem;
+  margin-right: 0.75rem;
+}
+
+.hero-search-input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: #1E293B;
+  background: transparent;
+  padding: 0.4rem 0;
+  font-weight: 500;
+}
+
+.hero-search-input-wrap input::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.hero-search-btn {
+  background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.75rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 18px rgba(223, 105, 81, 0.35);
+  transition: all 0.25s ease;
+}
+
+.hero-search-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(223, 105, 81, 0.5);
+}
+
+.hero-quick-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.chips-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.hero-pill-chip {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #475569;
+  padding: 0.28rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.hero-pill-chip:hover {
+  background: #DF6951;
+  color: #FFFFFF;
+  border-color: #DF6951;
+  transform: translateY(-2px);
+}
+
+/* Autocomplete Dropdown */
+.hero-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+  display: none;
+  z-index: 1000;
+}
+
+.hero-autocomplete-dropdown.is-open {
+  display: block;
+  animation: dropdownFadeIn 0.22s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1.15rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background: #FFF7ED;
+}
+
+.autocomplete-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+
+.autocomplete-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.autocomplete-info strong {
+  font-size: 0.9rem;
+  color: #1E293B;
+}
+
+.autocomplete-info span {
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.autocomplete-arrow {
+  color: #CBD5E1;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.autocomplete-item:hover .autocomplete-arrow {
+  color: #DF6951;
+  transform: translateX(4px);
+}
+
+.autocomplete-empty {
+  padding: 1.25rem;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 0.88rem;
+}
+
+/* 4. Destination Category Filter Tabs */
+.destination-category-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin: 1.5rem auto 2.2rem;
+  max-width: 950px;
+}
+
+.dest-cat-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  color: #475569;
+  border-radius: 2rem;
+  padding: 0.55rem 1.15rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dest-cat-btn:hover {
+  transform: translateY(-2px);
+  color: #DF6951;
+  border-color: #DF6951;
+  box-shadow: 0 6px 18px rgba(223, 105, 81, 0.15);
+}
+
+.dest-cat-btn.is-active {
+  background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 8px 22px rgba(223, 105, 81, 0.35);
+}
+
+/* 5. Travel Concierge Modal */
+.jadoo-concierge-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.jadoo-concierge-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.concierge-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.concierge-modal-dialog {
+  position: relative;
+  z-index: 2;
+  width: 92%;
+  max-width: 620px;
+  max-height: 88vh;
+  background: #FFFFFF;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from { transform: scale(0.92) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.concierge-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FAF5F0;
+}
+
+.concierge-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #DF6951;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.concierge-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  color: #64748B;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50%;
+  transition: color 0.2s ease;
+}
+
+.concierge-close-btn:hover {
+  color: #1E293B;
+}
+
+.concierge-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.concierge-welcome-banner h3 {
+  font-size: 1.25rem;
+  color: #1E293B;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.concierge-welcome-banner p {
+  font-size: 0.88rem;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.concierge-section-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.concierge-promos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.85rem;
+}
+
+.promo-card {
+  background: #FFF7ED;
+  border: 1px dashed #FDBA74;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promo-card:hover {
+  transform: translateY(-2px);
+  border-color: #DF6951;
+  box-shadow: 0 6px 16px rgba(223, 105, 81, 0.15);
+}
+
+.promo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.promo-badge {
+  background: #DF6951;
+  color: #FFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.5rem;
+  width: max-content;
+}
+
+.promo-badge-blue {
+  background: #3B82F6;
+}
+
+.promo-meta strong {
+  font-size: 1rem;
+  color: #1E293B;
+  letter-spacing: 0.5px;
+}
+
+.promo-meta p {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.promo-copy-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.4rem 0.75rem;
+  border-radius: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #DF6951;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.concierge-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #F8FAFC;
+  padding: 0.9rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.84rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+.checklist-item input {
+  accent-color: #10B981;
+  width: 16px;
+  height: 16px;
+}
+
+.concierge-support-box {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  color: #FFFFFF;
+  padding: 1.25rem 1.4rem;
+  border-radius: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.concierge-support-info strong {
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.concierge-support-info p {
+  font-size: 0.8rem;
+  color: #94A3B8;
+}
+
+.concierge-cta-btn {
+  background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.65rem 1.15rem;
+  border-radius: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 6px 18px rgba(223, 105, 81, 0.4);
+  transition: all 0.2s ease;
+}
+
+.concierge-cta-btn:hover {
+  transform: scale(1.04);
+}
+
+/* --------------------------------------------------------------------------
+   DARK THEME SUPPORT FOR UPGRADES
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] .hero-search-input-wrap {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .hero-search-input-wrap input {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .hero-pill-chip {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .hero-autocomplete-dropdown {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .autocomplete-item {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .autocomplete-item:hover {
+  background: #334155;
+}
+
+[data-theme="dark"] .autocomplete-info strong {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .dest-cat-btn {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .concierge-modal-dialog {
+  background: #141B2B;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .concierge-modal-header {
+  background: #1E293B;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .concierge-welcome-banner h3,
+[data-theme="dark"] .concierge-section-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .promo-card {
+  background: rgba(223, 105, 81, 0.08);
+  border-color: rgba(223, 105, 81, 0.3);
+}
+
+[data-theme="dark"] .promo-meta strong {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .promo-copy-btn {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .concierge-checklist {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .checklist-item {
+  color: #CBD5E1;
+}

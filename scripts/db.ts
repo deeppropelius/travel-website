@@ -514,7 +514,7 @@ class JadooDatabase {
             }
             return SEED_DESTINATIONS;
         } catch (err) {
-            console.error('getDestinationsAsync error:', err);
+            // Fallback gracefully when server is offline
             return SEED_DESTINATIONS;
         }
     }
@@ -546,7 +546,7 @@ class JadooDatabase {
             if (category && category !== 'All') params.set('category', category);
             return await apiFetch<DbAttraction[]>(`/api/attractions?${params}`);
         } catch (err) {
-            console.error('getAttractionsAsync error:', err);
+            // Fallback gracefully when server is offline
             return [];
         }
     }
@@ -567,7 +567,7 @@ class JadooDatabase {
             if (status) params.set('status', status);
             return await apiFetch<DbBooking[]>(`/api/bookings?${params}`);
         } catch (err) {
-            console.error('getBookingsAsync error:', err);
+            // Fallback gracefully when server is offline
             return [];
         }
     }
@@ -762,7 +762,7 @@ class JadooDatabase {
         try {
             return await apiFetch<DbTestimonial[]>('/api/testimonials');
         } catch (err) {
-            console.error('getTestimonialsAsync error:', err);
+            // Fallback gracefully when server is offline
             return [];
         }
     }

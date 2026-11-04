@@ -1080,6 +1080,19 @@
             </div>
             <div class="features-modal-body">
                 <form id="testimonialReviewForm">
+                    <!-- Reviewer Identity Bar -->
+                    <div class="reviewer-identity-bar">
+                        <div class="reviewer-avatar-wrap">
+                            <img src="../assets/testimonials-avatar-1.png" alt="Traveler Avatar" class="reviewer-mini-avatar" id="reviewModalAvatarPreview">
+                        </div>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-name-badge">
+                                <span class="reviewer-active-name" id="reviewModalActiveName">Traveler</span>
+                                <span class="verified-tag"><i class="fa-solid fa-circle-check"></i> Verified Traveler</span>
+                            </div>
+                            <span class="reviewer-sub">Your story will be published directly from your traveler profile</span>
+                        </div>
+                    </div>
                     <div class="booking-field-group">
                         <label>Trip Experience Rating <span class="required-star">*</span></label>
                         <div class="star-rating-picker" id="starRatingPicker">
@@ -1128,6 +1141,18 @@
                         </div>
                     </div>
 
+                    <!-- Travel Style Quick Tag Chips -->
+                    <div class="travel-type-chips-wrap">
+                        <label class="sub-label"><i class="fa-solid fa-tags"></i> Quick Travel Category / Style:</label>
+                        <div class="travel-chips-grid" id="travelTypeChipsGrid">
+                            <button type="button" class="travel-chip" data-tag="Solo Adventure"><i class="fa-solid fa-person-walking-luggage"></i> Solo Adventure</button>
+                            <button type="button" class="travel-chip" data-tag="Family Holiday"><i class="fa-solid fa-people-roof"></i> Family Holiday</button>
+                            <button type="button" class="travel-chip" data-tag="Romantic Getaway"><i class="fa-solid fa-heart"></i> Romantic Getaway</button>
+                            <button type="button" class="travel-chip" data-tag="Cultural Tour"><i class="fa-solid fa-landmark"></i> Cultural Tour</button>
+                            <button type="button" class="travel-chip" data-tag="Luxury Voyage"><i class="fa-solid fa-gem"></i> Luxury Voyage</button>
+                            <button type="button" class="travel-chip" data-tag="Eco & Nature"><i class="fa-solid fa-leaf"></i> Eco & Nature</button>
+                        </div>
+                    </div>
                     <div class="booking-field-group full-width">
                         <label for="reviewTripTag">Trip Tagline / Package Name</label>
                         <div class="booking-input-wrap">
@@ -1139,26 +1164,34 @@
                     <div class="booking-field-group full-width">
                         <label for="reviewQuote">Your Story &amp; Feedback <span class="required-star">*</span></label>
                         <textarea id="reviewQuote" rows="3" placeholder="Tell other travelers about your unforgettable moments with Jadoo..." required></textarea>
+                        <!-- Live Character Counter -->
+                        <div class="quote-counter-bar">
+                            <div class="quote-counter-track">
+                                <div class="quote-counter-fill" id="reviewQuoteFill"></div>
+                            </div>
+                            <div class="quote-counter-info">
+                                <span class="quote-min-badge" id="reviewQuoteMinBadge"><i class="fa-solid fa-circle-info"></i> Minimum 10 characters</span>
+                                <span class="quote-count-text" id="reviewQuoteCountText">0 / 500</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="booking-field-group full-width">
-                        <label>Choose Your Traveler Avatar</label>
-                        <div class="avatar-selection-grid" id="avatarSelectionGrid">
-                            <div class="avatar-chip is-selected" data-avatar="../assets/testimonials-avatar-1.png">
-                                <img src="../assets/testimonials-avatar-1.png" alt="Avatar 1">
-                            </div>
-                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-2.png">
-                                <img src="../assets/testimonials-avatar-2.png" alt="Avatar 2">
-                            </div>
-                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-3.png">
-                                <img src="../assets/testimonials-avatar-3.png" alt="Avatar 3">
-                            </div>
-                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80">
-                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar 4">
-                            </div>
-                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80">
-                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar 5">
-                            </div>
+                    <!-- Recommendation Switch -->
+                    <div class="booking-field-group full-width recommendation-box">
+                        <label><i class="fa-solid fa-thumbs-up"></i> Would you recommend this journey to fellow travelers?</label>
+                        <div class="recommend-pill-selector" id="recommendPillSelector">
+                            <button type="button" class="rec-pill is-active" data-val="yes">
+                                <i class="fa-solid fa-thumbs-up"></i>
+                                <span>Yes, Absolutely!</span>
+                            </button>
+                            <button type="button" class="rec-pill" data-val="maybe">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                                <span>Good Overall</span>
+                            </button>
+                            <button type="button" class="rec-pill" data-val="no">
+                                <i class="fa-solid fa-thumbs-down"></i>
+                                <span>Needs Improvement</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1178,7 +1211,12 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="../scripts/script.js"></script>
     <script type="module" src="../scripts/db.js"></script>
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module" src="../scripts/destination.js"></script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 </html>

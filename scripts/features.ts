@@ -175,6 +175,106 @@ if (typeof window !== 'undefined') {
 // --------------------------------------------------------------------------
 // 1. FLOATING TOAST NOTIFICATION ENGINE
 // --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------
+// 1.5. CELEBRATION CONFETTI PARTICLE ENGINE (Zero external dependencies)
+// --------------------------------------------------------------------------
+export const JadooConfetti = {
+    burst(xPercent = 50, yPercent = 45, count = 60): void {
+        if (typeof document === 'undefined') return;
+
+        let canvas = document.getElementById('jadooConfettiCanvas') as HTMLCanvasElement | null;
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'jadooConfettiCanvas';
+            canvas.className = 'jadoo-confetti-canvas';
+            document.body.appendChild(canvas);
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#DF6951', '#F1A501', '#10B981', '#38BDF8', '#8B5CF6', '#EC4899', '#FBBF24'];
+        const particles: Array<{
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            size: number;
+            color: string;
+            rotation: number;
+            rotSpeed: number;
+            alpha: number;
+        }> = [];
+
+        const startX = (window.innerWidth * xPercent) / 100;
+        const startY = (window.innerHeight * yPercent) / 100;
+
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 8 + 3;
+            particles.push({
+                x: startX,
+                y: startY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 2.5,
+                size: Math.random() * 8 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 12,
+                alpha: 1
+            });
+        }
+
+        let animId: number;
+        const gravity = 0.22;
+        const friction = 0.98;
+
+        const render = () => {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let activeCount = 0;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                if (p.alpha <= 0.01) continue;
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += gravity;
+                p.vx *= friction;
+                p.vy *= friction;
+                p.rotation += p.rotSpeed;
+                p.alpha -= 0.014;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                ctx.restore();
+
+                activeCount++;
+            }
+
+            if (activeCount > 0) {
+                animId = requestAnimationFrame(render);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                cancelAnimationFrame(animId);
+            }
+        };
+
+        animId = requestAnimationFrame(render);
+    }
+};
+
 export const JadooToast = {
     show(title: string, desc = '', type: 'success' | 'error' | 'info' | 'warning' | string = 'success', duration = 4000): void {
         let container = document.getElementById('jadooToastContainer');
@@ -2370,6 +2470,420 @@ export const JadooNavAuth = {
 // --------------------------------------------------------------------------
 // 7. GLOBAL INITIALIZATION ENTRY POINT
 // --------------------------------------------------------------------------
+
+function initRichUIElements(): void {
+    // 1. Floating Back To Top Button
+    const backToTopBtn = document.getElementById('jadooBackToTop');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 280) {
+                backToTopBtn.classList.add('is-visible');
+            } else {
+                backToTopBtn.classList.remove('is-visible');
+            }
+        });
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+
+    // 1.2. Floating Speed Dial / Quick Explorer Widget
+    if (!document.getElementById("jadooSpeedDial")) {
+        const isComp = typeof window !== "undefined" && window.location.pathname.includes("/components/");
+        const wishlistHref = isComp ? "./profile.html#wishlist" : "./components/profile.html#wishlist";
+
+        let savedWishCount = 0;
+        try {
+            savedWishCount = JSON.parse(localStorage.getItem("jadoo_saved_wishlist") || "[]").length;
+        } catch (_) {}
+
+        const speedDial = document.createElement("div");
+        speedDial.id = "jadooSpeedDial";
+        speedDial.className = "jadoo-speed-dial";
+        speedDial.innerHTML = `
+            <div class="speed-dial-menu" id="speedDialMenu">
+                <a href="${wishlistHref}" class="speed-dial-item" title="View Saved Destinations">
+                    <i class="fa-solid fa-heart" style="color: #EF4444;"></i>
+                    <span>Wishlist</span>
+                    <span class="speed-dial-badge" id="speedDialWishCount">${savedWishCount}</span>
+                </a>
+                <button type="button" class="speed-dial-item" id="speedDialBookingBtn" title="Instant Trip Booking">
+                    <i class="fa-solid fa-plane-departure" style="color: #DF6951;"></i>
+                    <span>Book Trip</span>
+                </button>
+                <button type="button" class="speed-dial-item" id="speedDialConciergeBtn" title="Travel Concierge & Tips">
+                    <i class="fa-solid fa-bell-concierge" style="color: #10B981;"></i>
+                    <span>Concierge</span>
+                </button>
+                <button type="button" class="speed-dial-item" id="speedDialThemeBtn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon" id="speedDialThemeIcon" style="color: #F1A501;"></i>
+                    <span>Theme</span>
+                </button>
+            </div>
+            <button type="button" class="speed-dial-main-btn" id="speedDialToggleBtn" aria-label="Quick Actions Menu" title="Quick Explorer Actions">
+                <i class="fa-solid fa-compass" id="speedDialMainIcon"></i>
+            </button>
+        `;
+        document.body.appendChild(speedDial);
+
+        const toggleBtn = document.getElementById("speedDialToggleBtn");
+        const mainIcon = document.getElementById("speedDialMainIcon");
+        toggleBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            speedDial.classList.toggle("is-open");
+            if (mainIcon) {
+                mainIcon.className = speedDial.classList.contains("is-open") ? "fa-solid fa-xmark" : "fa-solid fa-compass";
+            }
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!speedDial.contains(e.target as Node)) {
+                speedDial.classList.remove("is-open");
+                if (mainIcon) mainIcon.className = "fa-solid fa-compass";
+            }
+        });
+
+        document.getElementById("speedDialThemeBtn")?.addEventListener("click", () => {
+            JadooTheme.toggle();
+            const dark = JadooTheme.isDark();
+            const themeIcon = document.getElementById("speedDialThemeIcon");
+            if (themeIcon) themeIcon.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+        });
+
+        document.getElementById("speedDialBookingBtn")?.addEventListener("click", () => {
+            speedDial.classList.remove("is-open");
+            if (mainIcon) mainIcon.className = "fa-solid fa-compass";
+            const modal = document.getElementById("bookingModal");
+            if (modal) {
+                modal.classList.add("is-open");
+                modal.setAttribute("aria-hidden", "false");
+                document.body.style.overflow = "hidden";
+            } else if ((window as any).JadooUI?.openBookingModal) {
+                (window as any).JadooUI.openBookingModal({ destination: "Rome, Italy", price: 5400 });
+            } else {
+                window.location.href = isComp ? "../index.html#destinations" : "#destinations";
+            }
+        });
+
+        document.getElementById("speedDialConciergeBtn")?.addEventListener("click", () => {
+            speedDial.classList.remove("is-open");
+            if (mainIcon) mainIcon.className = "fa-solid fa-compass";
+            openTravelConciergeModal();
+        });
+    }
+
+    // 1.3. Interactive Travel Concierge Modal Engine
+    function openTravelConciergeModal(): void {
+        let modal = document.getElementById('travelConciergeModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'travelConciergeModal';
+            modal.className = 'jadoo-concierge-modal';
+            modal.innerHTML = `
+                <div class="concierge-modal-backdrop" id="conciergeBackdrop"></div>
+                <div class="concierge-modal-dialog">
+                    <div class="concierge-modal-header">
+                        <div class="concierge-brand-badge">
+                            <i class="fa-solid fa-bell-concierge"></i>
+                            <span>Jadoo Concierge & Travel Hub</span>
+                        </div>
+                        <button type="button" class="concierge-close-btn" id="conciergeCloseBtn" aria-label="Close Concierge">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="concierge-modal-body">
+                        <div class="concierge-welcome-banner">
+                            <h3>How can we elevate your journey today?</h3>
+                            <p>Instant answers, verified travel advisories, and exclusive explorer perks at your fingertips.</p>
+                        </div>
+
+                        <!-- Exclusive Promo Codes -->
+                        <div class="concierge-section">
+                            <h4 class="concierge-section-title"><i class="fa-solid fa-tags" style="color: #DF6951;"></i> Exclusive Explorer Perks</h4>
+                            <div class="concierge-promos-grid">
+                                <div class="promo-card" data-code="JADOO20" title="Click to copy coupon code">
+                                    <div class="promo-meta">
+                                        <span class="promo-badge">20% OFF</span>
+                                        <strong>JADOO20</strong>
+                                        <p>Save 20% on any European voyage</p>
+                                    </div>
+                                    <button type="button" class="promo-copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                                </div>
+                                <div class="promo-card" data-code="WANDERLUST" title="Click to copy coupon code">
+                                    <div class="promo-meta">
+                                        <span class="promo-badge promo-badge-blue">$100 OFF</span>
+                                        <strong>WANDERLUST</strong>
+                                        <p>Flat discount on private resort packages</p>
+                                    </div>
+                                    <button type="button" class="promo-copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instant Travel Essentials Checklist -->
+                        <div class="concierge-section">
+                            <h4 class="concierge-section-title"><i class="fa-solid fa-clipboard-check" style="color: #10B981;"></i> Pre-Departure Checklist</h4>
+                            <div class="concierge-checklist">
+                                <label class="checklist-item"><input type="checkbox" checked> <span>Passport valid for at least 6 months</span></label>
+                                <label class="checklist-item"><input type="checkbox" checked> <span>Digital Boarding Pass saved to mobile offline</span></label>
+                                <label class="checklist-item"><input type="checkbox"> <span>Travel health insurance certificate</span></label>
+                                <label class="checklist-item"><input type="checkbox"> <span>Universal power adapter & power bank</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 24/7 Priority Assistance -->
+                        <div class="concierge-section concierge-support-box">
+                            <div class="concierge-support-info">
+                                <strong>Need personal itinerary assistance?</strong>
+                                <p>Our luxury travel concierges are on standby 24 hours a day, 7 days a week.</p>
+                            </div>
+                            <a href="mailto:concierge@jadootravel.com" class="concierge-cta-btn">
+                                <i class="fa-solid fa-paper-plane"></i> Contact Concierge
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('conciergeCloseBtn')?.addEventListener('click', () => {
+                modal?.classList.remove('is-open');
+                document.body.style.overflow = '';
+            });
+
+            document.getElementById('conciergeBackdrop')?.addEventListener('click', () => {
+                modal?.classList.remove('is-open');
+                document.body.style.overflow = '';
+            });
+
+            // Promo code copy handlers
+            modal.querySelectorAll<HTMLElement>('.promo-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const code = card.getAttribute('data-code') || 'JADOO20';
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(code).then(() => {
+                            JadooToast.show('Promo Code Copied!', `Code "${code}" copied to clipboard.`, 'success');
+                            JadooConfetti.burst(50, 50, 40);
+                        }).catch(() => {
+                            JadooToast.show('Promo Code', `Your code is: ${code}`, 'info');
+                        });
+                    }
+                });
+            });
+        }
+
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // 1.4. Interactive Destination Category Tabs on Home Page
+    const catTabs = document.getElementById('destCategoryTabs');
+    if (catTabs) {
+        catTabs.querySelectorAll<HTMLButtonElement>('.dest-cat-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                catTabs.querySelectorAll('.dest-cat-btn').forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+
+                const cat = btn.getAttribute('data-cat') || 'all';
+                const cards = document.querySelectorAll<HTMLElement>('#carouselTrack .tcard');
+
+                cards.forEach(card => {
+                    const dest = (card.getAttribute('data-destination') || '').toLowerCase();
+                    let match = true;
+                    if (cat === 'historic') match = dest.includes('rome') || dest.includes('london') || dest.includes('paris');
+                    else if (cat === 'coastal') match = dest.includes('santorini') || dest.includes('bali') || dest.includes('greece');
+                    else if (cat === 'mountain') match = dest.includes('alps') || dest.includes('swiss') || dest.includes('japan');
+                    else if (cat === 'city') match = dest.includes('tokyo') || dest.includes('london') || dest.includes('paris') || dest.includes('rome');
+
+                    if (match) {
+                        card.style.display = '';
+                        card.style.opacity = '1';
+                        card.style.transform = 'scale(1)';
+                    } else {
+                        card.style.opacity = '0.35';
+                        card.style.transform = 'scale(0.96)';
+                    }
+                });
+            });
+        });
+    }
+
+    // 1.5. Interactive Search & Autocomplete in Hero
+    const heroSearchInput = document.getElementById('heroDestinationSearch') as HTMLInputElement | null;
+    const heroDropdown = document.getElementById('heroAutocompleteDropdown');
+    const heroSearchBtn = document.getElementById('heroSearchActionBtn');
+
+    if (heroSearchInput && heroDropdown) {
+        const popularDestinations = [
+            { name: 'Rome, Italy', sub: 'Colosseum & Ancient Wonders', img: './assets/destination-rome.png' },
+            { name: 'London, UK', sub: 'Big Ben & River Thames', img: './assets/destination-london.png' },
+            { name: 'Santorini, Greece', sub: 'Caldera Sunset & Aegean Sea', img: './assets/destination-santorini.jpg' },
+            { name: 'Tokyo, Japan', sub: 'Shibuya Crossing & Mount Fuji', img: './assets/destination-rome.png' },
+            { name: 'Paris, France', sub: 'Eiffel Tower & Louvre Museum', img: './assets/destination-london.png' }
+        ];
+
+        const renderSuggestions = (filterText = '') => {
+            const query = filterText.trim().toLowerCase();
+            const filtered = query ? popularDestinations.filter(d => d.name.toLowerCase().includes(query) || d.sub.toLowerCase().includes(query)) : popularDestinations;
+
+            if (filtered.length === 0) {
+                heroDropdown.innerHTML = '<div class="autocomplete-empty"><i class="fa-solid fa-compass"></i> No matching destinations found.</div>';
+                heroDropdown.classList.add('is-open');
+                return;
+            }
+
+            heroDropdown.innerHTML = filtered.map(item => `
+                <div class="autocomplete-item" data-name="${item.name}">
+                    <img src="${item.img}" alt="${item.name}" class="autocomplete-thumb">
+                    <div class="autocomplete-info">
+                        <strong>${item.name}</strong>
+                        <span>${item.sub}</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right autocomplete-arrow"></i>
+                </div>
+            `).join('');
+            heroDropdown.classList.add('is-open');
+
+            heroDropdown.querySelectorAll<HTMLElement>('.autocomplete-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const selName = el.getAttribute('data-name') || '';
+                    heroSearchInput.value = selName;
+                    heroDropdown.classList.remove('is-open');
+                    // Scroll to destinations or navigate
+                    const destSection = document.getElementById('destinations') || document.getElementById('third');
+                    if (destSection) {
+                        destSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        window.location.href = `./components/destination-page.html?search=${encodeURIComponent(selName)}`;
+                    }
+                });
+            });
+        };
+
+        heroSearchInput.addEventListener('focus', () => renderSuggestions(heroSearchInput.value));
+        heroSearchInput.addEventListener('input', () => renderSuggestions(heroSearchInput.value));
+
+        document.addEventListener('click', (e) => {
+            if (!heroSearchInput.contains(e.target as Node) && !heroDropdown.contains(e.target as Node)) {
+                heroDropdown.classList.remove('is-open');
+            }
+        });
+
+        heroSearchBtn?.addEventListener('click', () => {
+            const val = heroSearchInput.value.trim();
+            if (val) {
+                const isComp = window.location.pathname.includes('/components/');
+                const target = isComp ? `./destination-page.html?search=${encodeURIComponent(val)}` : `./components/destination-page.html?search=${encodeURIComponent(val)}`;
+                window.location.href = target;
+            }
+        });
+
+        // Quick trending chips
+        document.querySelectorAll<HTMLButtonElement>('.hero-pill-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const dest = chip.getAttribute('data-dest') || '';
+                heroSearchInput.value = dest;
+                heroSearchBtn?.click();
+            });
+        });
+    }
+
+    // 3. Testimonial Modal: Travel Style Quick Chips
+    const chipsGrid = document.getElementById('travelTypeChipsGrid');
+    const tripTagInput = document.getElementById('reviewTripTag') as HTMLInputElement | null;
+    if (chipsGrid && tripTagInput) {
+        chipsGrid.querySelectorAll<HTMLButtonElement>('.travel-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                chipsGrid.querySelectorAll('.travel-chip').forEach(c => c.classList.remove('is-selected'));
+                chip.classList.add('is-selected');
+                const tagVal = chip.getAttribute('data-tag') || '';
+                const currentDest = (document.getElementById('reviewDestinationSelect') as HTMLSelectElement | null)?.value || '';
+                if (currentDest) {
+                    tripTagInput.value = `${currentDest} • ${tagVal}`;
+                } else {
+                    tripTagInput.value = tagVal;
+                }
+                if ((window as any).JadooValidation) {
+                    (window as any).JadooValidation.validateField(tripTagInput);
+                }
+            });
+        });
+    }
+
+    // 4. Testimonial Modal: Live Quote Character Counter & Progress Meter
+    const quoteTextarea = document.getElementById('reviewQuote') as HTMLTextAreaElement | null;
+    const quoteFill = document.getElementById('reviewQuoteFill');
+    const quoteCountText = document.getElementById('reviewQuoteCountText');
+    const quoteMinBadge = document.getElementById('reviewQuoteMinBadge');
+
+    if (quoteTextarea && quoteFill && quoteCountText) {
+        const updateCounter = () => {
+            const len = quoteTextarea.value.length;
+            quoteCountText.textContent = `${len} / 500`;
+            const pct = Math.min(100, Math.round((len / 500) * 100));
+            quoteFill.style.width = `${pct}%`;
+            if (len >= 10) {
+                quoteFill.classList.add('is-valid');
+                if (quoteMinBadge) {
+                    quoteMinBadge.classList.add('is-satisfied');
+                    quoteMinBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Requirement Met';
+                }
+            } else {
+                quoteFill.classList.remove('is-valid');
+                if (quoteMinBadge) {
+                    quoteMinBadge.classList.remove('is-satisfied');
+                    quoteMinBadge.innerHTML = '<i class="fa-solid fa-circle-info"></i> Minimum 10 characters';
+                }
+            }
+        };
+        quoteTextarea.addEventListener('input', updateCounter);
+        quoteTextarea.addEventListener('keyup', updateCounter);
+    }
+
+    // 5. Testimonial Modal: Recommendation Switch Pills
+    const recGrid = document.getElementById('recommendPillSelector');
+    if (recGrid) {
+        recGrid.querySelectorAll<HTMLButtonElement>('.rec-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                recGrid.querySelectorAll('.rec-pill').forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+            });
+        });
+    }
+
+    // 6. Profile Upcoming Journey Countdown Hero Card
+    const daysEl = document.getElementById('countdownDays');
+    const hoursEl = document.getElementById('countdownHours');
+    const minsEl = document.getElementById('countdownMins');
+    const secsEl = document.getElementById('countdownSecs');
+    if (daysEl && hoursEl && minsEl && secsEl) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 14);
+        targetDate.setHours(targetDate.getHours() + 8);
+        targetDate.setMinutes(targetDate.getMinutes() + 45);
+
+        const updateClock = () => {
+            const now = new Date().getTime();
+            const diff = Math.max(0, targetDate.getTime() - now);
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            daysEl.textContent = String(d).padStart(2, '0');
+            hoursEl.textContent = String(h).padStart(2, '0');
+            minsEl.textContent = String(m).padStart(2, '0');
+            secsEl.textContent = String(s).padStart(2, '0');
+        };
+        updateClock();
+        setInterval(updateClock, 1000);
+    }
+}
+
 export function initAdvancedFeatures(): {
     theme: typeof JadooTheme;
     toast: typeof JadooToast;
@@ -2386,6 +2900,9 @@ export function initAdvancedFeatures(): {
 
     // 2. Initialize Universal Navbar Auth & Mobile Navigation
     JadooNavAuth.init();
+
+    // 3. Initialize Rich UI Interactive Elements
+    initRichUIElements();
 
     const boardingPass = new BoardingPassController();
     const reviews = new TestimonialReviewController();
@@ -2421,6 +2938,7 @@ export function initAdvancedFeatures(): {
         (window as any).JadooTicketUtilities = JadooTicketUtilities;
         (window as any).TicketSecurityMiddleware = TicketSecurityMiddleware;
         (window as any).JadooNavAuth = JadooNavAuth;
+        (window as any).JadooConfetti = JadooConfetti;
     }
 
     return {

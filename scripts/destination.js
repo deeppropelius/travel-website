@@ -531,10 +531,10 @@ function createPlaceCard(place, index) {
 function openBookingModalForPlace(place) {
     const currentUser = window.JadooDB?.getCurrentUser() || window.JadooAuth?.getCurrentUser();
     if (!currentUser) {
-        const proceed = confirm("You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.");
-        if (proceed) {
-            window.location.href = "auth.html#signin";
+        if (typeof window.JadooToast?.show === 'function') {
+            window.JadooToast.show("Authentication Required", "Please sign in or create an account to book your trip.", "warning");
         }
+        setTimeout(() => { window.location.href = "auth.html#signin"; }, 1200);
         return;
     }
     const jadooUI = window.JadooUI;
@@ -865,9 +865,7 @@ btnToggleWishlistLandmark?.addEventListener("click", () => {
     const placeId = `place-${place.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
     const existingIdx = saved.findIndex((item) => item.title === place.name || item.id === placeId);
     if (existingIdx >= 0) {
-        if (!confirm(`Are you sure you want to remove "${place.name}" from your saved destinations?`)) {
-            return;
-        }
+        // Direct removal with bottom-center notification
         saved.splice(existingIdx, 1);
         try {
             localStorage.setItem("jadoo_saved_wishlist", JSON.stringify(saved));

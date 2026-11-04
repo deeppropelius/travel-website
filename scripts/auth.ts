@@ -382,6 +382,9 @@ interface Window {
                 if (!isValid) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+                    if (typeof (window as any).showToastNotification === 'function') {
+                        (window as any).showToastNotification('Sign Up Incomplete', 'Please check the highlighted fields and correct errors.', 'error');
+                    }
                 }
             }, true); // Use capture phase to intercept before other handlers
         }
@@ -393,6 +396,9 @@ interface Window {
                 if (!isValid) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+                    if (typeof (window as any).showToastNotification === 'function') {
+                        (window as any).showToastNotification('Sign In Incomplete', 'Please check the highlighted fields and correct errors.', 'error');
+                    }
                 }
             }, true); // Use capture phase to intercept before other handlers
         }

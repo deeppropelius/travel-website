@@ -6529,3 +6529,78 @@ body.user-logged-in #destUserProfileDropdown {
     width: 100% !important;
   }
 }
+
+
+/* ==========================================================================
+   UNIVERSAL LIVE FORM VALIDATION & FIELD FEEDBACK ENGINE
+   ========================================================================== */
+input.input-error,
+textarea.input-error,
+select.input-error,
+.booking-input-wrap:has(input.input-error),
+.booking-input-wrap:has(select.input-error),
+.input-with-icon:has(input.input-error),
+.password-input-wrapper:has(input.input-error) {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important;
+  animation: jadooFieldShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+input.input-success,
+textarea.input-success,
+select.input-success,
+.booking-input-wrap:has(input.input-success),
+.input-with-icon:has(input.input-success) {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12) !important;
+}
+
+.field-error-msg,
+.booking-field-error {
+  display: none;
+  font-size: 0.78rem;
+  color: #EF4444;
+  font-weight: 500;
+  margin-top: 5px;
+  margin-bottom: 2px;
+  padding-left: 3px;
+  text-align: left;
+  width: 100%;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.field-error-msg.visible,
+.booking-field-error.visible {
+  display: block !important;
+  animation: jadooFadeInError 0.22s ease-in-out;
+}
+
+[data-theme="dark"] input.input-error,
+[data-theme="dark"] textarea.input-error,
+[data-theme="dark"] select.input-error,
+[data-theme="dark"] .booking-input-wrap:has(input.input-error),
+[data-theme="dark"] .booking-input-wrap:has(select.input-error),
+[data-theme="dark"] .input-with-icon:has(input.input-error),
+[data-theme="dark"] .password-input-wrapper:has(input.input-error) {
+  border-color: #F87171 !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+  color: #FEE2E2 !important;
+}
+
+[data-theme="dark"] input.input-success,
+[data-theme="dark"] textarea.input-success,
+[data-theme="dark"] select.input-success,
+[data-theme="dark"] .booking-input-wrap:has(input.input-success),
+[data-theme="dark"] .input-with-icon:has(input.input-success) {
+  border-color: #34D399 !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2) !important;
+}
+
+[data-theme="dark"] .field-error-msg,
+[data-theme="dark"] .booking-field-error {
+  color: #FCA5A5;
+}

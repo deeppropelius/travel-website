@@ -1230,9 +1230,7 @@ interface Window {
         const logoutBtns = document.querySelectorAll('.dropdown-logout-btn, #navLogoutBtn, #destNavLogoutBtn');
         const handleLogout = (e: Event) => {
             e.preventDefault();
-            if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
-                return;
-            }
+            // Direct logout with bottom-center notification
             userProfileDropdown?.classList.remove('open');
             destUserProfileDropdown?.classList.remove('open');
             userProfileBtn?.setAttribute('aria-expanded', 'false');
@@ -1300,10 +1298,8 @@ interface Window {
         if (!currentUser) {
             const isComponent = window.location.pathname.toLowerCase().includes('components');
             const authUrl = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
-            const proceed = confirm('You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.');
-            if (proceed) {
-                window.location.href = authUrl;
-            }
+            showToastNotification('Authentication Required', 'Please sign in or create an account to book your trip.', 'warning');
+            setTimeout(() => { window.location.href = authUrl; }, 1200);
             return;
         }
 
@@ -1514,8 +1510,8 @@ interface Window {
                     e.stopPropagation();
                     const bookingId = btn.getAttribute('data-cancel-id');
                     if (!bookingId) return;
-                    const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?`);
-                    if (confirmCancel) {
+                    showToastNotification('Booking Cancelled', 'Booking #' + bookingId + ' has been cancelled.', 'info');
+                    if (true) {
                         BookingService.cancelBooking(bookingId);
                         openMyBookingsModal();
                     }
@@ -1666,9 +1662,7 @@ interface Window {
             const dateLabel = formatDateDisplay(dateVal);
             const guestLabel = `${guests} ${guests > 1 ? 'guests' : 'guest'}`;
 
-            if (!confirm(`Are you sure you want to confirm your booking for ${targetLabel} on ${dateLabel} for ${guestLabel}? (Total: ${total.toFixed(2)})`)) {
-                return;
-            }
+            // Direct booking with bottom-center notification
 
             const newBooking = BookingService.createBooking({
                 userId: currentUser?.id,
@@ -1707,6 +1701,10 @@ interface Window {
 
             if (formContent) formContent.style.display = 'none';
             if (successView) successView.style.display = 'block';
+
+            if ((window as any).JadooConfetti && typeof (window as any).JadooConfetti.burst === 'function') {
+                (window as any).JadooConfetti.burst(50, 40, 75);
+            }
 
             // Wire success view buttons
             const viewBookingsBtn = document.getElementById('successViewBookingsBtn');
@@ -2167,9 +2165,7 @@ interface Window {
                 const bannerLogoutBtn = document.getElementById('bannerLogoutBtn');
                 if (bannerLogoutBtn) {
                     bannerLogoutBtn.addEventListener('click', () => {
-                        if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
-                            return;
-                        }
+                        // Direct logout with bottom-center notification
                         AuthService.logout();
                         banner.style.display = 'none';
                         showToastNotification('Logged Out', 'You have logged out successfully.', 'info');

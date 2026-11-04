@@ -750,6 +750,7 @@
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB } from '../scripts/db.js';
@@ -1413,7 +1414,7 @@
         }
 
         window.cancelAttachedService = async function(bookingId, serviceId, serviceTitle) {
-            if (!confirm(`Are you sure you want to cancel and remove "${serviceTitle}" from this voyage?`)) return;
+            // Direct service removal with bottom-center toast
             try {
                 const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) || localStorage.getItem('jadoo_auth_token') || '';
                 const res = await fetch('/api/services/detach', {
@@ -1800,7 +1801,7 @@
                 return;
             }
 
-            if (confirm(`Are you sure you want to cancel booking #${b.id} for ${b.attraction_name || b.destination_name}?`)) {
+            if (true) {
                 try {
                     JadooDB.cancelBooking(b.id);
                 } catch (_) {
@@ -1819,5 +1820,9 @@
             initTicketPage();
         }
     </script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 </html>
