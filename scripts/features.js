@@ -2538,99 +2538,21 @@ function initRichUIElements() {
                 catTabs.querySelectorAll('.dest-cat-btn').forEach(b => b.classList.remove('is-active'));
                 btn.classList.add('is-active');
                 const cat = btn.getAttribute('data-cat') || 'all';
-                const cards = document.querySelectorAll('#carouselTrack .tcard');
-                cards.forEach(card => {
-                    const dest = (card.getAttribute('data-destination') || '').toLowerCase();
-                    let match = true;
-                    if (cat === 'historic')
-                        match = dest.includes('rome') || dest.includes('london') || dest.includes('paris');
-                    else if (cat === 'coastal')
-                        match = dest.includes('santorini') || dest.includes('bali') || dest.includes('greece');
-                    else if (cat === 'mountain')
-                        match = dest.includes('alps') || dest.includes('swiss') || dest.includes('japan');
-                    else if (cat === 'city')
-                        match = dest.includes('tokyo') || dest.includes('london') || dest.includes('paris') || dest.includes('rome');
-                    if (match) {
-                        card.style.display = '';
-                        card.style.opacity = '1';
-                        card.style.transform = 'scale(1)';
-                    }
-                    else {
-                        card.style.opacity = '0.35';
-                        card.style.transform = 'scale(0.96)';
-                    }
-                });
-            });
-        });
-    }
-    // 1.5. Interactive Search & Autocomplete in Hero
-    const heroSearchInput = document.getElementById('heroDestinationSearch');
-    const heroDropdown = document.getElementById('heroAutocompleteDropdown');
-    const heroSearchBtn = document.getElementById('heroSearchActionBtn');
-    if (heroSearchInput && heroDropdown) {
-        const popularDestinations = [
-            { name: 'Rome, Italy', sub: 'Colosseum & Ancient Wonders', img: './assets/destination-rome.png' },
-            { name: 'London, UK', sub: 'Big Ben & River Thames', img: './assets/destination-london.png' },
-            { name: 'Santorini, Greece', sub: 'Caldera Sunset & Aegean Sea', img: './assets/destination-santorini.jpg' },
-            { name: 'Tokyo, Japan', sub: 'Shibuya Crossing & Mount Fuji', img: './assets/destination-rome.png' },
-            { name: 'Paris, France', sub: 'Eiffel Tower & Louvre Museum', img: './assets/destination-london.png' }
-        ];
-        const renderSuggestions = (filterText = '') => {
-            const query = filterText.trim().toLowerCase();
-            const filtered = query ? popularDestinations.filter(d => d.name.toLowerCase().includes(query) || d.sub.toLowerCase().includes(query)) : popularDestinations;
-            if (filtered.length === 0) {
-                heroDropdown.innerHTML = '<div class="autocomplete-empty"><i class="fa-solid fa-compass"></i> No matching destinations found.</div>';
-                heroDropdown.classList.add('is-open');
-                return;
-            }
-            heroDropdown.innerHTML = filtered.map(item => `
-                <div class="autocomplete-item" data-name="${item.name}">
-                    <img src="${item.img}" alt="${item.name}" class="autocomplete-thumb">
-                    <div class="autocomplete-info">
-                        <strong>${item.name}</strong>
-                        <span>${item.sub}</span>
-                    </div>
-                    <i class="fa-solid fa-arrow-right autocomplete-arrow"></i>
-                </div>
-            `).join('');
-            heroDropdown.classList.add('is-open');
-            heroDropdown.querySelectorAll('.autocomplete-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const selName = el.getAttribute('data-name') || '';
-                    heroSearchInput.value = selName;
-                    heroDropdown.classList.remove('is-open');
-                    // Scroll to destinations or navigate
-                    const destSection = document.getElementById('destinations') || document.getElementById('third');
-                    if (destSection) {
-                        destSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    else {
-                        window.location.href = `./components/destination-page.html?search=${encodeURIComponent(selName)}`;
-                    }
-                });
-            });
-        };
-        heroSearchInput.addEventListener('focus', () => renderSuggestions(heroSearchInput.value));
-        heroSearchInput.addEventListener('input', () => renderSuggestions(heroSearchInput.value));
-        document.addEventListener('click', (e) => {
-            if (!heroSearchInput.contains(e.target) && !heroDropdown.contains(e.target)) {
-                heroDropdown.classList.remove('is-open');
-            }
-        });
-        heroSearchBtn?.addEventListener('click', () => {
-            const val = heroSearchInput.value.trim();
-            if (val) {
-                const isComp = window.location.pathname.includes('/components/');
-                const target = isComp ? `./destination-page.html?search=${encodeURIComponent(val)}` : `./components/destination-page.html?search=${encodeURIComponent(val)}`;
-                window.location.href = target;
-            }
-        });
-        // Quick trending chips
-        document.querySelectorAll('.hero-pill-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                const dest = chip.getAttribute('data-dest') || '';
-                heroSearchInput.value = dest;
-                heroSearchBtn?.click();
+                const jadooCarousel = window.JadooCarousel;
+                if (jadooCarousel && typeof jadooCarousel.filterByCategory === 'function') {
+                    jadooCarousel.filterByCategory(cat);
+                }
+                const catLabels = {
+                    all: { title: 'All Escapes', desc: 'Viewing all 6 curated luxury destinations.' },
+                    historic: { title: 'Historic Wonders', desc: 'Slid to Rome, London & Paris historic landmarks.' },
+                    coastal: { title: 'Coastal & Beach', desc: 'Slid to Santorini Caldera & Venetian Canals.' },
+                    mountain: { title: 'Mountain & Nature', desc: 'Slid to Mount Fuji vistas & Tuscan hillsides.' },
+                    city: { title: 'Iconic Capitals', desc: 'Exploring Paris, Tokyo, London & Rome capitals.' }
+                };
+                const info = catLabels[cat] || { title: 'Filtered Destinations', desc: `Displaying ${cat} collection.` };
+                if (typeof JadooToast !== 'undefined' && JadooToast?.show) {
+                    JadooToast.show(info.title, info.desc, 'info');
+                }
             });
         });
     }

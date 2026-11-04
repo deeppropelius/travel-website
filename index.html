@@ -221,26 +221,6 @@
         </div>
       </div>
 
-      <!-- Interactive Hero Quick Search & Explorer -->
-      <div class="hero-search-card" id="heroSearchWidget">
-        <div class="hero-search-input-wrap">
-          <i class="fa-solid fa-location-dot hero-pin-icon"></i>
-          <input type="text" id="heroDestinationSearch" placeholder="Where do you want to wander? (e.g. Rome, Tokyo...)" autocomplete="off">
-          <button type="button" class="hero-search-btn" id="heroSearchActionBtn">
-            <i class="fa-solid fa-compass"></i>
-            <span>Explore</span>
-          </button>
-        </div>
-        <div class="hero-quick-chips" id="heroQuickChips">
-          <span class="chips-label"><i class="fa-solid fa-fire" style="color: #DF6951;"></i> Popular:</span>
-          <button type="button" class="hero-pill-chip" data-dest="Santorini, Greece">Santorini</button>
-          <button type="button" class="hero-pill-chip" data-dest="Rome, Italy">Rome</button>
-          <button type="button" class="hero-pill-chip" data-dest="Tokyo, Japan">Tokyo</button>
-          <button type="button" class="hero-pill-chip" data-dest="Paris, France">Paris</button>
-          <button type="button" class="hero-pill-chip" data-dest="London, UK">London</button>
-        </div>
-        <div class="hero-autocomplete-dropdown" id="heroAutocompleteDropdown"></div>
-      </div>
     </div>
     <div class="dimgs" data-reveal="right">
       <img src="./assets/hero-section-girl.png" alt="Traveler exploring destinations" class="girl">
@@ -311,7 +291,7 @@
     <div class="sec" data-reveal="up">
       <p>Top Selling</p>
       <h3>Top Destinations</h3>
-      <a href="/components/destination-page.html" class="destination-page" title="Destinations">
+      <a href="./components/destination-page.html" class="destination-page" id="destMoreLink" title="Destinations">
         <span>More</span>
         <i class="fa-solid fa-arrow-right"></i>
     </a>
@@ -319,35 +299,35 @@
 
       <!-- Travel Category Filter Chips -->
       <div class="destination-category-tabs" id="destCategoryTabs">
-        <button type="button" class="dest-cat-btn is-active" data-cat="all">
+        <button type="button" class="dest-cat-btn is-active" data-cat="all" onclick="if(window.JadooCarousel) window.JadooCarousel.filterByCategory('all');">
           <i class="fa-solid fa-earth-americas"></i> All Escapes
         </button>
-        <button type="button" class="dest-cat-btn" data-cat="historic">
+        <button type="button" class="dest-cat-btn" data-cat="historic" onclick="if(window.JadooCarousel) window.JadooCarousel.filterByCategory('historic');">
           <i class="fa-solid fa-landmark"></i> Historic Wonders
         </button>
-        <button type="button" class="dest-cat-btn" data-cat="coastal">
+        <button type="button" class="dest-cat-btn" data-cat="coastal" onclick="if(window.JadooCarousel) window.JadooCarousel.filterByCategory('coastal');">
           <i class="fa-solid fa-umbrella-beach"></i> Coastal & Beach
         </button>
-        <button type="button" class="dest-cat-btn" data-cat="mountain">
+        <button type="button" class="dest-cat-btn" data-cat="mountain" onclick="if(window.JadooCarousel) window.JadooCarousel.filterByCategory('mountain');">
           <i class="fa-solid fa-mountain-sun"></i> Mountain & Nature
         </button>
-        <button type="button" class="dest-cat-btn" data-cat="city">
+        <button type="button" class="dest-cat-btn" data-cat="city" onclick="if(window.JadooCarousel) window.JadooCarousel.filterByCategory('city');">
           <i class="fa-solid fa-city"></i> Iconic Capitals
         </button>
       </div>
      <div class="carousel-wrapper" data-reveal="up">
       <div class="carousel" id="destCarousel">
         <!-- Prev/Next Navigation Buttons -->
-        <button class="carousel-btn prev" id="carouselPrev" aria-label="Previous destination">
+        <button class="carousel-btn prev" id="carouselPrev" aria-label="Previous destination" onclick="if(window.JadooCarousel) window.JadooCarousel.prev();">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <button class="carousel-btn next" id="carouselNext" aria-label="Next destination">
+        <button class="carousel-btn next" id="carouselNext" aria-label="Next destination" onclick="if(window.JadooCarousel) window.JadooCarousel.next();">
           <i class="fa-solid fa-chevron-right"></i>
         </button>
         <!-- Cards Track -->
         <div class="tcards" id="carouselTrack">
           <!-- Card 1: Rome, Italy -->
-          <div class="tcard place-card is-active" data-index="0" data-destination="Rome, Italy">
+          <div class="tcard place-card is-active" data-index="0" data-destination="Rome, Italy" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(0);">
             <div class="place-card-img-wrap">
               <img src="./assets/destination-rome.png" alt="Rome, Italy" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Bestseller</span>
@@ -367,10 +347,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for Rome, Italy">
+                  <button class="place-view-btn" type="button" aria-label="View details for Rome, Italy" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(0);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book Rome, Italy">
+                  <button class="place-book-btn" type="button" aria-label="Book Rome, Italy" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(0);">
                     <span>Book</span>
                   </button>
                 </div>
@@ -379,7 +359,7 @@
           </div>
 
           <!-- Card 2: London, UK -->
-          <div class="tcard place-card" data-index="1" data-destination="London, UK">
+          <div class="tcard place-card" data-index="1" data-destination="London, UK" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(1);">
             <div class="place-card-img-wrap">
               <img src="./assets/destination-london.jpeg" alt="London, UK" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Popular</span>
@@ -399,10 +379,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for London, UK">
+                  <button class="place-view-btn" type="button" aria-label="View details for London, UK" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(1);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book London, UK">
+                  <button class="place-book-btn" type="button" aria-label="Book London, UK" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(1);">
                     <span>Book</span>
                   </button>
                 </div>
@@ -411,7 +391,7 @@
           </div>
 
           <!-- Card 3: Paris, France -->
-          <div class="tcard place-card" data-index="2" data-destination="Paris, France">
+          <div class="tcard place-card" data-index="2" data-destination="Paris, France" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(2);">
             <div class="place-card-img-wrap">
               <img src="./assets/destination-europe.png" alt="Paris, France" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Trending</span>
@@ -431,10 +411,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for Paris, France">
+                  <button class="place-view-btn" type="button" aria-label="View details for Paris, France" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(2);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book Paris, France">
+                  <button class="place-book-btn" type="button" aria-label="Book Paris, France" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(2);">
                     <span>Book</span>
                   </button>
                 </div>
@@ -443,7 +423,7 @@
           </div>
 
           <!-- Card 4: Santorini, Greece -->
-          <div class="tcard place-card" data-index="3" data-destination="Santorini, Greece">
+          <div class="tcard place-card" data-index="3" data-destination="Santorini, Greece" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(3);">
             <div class="place-card-img-wrap">
               <img src="./assets/easy-fast-trip-to-greece.jpeg" alt="Santorini, Greece" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Hot Deal</span>
@@ -463,10 +443,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for Santorini, Greece">
+                  <button class="place-view-btn" type="button" aria-label="View details for Santorini, Greece" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(3);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book Santorini, Greece">
+                  <button class="place-book-btn" type="button" aria-label="Book Santorini, Greece" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(3);">
                     <span>Book</span>
                   </button>
                 </div>
@@ -475,7 +455,7 @@
           </div>
 
           <!-- Card 5: Venice & Tuscany, Italy -->
-          <div class="tcard place-card" data-index="4" data-destination="Venice & Tuscany">
+          <div class="tcard place-card" data-index="4" data-destination="Venice & Tuscany" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(4);">
             <div class="place-card-img-wrap">
               <img src="./assets/destination-rome.png" alt="Venice & Tuscany, Italy" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Romantic</span>
@@ -495,10 +475,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for Venice & Tuscany">
+                  <button class="place-view-btn" type="button" aria-label="View details for Venice & Tuscany" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(4);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book Venice & Tuscany">
+                  <button class="place-book-btn" type="button" aria-label="Book Venice & Tuscany" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(4);">
                     <span>Book</span>
                   </button>
                 </div>
@@ -507,7 +487,7 @@
           </div>
 
           <!-- Card 6: Tokyo, Japan -->
-          <div class="tcard place-card" data-index="5" data-destination="Tokyo, Japan">
+          <div class="tcard place-card" data-index="5" data-destination="Tokyo, Japan" onclick="if(event.target.closest('button,a'))return; if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(5);">
             <div class="place-card-img-wrap">
               <img src="./assets/destination-london.jpeg" alt="Tokyo, Japan" class="place-img" loading="lazy" draggable="false">
               <span class="place-badge">Adventure</span>
@@ -527,10 +507,10 @@
                   <span class="place-price-unit">per person</span>
                 </div>
                 <div class="place-card-btns">
-                  <button class="place-view-btn" type="button" aria-label="View details for Tokyo, Japan">
+                  <button class="place-view-btn" type="button" aria-label="View details for Tokyo, Japan" onclick="event.stopPropagation(); if(window.JadooUI?.openPlaceModalByIndex) window.JadooUI.openPlaceModalByIndex(5);">
                     <span>Details</span>
                   </button>
-                  <button class="place-book-btn" type="button" aria-label="Book Tokyo, Japan">
+                  <button class="place-book-btn" type="button" aria-label="Book Tokyo, Japan" onclick="event.stopPropagation(); if(window.JadooUI?.openBookingModalByIndex) window.JadooUI.openBookingModalByIndex(5);">
                     <span>Book</span>
                   </button>
                 </div>

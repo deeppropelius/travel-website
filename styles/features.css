@@ -2780,3 +2780,31 @@ select.input-success,
 [data-theme="dark"] .checklist-item {
   color: #CBD5E1;
 }
+
+/* Interactive Destination Category and Carousel Feedback */
+.dest-cat-btn:active {
+  transform: translateY(0) scale(0.96) !important;
+}
+
+.tcard.is-category-matched {
+  opacity: 1 !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 16px 36px rgba(223, 105, 81, 0.22) !important;
+  border: 2px solid rgba(223, 105, 81, 0.5) !important;
+}
+
+.tcard.is-category-dimmed {
+  opacity: 0.42 !important;
+  transform: scale(0.96) !important;
+  filter: grayscale(35%) !important;
+  transition: all 0.4s ease !important;
+}
+
+.carousel-btn:active {
+  transform: translateY(-50%) scale(0.92) !important;
+}
+
+.place-view-btn:active,
+.place-book-btn:active {
+  transform: translateY(0) scale(0.95) !important;
+}

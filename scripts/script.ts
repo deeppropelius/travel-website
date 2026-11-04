@@ -47,6 +47,8 @@ interface IJadooUI {
     openMyBookingsModal(): void;
     closeMyBookingsModal(): void;
     openPlaceModal?(place: any): void;
+    openPlaceModalByIndex?(idx: number): void;
+    openBookingModalByIndex?(idx: number): void;
     updateNavbar(): void;
 }
 
@@ -1295,15 +1297,12 @@ interface Window {
     // Modal & Booking Functions
     function openBookingModal(details: { placeName: string; destination: string; price: number | string; image?: string }): void {
         const currentUser = AuthService.getCurrentUser();
-        if (!currentUser) {
-            const isComponent = window.location.pathname.toLowerCase().includes('components');
-            const authUrl = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
-            showToastNotification('Authentication Required', 'Please sign in or create an account to book your trip.', 'warning');
-            setTimeout(() => { window.location.href = authUrl; }, 1200);
-            return;
-        }
-
         const modal = document.getElementById('bookingModalOverlay');
+        if (!modal) return;
+
+        if (!currentUser) {
+            showToastNotification('Trip Reservation', 'Reserving as guest. Sign in anytime to sync bookings to your profile dashboard.', 'info');
+        }
         if (!modal) return;
 
         const isComponent = window.location.pathname.toLowerCase().includes('components');
@@ -1601,14 +1600,8 @@ interface Window {
         tripBookingForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             const currentUser = AuthService.getCurrentUser();
-            if (!currentUser) {
-                showToastNotification('Authentication Required', 'You must be logged in to book a trip.', 'warning');
-                const isComponent = window.location.pathname.toLowerCase().includes('components');
-                setTimeout(() => {
-                    window.location.href = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
-                }, 1000);
-                return;
-            }
+            const guestId = 'guest_' + Math.random().toString(36).substring(2, 9);
+            const activeUserId = currentUser ? currentUser.id : guestId;
 
             const fullNameInput = document.getElementById('bookingFullName') as HTMLInputElement | null;
             const emailInput = document.getElementById('bookingEmail') as HTMLInputElement | null;
@@ -1665,7 +1658,7 @@ interface Window {
             // Direct booking with bottom-center notification
 
             const newBooking = BookingService.createBooking({
-                userId: currentUser?.id,
+                userId: activeUserId,
                 userEmail: emailVal,
                 userName: nameVal,
                 phone: phoneInput?.value.trim() || '',
@@ -2091,6 +2084,21 @@ interface Window {
         openMyBookingsModal,
         closeMyBookingsModal,
         openPlaceModal,
+        openPlaceModalByIndex: (idx: number) => {
+            const meta = destinationCardsData[idx] || DEFAULT_CACHED_DESTINATIONS[idx];
+            if (meta) openPlaceModal(meta);
+        },
+        openBookingModalByIndex: (idx: number) => {
+            const meta = destinationCardsData[idx] || DEFAULT_CACHED_DESTINATIONS[idx];
+            if (meta) {
+                openBookingModal({
+                    placeName: meta.placeName,
+                    destination: meta.destination,
+                    price: meta.price,
+                    image: meta.image
+                });
+            }
+        },
         updateNavbar: updateNavbarAuthState
     };
 
@@ -2743,6 +2751,71 @@ interface Window {
                 }
             }
 
+            function filterByCategory(cat: string): void {
+                const normCat = (cat || 'all').toLowerCase();
+                let targetIndex = 0;
+
+                cards.forEach((card, idx) => {
+                    card.style.transition = 'all 0.4s ease';
+                    if (normCat === 'all') {
+                        card.classList.remove('is-category-dimmed');
+                        card.classList.add('is-category-matched');
+                        targetIndex = 0;
+                    } else if (normCat === 'historic') {
+                        // Rome (0), London (1), Paris (2)
+                        const isMatch = idx <= 2;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 0;
+                    } else if (normCat === 'coastal') {
+                        // Santorini (3), Venice & Tuscany (4)
+                        const isMatch = idx === 3 || idx === 4;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 3;
+                    } else if (normCat === 'mountain') {
+                        // Venice & Tuscany (4), Tokyo (5 - Mount Fuji)
+                        const isMatch = idx === 4 || idx === 5;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 3;
+                    } else if (normCat === 'city') {
+                        // Rome (0), London (1), Paris (2), Tokyo (5)
+                        const isMatch = idx === 0 || idx === 1 || idx === 2 || idx === 5;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 0;
+                    }
+                });
+
+                if (normCat === 'all') {
+                    setTimeout(() => {
+                        cards.forEach(c => c.classList.remove('is-category-matched'));
+                    }, 1000);
+                }
+
+                resetAutoPlay();
+                goTo(targetIndex, true);
+
+                // Update 'More' link dynamically
+                const moreLink = document.getElementById('destMoreLink') as HTMLAnchorElement | null;
+                if (moreLink) {
+                    moreLink.href = normCat === 'all'
+                        ? './components/destination-page.html'
+                        : `./components/destination-page.html?filter=${encodeURIComponent(normCat)}`;
+                }
+            }
+
+            // Expose JadooCarousel API globally for tabs and buttons
+            (window as any).JadooCarousel = {
+                goTo,
+                next,
+                prev,
+                filterByCategory,
+                getCurrentIndex: () => currentIndex,
+                getTotal: () => TOTAL
+            };
+
             if (prevBtn) {
                 prevBtn.addEventListener('click', (e: MouseEvent) => {
                     e.stopPropagation();
@@ -2771,7 +2844,7 @@ interface Window {
             function startDrag(clientX: number, clientY: number, isTouch: boolean, e: Event): void {
                 if (!track || !carousel) return;
                 const targetEl = e.target as HTMLElement | null;
-                if (targetEl && targetEl.closest('.carousel-btn')) return;
+                if (targetEl && targetEl.closest('.carousel-btn, button, a, input, select, textarea, .place-card-btns, .place-view-btn, .place-book-btn')) return;
 
                 isDragging = true;
                 hasDragged = false;
