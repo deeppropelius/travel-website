@@ -907,6 +907,17 @@
               </div>
             </div>
           </div>
+
+          <!-- Day-by-Day Curated Itinerary Visualizer -->
+          <div class="modal-itinerary-wrap" id="modalItineraryWrap">
+            <div class="itinerary-header-row">
+              <h4 class="modal-section-title"><i class="fa-solid fa-map-location-dot"></i> Curated Trip Itinerary</h4>
+              <span class="itinerary-curated-badge"><i class="fa-solid fa-sparkles"></i> Handcrafted Plan</span>
+            </div>
+            <div class="itinerary-timeline-list" id="modalItineraryList">
+              <!-- Dynamically rendered per destination -->
+            </div>
+          </div>
         </div>
 
         <div class="modal-bottom-bar">
@@ -1013,17 +1024,57 @@
               </div>
             </div>
 
-            <div class="booking-field-group">
-              <label for="bookingPackage">Package Tier</label>
-              <div class="booking-input-wrap select-wrap">
-                <i class="fa-solid fa-award input-icon"></i>
-                <select id="bookingPackage" name="packageTier">
-                  <option value="Standard" data-multiplier="1.0">Standard Explorer (Included)</option>
-                  <option value="Guided VIP" data-multiplier="1.25">Guided VIP Tour (+25%)</option>
-                  <option value="Luxury All-Inclusive" data-multiplier="1.5">Luxury All-Inclusive (+50%)</option>
-                </select>
+          </div>
+
+          <!-- Interactive Luxury Package Tier Cards -->
+          <div class="booking-field-group full-width package-tier-selection-group">
+            <div class="tier-label-row">
+              <label><i class="fa-solid fa-crown" style="color: #F1A501;"></i> Choose Experience Package Tier</label>
+              <span class="tier-guarantee-badge"><i class="fa-solid fa-shield-halved"></i> Best Value Guaranteed</span>
+            </div>
+            <div class="package-tiers-grid" id="bookingPackageTiers">
+              <div class="package-tier-card is-active" data-tier="Standard">
+                <div class="tier-card-header">
+                  <span class="tier-name">Standard Explorer</span>
+                  <span class="tier-multiplier-badge">Included</span>
+                </div>
+                <p class="tier-desc">Curated group excursion, licensed historian guide, digital headsets & landmark entry.</p>
+                <ul class="tier-perks">
+                  <li><i class="fa-solid fa-check"></i> Hotel Pickup & Return</li>
+                  <li><i class="fa-solid fa-check"></i> Skip-the-line Tickets</li>
+                </ul>
+              </div>
+              <div class="package-tier-card" data-tier="Guided VIP">
+                <div class="tier-badge-ribbon">Most Popular</div>
+                <div class="tier-card-header">
+                  <span class="tier-name">Guided VIP Comfort</span>
+                  <span class="tier-multiplier-badge">+25%</span>
+                </div>
+                <p class="tier-desc">Small group (max 8), 5-star hotel upgrade, private museum access & gourmet lunch.</p>
+                <ul class="tier-perks">
+                  <li><i class="fa-solid fa-check"></i> 5-Star Boutique Stay</li>
+                  <li><i class="fa-solid fa-check"></i> Priority VIP Lane</li>
+                  <li><i class="fa-solid fa-check"></i> Sommelier Wine Lunch</li>
+                </ul>
+              </div>
+              <div class="package-tier-card" data-tier="Luxury All-Inclusive">
+                <div class="tier-card-header">
+                  <span class="tier-name">VIP Ultra-Luxury</span>
+                  <span class="tier-multiplier-badge">+50%</span>
+                </div>
+                <p class="tier-desc">Private luxury chauffeur, sunset yacht/helicopter view, Michelin dining & 24/7 butler.</p>
+                <ul class="tier-perks">
+                  <li><i class="fa-solid fa-check"></i> Private Chauffeur & Sedan</li>
+                  <li><i class="fa-solid fa-check"></i> Sunset Yacht Charter</li>
+                  <li><i class="fa-solid fa-check"></i> 24/7 Personal Concierge</li>
+                </ul>
               </div>
             </div>
+            <select id="bookingPackage" name="packageTier" style="display: none;">
+              <option value="Standard" data-multiplier="1.0" selected>Standard Explorer (Included)</option>
+              <option value="Guided VIP" data-multiplier="1.25">Guided VIP Tour (+25%)</option>
+              <option value="Luxury All-Inclusive" data-multiplier="1.5">Luxury All-Inclusive (+50%)</option>
+            </select>
           </div>
 
           <div class="booking-field-group full-width">
@@ -1077,7 +1128,10 @@
             <div class="price-divider"></div>
             <div class="price-row total-row">
               <span class="total-label">Total Amount:</span>
-              <span class="total-value" id="bookingTotalAmount">$55.00</span>
+              <div class="total-val-wrap">
+                <span class="total-value" id="bookingTotalAmount">$55.00</span>
+                <span class="per-traveler-cost" id="summaryPerTravelerRate">$55.00 / guest</span>
+              </div>
             </div>
           </div>
 

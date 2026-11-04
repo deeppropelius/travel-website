@@ -2704,3 +2704,518 @@ select.input-success,
 .place-book-btn:active {
   transform: translateY(0) scale(0.95) !important;
 }
+
+/* ==========================================================================
+   ADVANCED UI/UX UPGRADES: 3D TILT, IMAGE SCRUBBER, ITINERARY & TIER CARDS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 3D Perspective Tilt & Specular Glare
+   -------------------------------------------------------------------------- */
+.category .card,
+.carousel .tcard.place-card,
+.fourth .fcard {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+  position: relative;
+}
+
+.card-tilt-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 6;
+  mix-blend-mode: overlay;
+}
+
+[data-theme="dark"] .card-tilt-glare {
+  mix-blend-mode: screen;
+}
+
+/* --------------------------------------------------------------------------
+   2. Micro Photo Scrubber on Destination Cards
+   -------------------------------------------------------------------------- */
+.card-scrubber {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.place-card-img-wrap:hover .card-scrubber,
+.tcard.place-card:hover .card-scrubber {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scrubber-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: auto;
+}
+
+.scrub-pill {
+  width: 18px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.scrub-pill:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: scaleY(1.3);
+}
+
+.scrub-pill.is-active {
+  background: #FFFFFF;
+  width: 28px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+/* --------------------------------------------------------------------------
+   3. Curated Day-by-Day Itinerary Visualizer in Place Modal
+   -------------------------------------------------------------------------- */
+.modal-itinerary-wrap {
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed rgba(226, 232, 240, 0.85);
+}
+
+[data-theme="dark"] .modal-itinerary-wrap {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.itinerary-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.itinerary-header-row .modal-section-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #181E4B;
+  font-family: 'Volkhov', serif;
+}
+
+[data-theme="dark"] .itinerary-header-row .modal-section-title {
+  color: #F8FAFC;
+}
+
+.itinerary-header-row .modal-section-title i {
+  color: #DF6951;
+}
+
+.itinerary-curated-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(241, 165, 1, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(241, 165, 1, 0.3);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .itinerary-curated-badge {
+  background: rgba(241, 165, 1, 0.2);
+  color: #FBBF24;
+  border-color: rgba(241, 165, 1, 0.4);
+}
+
+.itinerary-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.itinerary-card-item {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+[data-theme="dark"] .itinerary-card-item {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.itinerary-card-item:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .itinerary-card-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.itinerary-card-item.is-expanded {
+  background: #FFFFFF;
+  border-color: rgba(223, 105, 81, 0.4);
+  box-shadow: 0 8px 20px rgba(223, 105, 81, 0.1);
+}
+
+[data-theme="dark"] .itinerary-card-item.is-expanded {
+  background: #1E293B;
+  border-color: rgba(223, 105, 81, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.itinerary-item-header {
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  gap: 0.75rem;
+}
+
+.itinerary-left-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.itinerary-day-badge {
+  background: #181E4B;
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .itinerary-day-badge {
+  background: #334155;
+  color: #F8FAFC;
+}
+
+.itinerary-card-item.is-expanded .itinerary-day-badge {
+  background: #DF6951;
+}
+
+.itinerary-icon-bubble {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(223, 105, 81, 0.1);
+  color: #DF6951;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .itinerary-icon-bubble {
+  background: rgba(223, 105, 81, 0.2);
+}
+
+.itinerary-day-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .itinerary-day-title {
+  color: #F1F5F9;
+}
+
+.itinerary-right-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.itinerary-time-pill {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+[data-theme="dark"] .itinerary-time-pill {
+  background: #0F172A;
+  color: #94A3B8;
+}
+
+.itinerary-chevron {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  transition: transform 0.25s ease;
+}
+
+.itinerary-card-item.is-expanded .itinerary-chevron {
+  transform: rotate(180deg);
+  color: #DF6951;
+}
+
+.itinerary-item-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+  padding: 0 1rem;
+}
+
+.itinerary-card-item.is-expanded .itinerary-item-body {
+  max-height: 200px;
+  padding: 0 1rem 0.85rem 1rem;
+}
+
+.itinerary-item-body p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+[data-theme="dark"] .itinerary-item-body p {
+  color: #CBD5E1;
+}
+
+/* --------------------------------------------------------------------------
+   4. Luxury Package Tier Cards & Live Price Breakdown
+   -------------------------------------------------------------------------- */
+.package-tier-selection-group {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.tier-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.tier-label-row label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+[data-theme="dark"] .tier-label-row label {
+  color: #F8FAFC;
+}
+
+.tier-guarantee-badge {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #10B981;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.package-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .package-tiers-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.package-tier-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 1rem 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+[data-theme="dark"] .package-tier-card {
+  background: #1E293B;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.package-tier-card:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .package-tier-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.package-tier-card.is-active {
+  border-color: #DF6951;
+  background: linear-gradient(180deg, rgba(223, 105, 81, 0.04) 0%, #FFFFFF 100%);
+  box-shadow: 0 10px 24px rgba(223, 105, 81, 0.2);
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .package-tier-card.is-active {
+  background: linear-gradient(180deg, rgba(223, 105, 81, 0.15) 0%, #1E293B 100%);
+  border-color: #DF6951;
+  box-shadow: 0 10px 28px rgba(223, 105, 81, 0.3);
+}
+
+.tier-badge-ribbon {
+  position: absolute;
+  top: -9px;
+  right: 12px;
+  background: linear-gradient(135deg, #DF6951 0%, #F1A501 100%);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(223, 105, 81, 0.35);
+}
+
+.tier-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.tier-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #181E4B;
+  font-family: 'Poppins', sans-serif;
+}
+
+[data-theme="dark"] .tier-name {
+  color: #F8FAFC;
+}
+
+.tier-multiplier-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: #F1F5F9;
+  color: #475569;
+}
+
+[data-theme="dark"] .tier-multiplier-badge {
+  background: #0F172A;
+  color: #94A3B8;
+}
+
+.package-tier-card.is-active .tier-multiplier-badge {
+  background: rgba(223, 105, 81, 0.15);
+  color: #DF6951;
+}
+
+.tier-desc {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: #64748B;
+  margin: 0 0 0.65rem 0;
+}
+
+[data-theme="dark"] .tier-desc {
+  color: #94A3B8;
+}
+
+.tier-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px dashed rgba(226, 232, 240, 0.8);
+  padding-top: 0.55rem;
+}
+
+[data-theme="dark"] .tier-perks {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.tier-perks li {
+  font-size: 0.74rem;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+[data-theme="dark"] .tier-perks li {
+  color: #CBD5E1;
+}
+
+.tier-perks li i {
+  color: #10B981;
+  font-size: 0.68rem;
+}
+
+.total-val-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.per-traveler-cost {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: -0.2px;
+}

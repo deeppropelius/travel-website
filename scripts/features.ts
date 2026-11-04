@@ -2688,6 +2688,160 @@ function initRichUIElements(): void {
         });
     }
 
+
+    // 7. 3D Card Perspective Tilt & Dynamic Glare Engine
+    function init3DCardTilt(): void {
+        if (typeof window === 'undefined') return;
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouch) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const targetCards = document.querySelectorAll<HTMLElement>('.carousel .tcard.place-card, .category .card, .fourth .fcard');
+        targetCards.forEach(card => {
+            let glare = card.querySelector<HTMLElement>('.card-tilt-glare');
+            if (!glare) {
+                glare = document.createElement('div');
+                glare.className = 'card-tilt-glare';
+                card.appendChild(glare);
+            }
+
+            let rafId: number | null = null;
+
+            const onMouseMove = (e: MouseEvent) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xRatio = Math.max(0, Math.min(1, x / rect.width));
+                const yRatio = Math.max(0, Math.min(1, y / rect.height));
+
+                const rotX = (-(yRatio - 0.5) * 10).toFixed(2);
+                const rotY = ((xRatio - 0.5) * 12).toFixed(2);
+
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(() => {
+                    card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-5px)`;
+                    if (glare) {
+                        glare.style.opacity = '1';
+                        glare.style.background = `radial-gradient(circle 300px at ${xRatio * 100}% ${yRatio * 100}%, rgba(255, 255, 255, 0.28), transparent 70%)`;
+                    }
+                });
+            };
+
+            const onMouseLeave = () => {
+                if (rafId) cancelAnimationFrame(rafId);
+                card.style.transform = '';
+                if (glare) {
+                    glare.style.opacity = '0';
+                }
+            };
+
+            card.addEventListener('mousemove', onMouseMove);
+            card.addEventListener('mouseleave', onMouseLeave);
+        });
+    }
+
+    // 8. Micro Image Scrubber on Destination Cards
+    function initCardImageScrubbers(): void {
+        const galleries: Record<number, string[]> = {
+            0: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=700&q=80'
+            ],
+            1: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=700&q=80'
+            ],
+            2: [
+                './assets/destination-europe.png',
+                'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1509299349698-dd22323b5963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=700&q=80'
+            ],
+            3: [
+                './assets/easy-fast-trip-to-greece.jpeg',
+                'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80'
+            ],
+            4: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?auto=format&fit=crop&w=700&q=80'
+            ],
+            5: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=700&q=80'
+            ]
+        };
+
+        const cardWraps = document.querySelectorAll<HTMLElement>('.place-card-img-wrap');
+        cardWraps.forEach((wrap, cardIdx) => {
+            const card = wrap.closest<HTMLElement>('.tcard.place-card');
+            const dataIdx = card ? parseInt(card.getAttribute('data-index') || String(cardIdx), 10) : cardIdx;
+            const photos = galleries[dataIdx] || galleries[cardIdx % 6];
+            if (!photos || photos.length < 2) return;
+
+            const img = wrap.querySelector<HTMLImageElement>('.place-img');
+            if (!img) return;
+
+            // Preload secondary images silently into browser cache
+            photos.slice(1).forEach(src => {
+                const preload = new Image();
+                preload.src = src;
+            });
+
+            // Build or select scrubber pills
+            let scrubber = wrap.querySelector<HTMLElement>('.card-scrubber');
+            if (!scrubber) {
+                scrubber = document.createElement('div');
+                scrubber.className = 'card-scrubber';
+                scrubber.innerHTML = `<div class="scrubber-pills">${photos.map((_, i) => `<span class="scrub-pill ${i === 0 ? 'is-active' : ''}" data-idx="${i}"></span>`).join('')}</div>`;
+                wrap.appendChild(scrubber);
+            }
+
+            const pills = scrubber.querySelectorAll<HTMLElement>('.scrub-pill');
+            let currentScrubIdx = 0;
+
+            const setPhoto = (idx: number) => {
+                if (idx === currentScrubIdx) return;
+                currentScrubIdx = idx;
+                pills.forEach((p, i) => p.classList.toggle('is-active', i === idx));
+                img.style.opacity = '0.85';
+                img.src = photos[idx];
+                setTimeout(() => { img.style.opacity = '1'; }, 100);
+            };
+
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const ratio = Math.max(0, Math.min(0.999, x / rect.width));
+                const targetIdx = Math.floor(ratio * photos.length);
+                setPhoto(targetIdx);
+            });
+
+            wrap.addEventListener('mouseleave', () => {
+                setPhoto(0);
+            });
+
+            pills.forEach((pill, pIdx) => {
+                pill.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setPhoto(pIdx);
+                });
+            });
+        });
+    }
+
+    try { init3DCardTilt(); } catch (e) { console.error('init3DCardTilt error:', e); }
+    try { initCardImageScrubbers(); } catch (e) { console.error('initCardImageScrubbers error:', e); }
+
     // 6. Profile Upcoming Journey Countdown Hero Card
     const daysEl = document.getElementById('countdownDays');
     const hoursEl = document.getElementById('countdownHours');

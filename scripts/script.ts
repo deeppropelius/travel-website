@@ -1424,7 +1424,23 @@ interface Window {
             }
         }
 
-        if (totalAmountEl) totalAmountEl.textContent = `$${total.toFixed(2)}`;
+        if (totalAmountEl) totalAmountEl.textContent = `${total.toFixed(2)}`;
+
+        // Update live per-traveler rate pill
+        const perTravelerRateEl = document.getElementById('summaryPerTravelerRate');
+        if (perTravelerRateEl) {
+            const perTraveler = total / guests;
+            perTravelerRateEl.textContent = `${perTraveler.toFixed(2)} / guest`;
+        }
+
+        // Sync active styling on package tier cards
+        const tierCards = document.querySelectorAll('.package-tier-card');
+        tierCards.forEach(card => {
+            const cardTier = card.getAttribute('data-tier') || '';
+            const isActive = cardTier.toLowerCase() === tierLabel.toLowerCase();
+            card.classList.toggle('is-active', isActive);
+        });
+
         return total;
     }
 
@@ -1596,6 +1612,19 @@ interface Window {
             updateBookingPriceCalculation();
         });
 
+        // Interactive Package Tier Cards Selection
+        const packageTierCards = document.querySelectorAll<HTMLElement>('.package-tier-card');
+        packageTierCards.forEach(tierCard => {
+            tierCard.addEventListener('click', () => {
+                const tierVal = tierCard.getAttribute('data-tier') || 'Standard';
+                if (packageSelect) {
+                    packageSelect.value = tierVal;
+                    // Trigger change
+                    packageSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
         // Booking Form Submission
         tripBookingForm?.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1723,6 +1752,8 @@ interface Window {
         price: number;
         priceFormatted: string;
         image: string;
+        gallery?: string[];
+        itinerary?: { day: number; title: string; desc: string; icon: string; time: string }[];
         badge: string;
         rating: number;
         reviews: number;
@@ -1740,6 +1771,18 @@ interface Window {
             price: 54,
             priceFormatted: '$5.42k',
             image: './assets/destination-rome.png',
+            gallery: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'VIP Imperial Arrival & Piazza Aperitivo', desc: 'Private luxury transfer to your boutique historic suite. Evening stroll across Piazza Navona and private Trevi Fountain aperitivo.', icon: 'fa-car-side', time: '14:00 - 20:00' },
+                { day: 2, title: 'Colosseum Gladiator Floor & Roman Forum VIP', desc: 'Skip-the-line gladiator arena access with an exclusive historian guide. Panoramic golden hour dinner overlooking Ancient Rome.', icon: 'fa-landmark', time: '09:30 - 18:00' },
+                { day: 3, title: 'Vatican Museums & Sistine Chapel Privileged Entry', desc: 'Early morning private entrance before public opening hours to admire Michelangelo\'s frescoes and St. Peter\'s Basilica dome.', icon: 'fa-church', time: '08:00 - 15:30' },
+                { day: 4, title: 'Handcrafted Pasta & Sommelier Tasting Masterclass', desc: 'Exclusive cooking masterclass with a celebrated Roman master chef, followed by private cellar reserve Brunello pairing.', icon: 'fa-utensils', time: '11:00 - 16:00' }
+            ],
             badge: 'Bestseller',
             rating: 4.9,
             reviews: 2840,
@@ -1754,6 +1797,17 @@ interface Window {
             price: 42,
             priceFormatted: '$4.2k',
             image: './assets/destination-london.jpeg',
+            gallery: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Royal Thames Arrival & High Tea at The Ritz', desc: 'Private chauffeur to Mayfair luxury hotel, signature traditional afternoon tea, followed by a twilight private Thames river yacht cruise.', icon: 'fa-ship', time: '13:30 - 19:30' },
+                { day: 2, title: 'Tower of London Early Access & Crown Jewels', desc: 'Exclusive private opening viewing of the Royal Crown Jewels, private Yeoman Warder tour, and historic Westminster Abbey exploration.', icon: 'fa-chess-rook', time: '09:00 - 16:00' },
+                { day: 3, title: 'West End VIP Gala & Kensington Palace', desc: 'Private curator tour of Kensington Palace State Apartments, Michelin-starred British dining, and premium orchestra West End theatre seats.', icon: 'fa-masks-theater', time: '14:00 - 22:30' }
+            ],
             badge: 'Popular',
             rating: 4.8,
             reviews: 3120,
@@ -1768,6 +1822,17 @@ interface Window {
             price: 58,
             priceFormatted: '$5.8k',
             image: './assets/destination-europe.png',
+            gallery: [
+                './assets/destination-europe.png',
+                'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1509299349698-dd22323b5963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Champagne Summit & Seine Gourmet Dinner', desc: 'Chauffeur transfer to luxury suite in the 8th Arrondissement. Sunset champagne toast atop the Eiffel Tower and gourmet Seine dinner cruise.', icon: 'fa-champagne-glasses', time: '15:00 - 21:30' },
+                { day: 2, title: 'Louvre Private Curator Tour & Montmartre', desc: 'Privileged skip-the-line access to the Mona Lisa and Winged Victory, bohemian artist quarter stroll, and sunset panoramic views from Sacré-Cœur.', icon: 'fa-palette', time: '09:30 - 17:00' },
+                { day: 3, title: 'Palace of Versailles Grand Royal Day', desc: 'Private chauffeur excursion to Versailles, Hall of Mirrors private view, golf cart cruise through royal fountains, and French pastry degustation.', icon: 'fa-crown', time: '08:30 - 16:30' }
+            ],
             badge: 'Trending',
             rating: 4.9,
             reviews: 3450,
@@ -1782,6 +1847,17 @@ interface Window {
             price: 68,
             priceFormatted: '$6.8k',
             image: './assets/easy-fast-trip-to-greece.jpeg',
+            gallery: [
+                './assets/easy-fast-trip-to-greece.jpeg',
+                'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Aegean Cliffside Villa Arrival & Oia Sunset', desc: 'Catamaran or helicopter arrival to cliffside Oia luxury cave villa with private heated plunge pool, infinity drinks, and iconic sunset.', icon: 'fa-umbrella-beach', time: '14:00 - 20:30' },
+                { day: 2, title: 'Private Catamaran Yacht & Volcanic Springs', desc: 'Exclusive private sailing yacht across the caldera, swimming in healing volcanic springs, and fresh Mediterranean lobster feast on board.', icon: 'fa-sailboat', time: '10:00 - 18:00' },
+                { day: 3, title: 'Ancient Akrotiri Ruins & Caldera Wine Pairing', desc: 'Private archaeologist tour of prehistoric Akrotiri, followed by volcanic Assyrtiko wine flight at Santo Wines overlooking the Aegean Sea.', icon: 'fa-wine-glass', time: '11:00 - 19:30' }
+            ],
             badge: 'Hot Deal',
             rating: 4.9,
             reviews: 2410,
@@ -1796,6 +1872,17 @@ interface Window {
             price: 48,
             priceFormatted: '$4.85k',
             image: './assets/destination-rome.png',
+            gallery: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Private Grand Canal Water Limousine', desc: 'Mahogany water taxi arrival through the Grand Canal. Check-in at 16th-century Palazzo, followed by a romantic twilight gondola serenade.', icon: 'fa-water', time: '14:00 - 20:00' },
+                { day: 2, title: 'Doge\'s Palace & Murano Master Glassblowing', desc: 'Secret Council chambers private access in St. Mark\'s, private watercraft to Murano for master glass-sculpting demonstration.', icon: 'fa-monument', time: '09:30 - 16:30' },
+                { day: 3, title: 'Chianti Hills & Tuscan Vineyard Feast', desc: 'Chauffeured drive through cypress-lined Tuscan hills, private olive oil and cellar reserve Brunello di Montalcino tasting.', icon: 'fa-wine-bottle', time: '09:00 - 18:00' }
+            ],
             badge: 'Romantic',
             rating: 4.7,
             reviews: 1680,
@@ -1810,6 +1897,17 @@ interface Window {
             price: 51,
             priceFormatted: '$5.1k',
             image: './assets/destination-london.jpeg',
+            gallery: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Neon Skyline & Shibuya Private Culinary Tour', desc: 'Luxury transfer to panoramic Shinjuku high-rise. Twilight Shibuya Crossing VIP lounge access and guided Omoide Yokocho culinary crawl.', icon: 'fa-city', time: '15:00 - 21:30' },
+                { day: 2, title: 'Ancient Asakusa & Imperial Gardens Tea Ceremony', desc: 'Morning blessing at historic Senso-ji temple, traditional private tea ceremony in Hamarikyu Imperial Gardens, followed by Ginza dining.', icon: 'fa-torii-gate', time: '09:00 - 16:30' },
+                { day: 3, title: 'Mount Fuji Bullet Train & Onsen Sanctuary', desc: 'First-class Shinkansen bullet train to Mount Fuji 5th station, Lake Kawaguchi cruise, and luxury Hakone private hot springs onsen retreat.', icon: 'fa-mountain-sun', time: '08:00 - 18:30' }
+            ],
             badge: 'Adventure',
             rating: 4.9,
             reviews: 2190,
@@ -1866,6 +1964,35 @@ interface Window {
             } else {
                 modalWikiLink.style.display = "none";
             }
+        }
+
+        // Render Day-by-Day Curated Itinerary Timeline
+        const itineraryList = document.getElementById("modalItineraryList");
+        if (itineraryList) {
+            const items = place.itinerary && place.itinerary.length > 0 ? place.itinerary : [
+                { day: 1, title: 'Arrival & Private Chauffeur Transfer', desc: `Check-in at luxury 5-star boutique suite, welcome champagne, and orientation stroll in ${place.destination}.`, icon: 'fa-plane-arrival', time: '14:00 - 19:30' },
+                { day: 2, title: 'Guided Historic Landmarks & VIP Access', desc: `Skip-the-line private access with a personal historian guide exploring ${place.placeName}.`, icon: 'fa-landmark', time: '09:30 - 16:30' },
+                { day: 3, title: 'Gourmet Culinary Masterclass & Sunset Panorama', desc: 'Artisanal dining tasting with sommelier wine pairing and picturesque golden hour views.', icon: 'fa-utensils', time: '12:00 - 21:00' }
+            ];
+
+            itineraryList.innerHTML = items.map((item, idx) => `
+                <div class="itinerary-card-item ${idx === 0 ? 'is-expanded' : ''}" data-day="${item.day}">
+                    <div class="itinerary-item-header" onclick="this.parentElement.classList.toggle('is-expanded')">
+                        <div class="itinerary-left-meta">
+                            <span class="itinerary-day-badge">Day 0${item.day}</span>
+                            <span class="itinerary-icon-bubble"><i class="fa-solid ${item.icon}"></i></span>
+                            <strong class="itinerary-day-title">${item.title}</strong>
+                        </div>
+                        <div class="itinerary-right-meta">
+                            <span class="itinerary-time-pill"><i class="fa-regular fa-clock"></i> ${item.time}</span>
+                            <i class="fa-solid fa-chevron-down itinerary-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="itinerary-item-body">
+                        <p>${item.desc}</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
         modalOverlay.classList.add("active");
