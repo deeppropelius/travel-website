@@ -595,13 +595,19 @@ class JadooDatabase {
     }
     async updateBookingStatusAsync(idOrRef, status) {
         try {
-            await apiFetch(`/api/bookings/${encodeURIComponent(idOrRef)}/status`, {
+            const cleanId = (idOrRef || '').replace(/^#+/, '').trim();
+            await apiFetch(`/api/bookings/${encodeURIComponent(cleanId)}/status`, {
                 method: 'PATCH',
                 body: JSON.stringify({ status })
             });
-            const s = idOrRef.trim().toLowerCase();
+            const s = cleanId.toLowerCase();
+            const rawS = (idOrRef || '').trim().toLowerCase();
             const cache = window.__jadoo_bookings_cache || [];
-            const found = cache.find(b => b.id?.toLowerCase() === s || b.booking_ref?.toLowerCase() === s);
+            const found = cache.find(b => {
+                const bId = (b.id || '').toLowerCase();
+                const bRef = (b.booking_ref || '').toLowerCase();
+                return bId === s || bRef === s || bId === rawS || bRef === rawS;
+            });
             if (found) {
                 found.status = status;
             }
@@ -609,7 +615,11 @@ class JadooDatabase {
                 const ls = localStorage.getItem('jadoo_bookings');
                 if (ls) {
                     const list = JSON.parse(ls);
-                    const item = list.find((b) => b.id?.toLowerCase() === s || b.booking_ref?.toLowerCase() === s || (b.bookingReference || '').toLowerCase() === s);
+                    const item = list.find((b) => {
+                        const bId = (b.id || '').toLowerCase();
+                        const bRef = (b.booking_ref || b.bookingReference || '').toLowerCase();
+                        return bId === s || bRef === s || bId === rawS || bRef === rawS;
+                    });
                     if (item) {
                         item.status = status;
                         localStorage.setItem('jadoo_bookings', JSON.stringify(list));
@@ -624,9 +634,15 @@ class JadooDatabase {
         }
     }
     updateBookingStatus(idOrRef, status) {
-        const s = idOrRef.trim().toLowerCase();
+        const cleanId = (idOrRef || '').replace(/^#+/, '').trim();
+        const s = cleanId.toLowerCase();
+        const rawS = (idOrRef || '').trim().toLowerCase();
         const cache = window.__jadoo_bookings_cache || [];
-        const found = cache.find(b => b.id?.toLowerCase() === s || b.booking_ref?.toLowerCase() === s);
+        const found = cache.find(b => {
+            const bId = (b.id || '').toLowerCase();
+            const bRef = (b.booking_ref || '').toLowerCase();
+            return bId === s || bRef === s || bId === rawS || bRef === rawS;
+        });
         if (found) {
             found.status = status;
         }
@@ -634,7 +650,11 @@ class JadooDatabase {
             const ls = localStorage.getItem('jadoo_bookings');
             if (ls) {
                 const list = JSON.parse(ls);
-                const item = list.find((b) => b.id?.toLowerCase() === s || b.booking_ref?.toLowerCase() === s);
+                const item = list.find((b) => {
+                    const bId = (b.id || '').toLowerCase();
+                    const bRef = (b.booking_ref || b.bookingReference || '').toLowerCase();
+                    return bId === s || bRef === s || bId === rawS || bRef === rawS;
+                });
                 if (item) {
                     item.status = status;
                     localStorage.setItem('jadoo_bookings', JSON.stringify(list));

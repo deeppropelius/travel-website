@@ -41,7 +41,8 @@ bookingRouter.get('/', authenticateToken, async (req, res) => {
 bookingRouter.get('/:id', authenticateToken, async (req, res) => {
     try {
         const user = req.user;
-        const bookingId = req.params.id;
+        const bookingId = (req.params.id || '').trim();
+        const cleanId = bookingId.replace(/^#+/, '').trim();
         const { rows } = await pool.query('SELECT * FROM booking WHERE id::text = $1 OR booking_ref ILIKE $2 LIMIT 1', [bookingId, bookingId]);
         if (!rows.length)
             return res.status(404).json({ error: 'Booking not found' });
@@ -77,9 +78,9 @@ bookingRouter.patch('/:id/status', authenticateToken, async (req, res) => {
         }
         const { rows } = await pool.query(`UPDATE booking 
        SET status = $1, updated_at = NOW() 
-       WHERE (id::text = $2 OR booking_ref ILIKE $2) 
-         AND (customer_id = $3 OR user_email ILIKE $4) 
-       RETURNING *`, [rawStatus, bookingId, user.id, user.email]);
+       WHERE (id::text = $2 OR booking_ref ILIKE $2 OR booking_ref ILIKE $3)
+         AND (customer_id = $4 OR user_email ILIKE $5) 
+       RETURNING *`, [rawStatus, bookingId, cleanId, user.id, user.email]);
         if (!rows.length) {
             return res.status(404).json({
                 error: 'Booking not found or you do not have permission to modify this booking.'
@@ -106,9 +107,9 @@ bookingRouter.delete('/:id', authenticateToken, async (req, res) => {
         const bookingId = req.params.id;
         const { rows } = await pool.query(`UPDATE booking 
        SET status = 'cancelled', updated_at = NOW() 
-       WHERE (id::text = $1 OR booking_ref ILIKE $1) 
-         AND (customer_id = $2 OR user_email ILIKE $3) 
-       RETURNING id, booking_ref, status`, [bookingId, user.id, user.email]);
+       WHERE (id::text = $1 OR booking_ref ILIKE $1 OR booking_ref ILIKE $2)
+         AND (customer_id = $3 OR user_email ILIKE $4) 
+       RETURNING id, booking_ref, status`, [bookingId, cleanId, user.id, user.email]);
         if (!rows.length) {
             return res.status(404).json({
                 error: 'Booking not found or you do not have permission to cancel this booking.'
