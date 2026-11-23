@@ -817,6 +817,7 @@
                             history.replaceState(null, '', '?id=' + encodeURIComponent(activeRef));
                         } catch (_) {}
                         renderTicket(activeBooking);
+                        renderPassesSlider(activeBooking);
                     }
                 }
             };
@@ -848,6 +849,14 @@
 
             const userEmail = (currentUser.email || '').trim().toLowerCase();
             const userId = (currentUser.id || '').trim();
+
+            const params = new URLSearchParams(window.location.search);
+            let requestedId = (params.get('id') || '').trim();
+            if (!requestedId) {
+                try {
+                    requestedId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
+                } catch (_) {}
+            }
 
             function matchBooking(search, list) {
                 if (!search || !list || !list.length) return null;
@@ -947,14 +956,6 @@
             if (switchWrap) switchWrap.style.display = 'flex';
             if (statusPill) statusPill.style.display = 'inline-flex';
 
-            const params = new URLSearchParams(window.location.search);
-            let requestedId = (params.get('id') || '').trim();
-            if (!requestedId) {
-                try {
-                    requestedId = (localStorage.getItem('jadoo_current_ticket_id') || '').trim();
-                } catch (_) {}
-            }
-
             activeBooking = matchBooking(requestedId, allBookings) || allBookings[0];
 
             const activeId = activeBooking.booking_ref || activeBooking.id;
@@ -967,6 +968,7 @@
 
             renderTicket(activeBooking);
             populateSwitcher(allBookings, activeBooking);
+            renderPassesSlider(activeBooking);
 
             // Listeners
             const bottomPdfBtn = document.getElementById('bottomPdfBtn');
@@ -1614,6 +1616,8 @@
             }
         }
         async function downloadPdf(b) {
+            b = b || activeBooking;
+            if (!b) return;
             const element = document.getElementById('ticketVoucherCard');
             if (!element) return;
 
@@ -1771,6 +1775,7 @@
         }
 
         async function cancelBooking(b) {
+            b = b || activeBooking;
             if (!b) return;
             if ((b.status || '').toLowerCase() === 'cancelled') {
                 JadooToast.show('Already Cancelled', 'This reservation is already marked as cancelled.', 'info');
