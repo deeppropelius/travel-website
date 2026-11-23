@@ -365,6 +365,9 @@ export class TestimonialReviewController {
         this.syncAvatarSelection();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
     }
     close() {
@@ -375,6 +378,9 @@ export class TestimonialReviewController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        document.documentElement.style.overflow = '';
         document.body.style.overflow = '';
     }
     initStarRating() {
@@ -762,6 +768,9 @@ export class BoardingPassController {
         this.renderTicket(booking);
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
     }
     close() {
@@ -772,6 +781,9 @@ export class BoardingPassController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        document.documentElement.style.overflow = '';
         document.body.style.overflow = '';
     }
     renderTicket(booking) {
@@ -1014,6 +1026,9 @@ export class ProfileDashboardController {
         this.renderStats();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
     }
     close() {
@@ -1024,6 +1039,9 @@ export class ProfileDashboardController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        document.documentElement.style.overflow = '';
         document.body.style.overflow = '';
     }
     renderStats() {
@@ -2421,10 +2439,16 @@ function initRichUIElements() {
             document.body.appendChild(modal);
             document.getElementById('conciergeCloseBtn')?.addEventListener('click', () => {
                 modal?.classList.remove('is-open');
+                document.documentElement.classList.remove('modal-open');
+                document.body.classList.remove('modal-open');
+                document.documentElement.style.overflow = '';
                 document.body.style.overflow = '';
             });
             document.getElementById('conciergeBackdrop')?.addEventListener('click', () => {
                 modal?.classList.remove('is-open');
+                document.documentElement.classList.remove('modal-open');
+                document.body.classList.remove('modal-open');
+                document.documentElement.style.overflow = '';
                 document.body.style.overflow = '';
             });
             // Promo code copy handlers
@@ -2443,6 +2467,9 @@ function initRichUIElements() {
             });
         }
         modal.classList.add('is-open');
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
     }
     // 1.4. Interactive Destination Category Tabs on Home Page

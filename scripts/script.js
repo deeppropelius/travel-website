@@ -647,264 +647,12 @@
         catch (e) {
             console.error('Drawer init error:', e);
         }
-        // --- C. Functional Multilingual Translation System ---
-        const I18N_DICTIONARY = {
-            eng: {
-                home: 'Home',
-                destinations: 'Destinations',
-                services: 'Services',
-                bookings: 'Bookings',
-                testimonials: 'Testimonials',
-                login: 'Login',
-                signup: 'Sign Up',
-                logout: 'Log Out',
-                my_profile: 'My Profile',
-                my_tickets: 'My E-Tickets',
-                explore_dest: 'Explore Destinations',
-                hero_badge: 'Best Destinations around the world',
-                hero_title: 'Travel, enjoy and live a new and full life',
-                hero_sub: 'Discover handcrafted luxury journeys, verified VIP admission passes, and authentic destination experiences tailored for the modern voyager.',
-                find_out_more: 'Find out more',
-                play_demo: 'Play Demo',
-                cat_sub: 'CATEGORY',
-                cat_title: 'We Offer Best Services',
-                top_sub: 'Top Selling',
-                top_title: 'Top Destinations',
-                book_sub: 'Easy and Fast',
-                book_title: 'Book Your Next Trip In 3 Easy Steps',
-                test_sub: 'Testimonials',
-                test_title: 'What People Say About Us',
-                subs_title: 'Subscribe to get information, latest news and other interesting offers about Jadoo',
-                subs_btn: 'Subscribe',
-                back_popular: 'Back to Popular Locations',
-                search_placeholder: 'Search city, landmark, or category...',
-                filter_all: 'All',
-                filter_landmarks: 'Landmarks',
-                filter_museums: 'Museums',
-                filter_architecture: 'Architecture',
-                filter_nature: 'Nature',
-                filter_entertainment: 'Entertainment',
-                switched_msg: 'Language switched to English'
-            },
-            Guj: {
-                home: 'મુખ્ય પૃષ્ઠ',
-                destinations: 'પ્રવાસન સ્થળો',
-                services: 'સેવાઓ',
-                bookings: 'મારા બુકિંગ',
-                testimonials: 'અભિપ્રાયો',
-                login: 'પ્રવેશ કરો',
-                signup: 'સાઇન અપ',
-                logout: 'બહાર નીકળો',
-                my_profile: 'મારી પ્રોફાઇલ',
-                my_tickets: 'મારી ઈ-ટિકિટ્સ',
-                explore_dest: 'નવા સ્થળો શોધો',
-                hero_badge: 'સમગ્ર વિશ્વમાં શ્રેષ્ઠ પ્રવાસન સ્થળો',
-                hero_title: 'મુસાફરી કરો, આનંદ માણો અને નવું જીવન જીવો',
-                hero_sub: 'વિશ્વના સુંદર પ્રવાસ સ્થળો, માન્ય વીઆઇપી પાસ અને અવિસ્મરણીય યાદો સાથે તમારી યાત્રા શરૂ કરો.',
-                find_out_more: 'વધુ જાણો',
-                play_demo: 'ડેમો જુઓ',
-                cat_sub: 'શ્રેણીઓ',
-                cat_title: 'અમે શ્રેષ્ઠ સેવાઓ પ્રદાન કરીએ છીએ',
-                top_sub: 'લોકપ્રિય સ્થળો',
-                top_title: 'શ્રેષ્ઠ પ્રવાસન સ્થળો',
-                book_sub: 'સરળ અને ઝડપી',
-                book_title: 'માત્ર ૩ સરળ પગલાંમાં તમારી યાત્રા બુક કરો',
-                test_sub: 'અભિપ્રાયો',
-                test_title: 'મુસાફરો અમારા વિશે શું કહે છે',
-                subs_title: 'જાડૂ તરફથી નવીનતમ ઑફરો, પ્રવાસ માહિતી અને સમાચાર મેળવો',
-                subs_btn: 'જોડાઓ',
-                back_popular: 'લોકપ્રિય સ્થળો પર પાછા જાઓ',
-                search_placeholder: 'શહેર, પ્રવાસ સ્થળ અથવા કેટેગરી શોધો...',
-                filter_all: 'બધા',
-                filter_landmarks: 'ઐતિહાસિક સ્થળો',
-                filter_museums: 'સંગ્રહાલયો',
-                filter_architecture: 'સ્થાપત્ય',
-                filter_nature: 'કુદરતી સૌંદર્ય',
-                filter_entertainment: 'મનોરંજન',
-                switched_msg: 'ભાષા સફળતાપૂર્વક ગુજરાતીમાં બદલાઈ ગઈ છે'
-            },
-            Hi: {
-                home: 'होम',
-                destinations: 'गंतव्य स्थल',
-                services: 'सेवाएं',
-                bookings: 'मेरी बुकिंग्स',
-                testimonials: 'प्रशंसापत्र',
-                login: 'लॉग इन',
-                signup: 'साइन अप',
-                logout: 'लॉग आउट',
-                my_profile: 'मेरी प्रोफ़ाइल',
-                my_tickets: 'मेरी ई-टिकटें',
-                explore_dest: 'गंतव्य स्थल खोजें',
-                hero_badge: 'दुनिया भर के सर्वोत्तम गंतव्य स्थल',
-                hero_title: 'यात्रा करें, आनंद लें और नया जीवन जिएं',
-                hero_sub: 'दुनिया के मनमोहक पर्यटन स्थलों, वीआईपी पासेज और अविस्मरणीय अनुभवों के साथ अपनी यात्रा की योजना बनाएं।',
-                find_out_more: 'और जानें',
-                play_demo: 'डेमो देखें',
-                cat_sub: 'श्रेणियां',
-                cat_title: 'हम सर्वोत्तम सेवाएं प्रदान करते हैं',
-                top_sub: 'सर्वश्रेष्ठ बिक्री',
-                top_title: 'शीर्ष गंतव्य स्थल',
-                book_sub: 'आसान और तेज़',
-                book_title: 'केवल ३ आसान चरणों में अपनी यात्रा बुक करें',
-                test_sub: 'प्रशंसापत्र',
-                test_title: 'यात्री हमारे बारे में क्या कहते हैं',
-                subs_title: 'जादू से नवीनतम ऑफ़र, यात्रा युक्तियाँ और समाचार प्राप्त करने के लिए सदस्यता लें',
-                subs_btn: 'सब्सक्राइब',
-                back_popular: 'लोकप्रिय स्थानों पर वापस जाएं',
-                search_placeholder: 'शहर, स्मारक या श्रेणी खोजें...',
-                filter_all: 'सभी',
-                filter_landmarks: 'ऐतिहासिक स्थल',
-                filter_museums: 'संग्रहालय',
-                filter_architecture: 'स्थापत्य',
-                filter_nature: 'प्राकृतिक दृश्य',
-                filter_entertainment: 'मनोरंजन',
-                switched_msg: 'भाषा सफलतापूर्वक हिंदी में बदल दी गई है'
-            }
-        };
-        function applyLanguage(lang, notify = false) {
-            const dict = I18N_DICTIONARY[lang] || I18N_DICTIONARY.eng;
-            document.documentElement.lang = lang === 'Guj' ? 'gu' : lang === 'Hi' ? 'hi' : 'en';
-            // 1. Update Navigation Items
-            document.querySelectorAll('.navlink').forEach(link => {
-                const href = (link.getAttribute('href') || '').toLowerCase();
-                const id = link.getAttribute('id') || '';
-                if (href.includes('index.html') || href === '#home')
-                    link.textContent = dict.home;
-                else if (href.includes('destination'))
-                    link.textContent = dict.destinations;
-                else if (href.includes('service'))
-                    link.textContent = dict.services;
-                else if (href.includes('booking') || id === 'navBookingsTrigger')
-                    link.textContent = dict.bookings;
-                else if (href.includes('testimonial'))
-                    link.textContent = dict.testimonials;
-                else if (id === 'nav-login-link')
-                    link.textContent = dict.login;
-            });
-            const signupBtn = document.getElementById('nav-signup-btn');
-            if (signupBtn)
-                signupBtn.textContent = dict.signup;
-            // 2. Dropdown items
-            document.querySelectorAll('.dropdown-item').forEach(item => {
-                const span = item.querySelector('span');
-                if (!span)
-                    return;
-                const href = (item.getAttribute('href') || '').toLowerCase();
-                if (href.includes('profile'))
-                    span.textContent = dict.my_profile;
-                else if (href.includes('ticket'))
-                    span.textContent = dict.my_tickets;
-                else if (href.includes('destination'))
-                    span.textContent = dict.explore_dest;
-                else if (item.id === 'navLogoutBtn')
-                    span.textContent = dict.logout;
-            });
-            // 3. Main Landing Page Headlines & Content
-            const heroBadge = document.querySelector('.dtexts h4');
-            if (heroBadge)
-                heroBadge.textContent = dict.hero_badge;
-            const heroTitle = document.querySelector('.dtexts h1');
-            if (heroTitle) {
-                if (lang === 'Guj') {
-                    heroTitle.innerHTML = `મુસાફરી કરો, <span class="highlight-word">આનંદ માણો<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> અને નવું જીવન જીવો`;
-                }
-                else if (lang === 'Hi') {
-                    heroTitle.innerHTML = `यात्रा करें, <span class="highlight-word">आनंद लें<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> और नया जीवन जिएं`;
-                }
-                else {
-                    heroTitle.innerHTML = `Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> and live a new and full life`;
-                }
-            }
-            const heroSub = document.querySelector('.dtexts p');
-            if (heroSub && dict.hero_sub)
-                heroSub.textContent = dict.hero_sub;
-            const dobut = document.querySelector('.dobut');
-            if (dobut)
-                dobut.textContent = dict.find_out_more;
-            const demoText = document.querySelector('.playdemo p');
-            if (demoText)
-                demoText.textContent = dict.play_demo;
-            const catSub = document.querySelector('.firsttext h4');
-            if (catSub)
-                catSub.textContent = dict.cat_sub;
-            const catTitle = document.querySelector('.firsttext h1');
-            if (catTitle)
-                catTitle.textContent = dict.cat_title;
-            const topSub = document.querySelector('.secondtext h4');
-            if (topSub)
-                topSub.textContent = dict.top_sub;
-            const topTitle = document.querySelector('.secondtext h1');
-            if (topTitle)
-                topTitle.textContent = dict.top_title;
-            const bookSub = document.querySelector('.fleft-head h4');
-            if (bookSub)
-                bookSub.textContent = dict.book_sub;
-            const bookTitle = document.querySelector('.fleft-head h1');
-            if (bookTitle)
-                bookTitle.textContent = dict.book_title;
-            const testSub = document.querySelector('.tleft-head h4');
-            if (testSub)
-                testSub.textContent = dict.test_sub;
-            const testTitle = document.querySelector('.tleft-head h1');
-            if (testTitle)
-                testTitle.textContent = dict.test_title;
-            const subsH2 = document.querySelector('.subs-content h2');
-            if (subsH2)
-                subsH2.textContent = dict.subs_title;
-            const subsBtn = document.querySelector('.mailtext button');
-            if (subsBtn)
-                subsBtn.textContent = dict.subs_btn;
-            // 4. Destination Page Elements
-            const backPopBtn = document.querySelector('.btn-back-popular span');
-            if (backPopBtn)
-                backPopBtn.textContent = dict.back_popular;
-            const destInput = document.getElementById('dest-input');
-            if (destInput)
-                destInput.placeholder = dict.search_placeholder;
-            const chipAll = document.querySelector('.category-chip[data-category="all"]');
-            if (chipAll)
-                chipAll.innerHTML = `<i class="fa-solid fa-shapes"></i> ${dict.filter_all}`;
-            const chipLandmarks = document.querySelector('.category-chip[data-category="landmarks"]');
-            if (chipLandmarks)
-                chipLandmarks.innerHTML = `<i class="fa-solid fa-monument"></i> ${dict.filter_landmarks}`;
-            const chipMuseums = document.querySelector('.category-chip[data-category="museums"]');
-            if (chipMuseums)
-                chipMuseums.innerHTML = `<i class="fa-solid fa-palette"></i> ${dict.filter_museums}`;
-            const chipArch = document.querySelector('.category-chip[data-category="architecture"]');
-            if (chipArch)
-                chipArch.innerHTML = `<i class="fa-solid fa-landmark-dome"></i> ${dict.filter_architecture}`;
-            const chipNature = document.querySelector('.category-chip[data-category="nature"]');
-            if (chipNature)
-                chipNature.innerHTML = `<i class="fa-solid fa-mountain-sun"></i> ${dict.filter_nature}`;
-            const chipEnt = document.querySelector('.category-chip[data-category="entertainment"]');
-            if (chipEnt)
-                chipEnt.innerHTML = `<i class="fa-solid fa-film"></i> ${dict.filter_entertainment}`;
-            // Synchronize all select#lang on the page
-            document.querySelectorAll('select#lang').forEach(sel => {
-                sel.value = lang;
-            });
-            if (notify && typeof window.JadooToast !== 'undefined') {
-                window.JadooToast.show('Language Updated', dict.switched_msg, 'info');
-            }
-        }
+        // Default clean English localization
         try {
-            const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE) || 'eng';
-            applyLanguage(savedLang, false);
-            const langSelects = document.querySelectorAll('select#lang, select[name="Language"]');
-            langSelects.forEach(sel => {
-                sel.value = savedLang;
-                sel.addEventListener('change', (e) => {
-                    const target = e.target;
-                    if (target) {
-                        Storage.set(STORAGE_KEYS.LANGUAGE, target.value);
-                        applyLanguage(target.value, true);
-                    }
-                });
-            });
+            document.documentElement.lang = 'en';
+            localStorage.removeItem('jadoo_language');
         }
-        catch (e) {
-            console.error('Language select init error:', e);
-        }
+        catch (_) { }
         // --- Prevent Booking from Previous Days (Dynamic Date Picker Min Validator) ---
         try {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -970,6 +718,22 @@
             console.error('initHomepageBookingTriggers error:', e);
         }
     });
+    // Global Modal Page Scroll Locks (Stops background scroll completely)
+    function lockPageScroll() {
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+    }
+    function unlockPageScroll() {
+        const anyModalOpen = document.querySelectorAll('.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open');
+        if (anyModalOpen.length > 0)
+            return;
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+    }
     let activeBookingDetails = {
         placeName: 'Colosseum & Historic Walking Tour',
         destination: 'Rome, Italy',
@@ -1309,7 +1073,7 @@
         updateBookingPriceCalculation();
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        lockPageScroll();
     }
     function closeBookingModal() {
         const modal = document.getElementById('bookingModalOverlay');
@@ -1320,7 +1084,7 @@
         }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        unlockPageScroll();
     }
     function updateBookingPriceCalculation() {
         const guestsInput = document.getElementById('bookingGuests');
@@ -1468,7 +1232,7 @@
         }
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        lockPageScroll();
     }
     function closeMyBookingsModal() {
         const modal = document.getElementById('myBookingsModalOverlay');
@@ -1479,7 +1243,7 @@
         }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        unlockPageScroll();
     }
     let bookingSystemInitialized = false;
     function initBookingSystem() {
@@ -1905,7 +1669,7 @@
         }
         modalOverlay.classList.add("active");
         modalOverlay.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
+        lockPageScroll();
     }
     function closePlaceModal() {
         const modalOverlay = document.getElementById("place-modal-overlay");
@@ -1916,7 +1680,7 @@
         }
         modalOverlay.classList.remove("active");
         modalOverlay.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
+        unlockPageScroll();
     }
     function bindDestinationCardEvents(cards) {
         const carouselCards = document.querySelectorAll('#carouselTrack .tcard');
@@ -2054,6 +1818,11 @@
         const modalOverlay = document.getElementById("place-modal-overlay");
         const modalCloseBtn = document.getElementById("modal-close-btn");
         const modalBookCta = document.getElementById("modal-book-cta");
+        modalOverlay?.addEventListener("wheel", (e) => {
+            if (e.target === modalOverlay || e.target.classList.contains("place-modal-backdrop")) {
+                e.preventDefault();
+            }
+        }, { passive: false });
         modalCloseBtn?.addEventListener("click", closePlaceModal);
         modalOverlay?.addEventListener("click", (e) => {
             if (e.target === modalOverlay || e.target.classList.contains("place-modal-backdrop")) {
@@ -2582,17 +2351,6 @@
                 if (e.key === STORAGE_KEYS.CURRENT_USER) {
                     updateNavbarAuthState();
                     initAuthForms();
-                }
-                if (e.key === STORAGE_KEYS.LANGUAGE) {
-                    const langSelect = document.getElementById('lang');
-                    if (langSelect && e.newValue) {
-                        try {
-                            langSelect.value = JSON.parse(e.newValue);
-                        }
-                        catch (err) {
-                            langSelect.value = e.newValue;
-                        }
-                    }
                 }
             });
             // Listen for OS system theme changes

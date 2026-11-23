@@ -6641,3 +6641,31 @@ select.input-success,
 [data-theme="dark"] .booking-field-error {
   color: #FCA5A5;
 }
+
+
+/* --------------------------------------------------------------------------
+   GLOBAL MODAL SCROLL-LOCK & OVERSCROLL CONTAINMENT
+   -------------------------------------------------------------------------- */
+html.modal-open,
+body.modal-open {
+    overflow: hidden !important;
+    height: 100% !important;
+    touch-action: none !important;
+    -webkit-overflow-scrolling: auto !important;
+}
+
+.place-modal-overlay,
+.booking-modal-overlay,
+.my-bookings-overlay,
+.demo-modal-overlay,
+.modal-overlay {
+    overscroll-behavior: contain !important;
+}
+
+.place-modal-card,
+.booking-modal-card,
+.modal-body-scroll,
+.my-bookings-modal-card,
+.my-bookings-body {
+    overscroll-behavior: contain !important;
+}

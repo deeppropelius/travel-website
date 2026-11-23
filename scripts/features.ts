@@ -404,7 +404,7 @@ export class TestimonialReviewController {
 
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
     }
 
     public close(): void {
@@ -414,7 +414,7 @@ export class TestimonialReviewController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
     }
 
     private initStarRating(): void {
@@ -811,7 +811,7 @@ export class BoardingPassController {
         this.renderTicket(booking);
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
     }
 
     public close(): void {
@@ -821,7 +821,7 @@ export class BoardingPassController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
     }
 
     private renderTicket(booking: DbBooking): void {
@@ -1074,7 +1074,7 @@ export class ProfileDashboardController {
         this.renderStats();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
     }
 
     public close(): void {
@@ -1084,7 +1084,7 @@ export class ProfileDashboardController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
     }
 
     private renderStats(): void {
@@ -2564,12 +2564,12 @@ function initRichUIElements(): void {
 
             document.getElementById('conciergeCloseBtn')?.addEventListener('click', () => {
                 modal?.classList.remove('is-open');
-                document.body.style.overflow = '';
+                document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
             });
 
             document.getElementById('conciergeBackdrop')?.addEventListener('click', () => {
                 modal?.classList.remove('is-open');
-                document.body.style.overflow = '';
+                document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
             });
 
             // Promo code copy handlers
@@ -2589,7 +2589,7 @@ function initRichUIElements(): void {
         }
 
         modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
     }
 
     // 1.4. Interactive Destination Category Tabs on Home Page
