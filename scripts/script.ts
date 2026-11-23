@@ -886,33 +886,31 @@ interface Window {
     let savedPageScrollY: number = 0;
     let isPageScrollLocked: boolean = false;
 
+    function isAnyModalOpen(): boolean {
+        const anyOpen = document.querySelectorAll(
+            '.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open, .features-modal-overlay.is-open, .features-modal-overlay.active, .jadoo-concierge-modal.is-open, .ticket-modal-overlay.is-active'
+        );
+        return anyOpen.length > 0;
+    }
+
     function lockPageScroll(): void {
         if (!isPageScrollLocked) {
             savedPageScrollY = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
             isPageScrollLocked = true;
         }
         document.body.classList.add('modal-open');
+        document.documentElement.classList.add('modal-open');
         document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
 
         // Keep scroll position firmly anchored so background page never moves to top
         if (Math.abs((window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0) - savedPageScrollY) > 1) {
             window.scrollTo(0, savedPageScrollY);
         }
-        requestAnimationFrame(() => {
-            if (isPageScrollLocked) {
-                const currentY = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0;
-                if (Math.abs(currentY - savedPageScrollY) > 1) {
-                    window.scrollTo(0, savedPageScrollY);
-                }
-            }
-        });
     }
 
     function unlockPageScroll(): void {
-        const anyModalOpen = document.querySelectorAll(
-            '.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open, .features-modal-overlay.is-open, .features-modal-overlay.active, .jadoo-concierge-modal.is-open'
-        );
-        if (anyModalOpen.length > 0) return;
+        if (isAnyModalOpen()) return;
 
         document.body.classList.remove('modal-open');
         document.documentElement.classList.remove('modal-open');
@@ -925,6 +923,82 @@ interface Window {
             window.scrollTo(0, restoreY);
         }
     }
+
+    // Universal Modal Guardian (Blocks background scroll and outside dismissal)
+    const MODAL_OVERLAY_QUERY = '.place-modal-overlay, .features-modal-overlay, .booking-modal-overlay, .my-bookings-overlay, .ticket-modal-overlay, .modal-overlay, .jadoo-concierge-modal';
+
+    document.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+
+        const overlay = target.closest<HTMLElement>(MODAL_OVERLAY_QUERY);
+        if (!overlay) return;
+
+        const isOpen = overlay.classList.contains('active') || overlay.classList.contains('is-open') || overlay.classList.contains('is-active');
+        if (!isOpen) return;
+
+        // If clicking legitimate close buttons, allow normal dismiss
+        if (target.closest('.modal-close-btn, .features-modal-close, .booking-modal-close, .my-bookings-close, .close-btn, .btn-secondary-flat, [data-modal-close], #modal-close-btn, #serviceModalClose, #createServiceModalClose')) {
+            return;
+        }
+
+        // Find the inner modal card
+        const card = overlay.querySelector<HTMLElement>(
+            '.place-modal-card, .service-modal-card, .features-modal-card, .booking-modal-card, .my-bookings-modal-card, .ticket-modal-card, .features-modal-dialog, .concierge-modal-dialog, .modal-card, .wallet-card-modal, .share-card-modal, .seat-map-card-modal'
+        );
+
+        // If clicking INSIDE the card, allow all normal clicks
+        if (card && card.contains(target)) {
+            return;
+        }
+
+        // The click is OUTSIDE the card: stop dismissal & trigger static backdrop pulse
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if (card) {
+            card.classList.remove('modal-static-pulse');
+            void card.offsetWidth;
+            card.classList.add('modal-static-pulse');
+        }
+    }, true);
+
+    // Prevent background wheel scrolling whenever any modal is open
+    window.addEventListener('wheel', (e: WheelEvent) => {
+        if (!isAnyModalOpen()) return;
+
+        const target = e.target as HTMLElement | null;
+        if (target) {
+            const scrollable = target.closest<HTMLElement>(
+                '.modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]'
+            );
+            if (scrollable) {
+                const canScrollUp = scrollable.scrollTop > 0 && e.deltaY < 0;
+                const canScrollDown = (scrollable.scrollHeight - scrollable.clientHeight - scrollable.scrollTop > 1) && e.deltaY > 0;
+                if (canScrollUp || canScrollDown) {
+                    return;
+                }
+            }
+        }
+        e.preventDefault();
+    }, { passive: false });
+
+    // Prevent background touch dragging on backdrop
+    window.addEventListener('touchmove', (e: TouchEvent) => {
+        if (!isAnyModalOpen()) return;
+
+        const target = e.target as HTMLElement | null;
+        if (target) {
+            const scrollable = target.closest<HTMLElement>(
+                '.modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]'
+            );
+            if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
+                return;
+            }
+        }
+        e.preventDefault();
+    }, { passive: false });
 
     (window as any).lockPageScroll = lockPageScroll;
     (window as any).unlockPageScroll = unlockPageScroll;

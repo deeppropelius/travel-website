@@ -3270,3 +3270,24 @@ select.input-success,
   border-radius: 6px;
   letter-spacing: -0.2px;
 }
+
+/* --------------------------------------------------------------------------
+   UNIVERSAL MODAL SCROLL-LOCK & STATIC BACKDROP PULSE
+   -------------------------------------------------------------------------- */
+html.modal-open,
+body.modal-open {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
+    -webkit-overflow-scrolling: auto !important;
+}
+
+@keyframes modalStaticPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.modal-static-pulse {
+    animation: modalStaticPulse 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}

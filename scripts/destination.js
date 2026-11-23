@@ -820,7 +820,9 @@ function openPlaceModal(place) {
     }
     else {
         document.body.classList.add("modal-open");
+        document.documentElement.classList.add("modal-open");
         document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
     }
 }
 function closePlaceModal() {
@@ -836,17 +838,21 @@ function closePlaceModal() {
     }
     else {
         document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
         document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
     }
 }
 modalCloseBtn?.addEventListener("click", closePlaceModal);
 // Static backdrop: tapping outside does NOT close the modal
-modalOverlay?.querySelector(".place-modal-backdrop")?.addEventListener("click", () => {
-    const card = modalOverlay.querySelector('.place-modal-card');
-    if (card) {
-        card.classList.remove('modal-static-pulse');
-        void card.offsetWidth;
-        card.classList.add('modal-static-pulse');
+modalOverlay?.addEventListener("click", (e) => {
+    if (e.target === modalOverlay || e.target.classList.contains("place-modal-backdrop")) {
+        const card = modalOverlay.querySelector('.place-modal-card');
+        if (card) {
+            card.classList.remove('modal-static-pulse');
+            void card.offsetWidth;
+            card.classList.add('modal-static-pulse');
+        }
     }
 });
 modalBookCta?.addEventListener("click", () => {

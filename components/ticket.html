@@ -1207,11 +1207,16 @@
                 if (qrModal) qrModal.classList.remove('is-active');
             });
 
-            // Close modals when clicking outside card or pressing Escape
+            // Static backdrop: clicking outside does NOT dismiss ticket modals
             document.querySelectorAll('.ticket-modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) {
-                        overlay.classList.remove('is-active');
+                    if (e.target === overlay || (e.target as HTMLElement).classList.contains('ticket-modal-backdrop')) {
+                        const card = overlay.querySelector('.ticket-modal-card, .features-modal-card');
+                        if (card) {
+                            card.classList.remove('modal-static-pulse');
+                            void (card as HTMLElement).offsetWidth;
+                            card.classList.add('modal-static-pulse');
+                        }
                     }
                 });
             });

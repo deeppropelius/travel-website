@@ -504,6 +504,7 @@
     </button>
 
     <!-- Scripts -->
+    <script src="../scripts/script.js"></script>
     <script type="module" src="../scripts/db.js"></script>
     <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
@@ -1020,13 +1021,15 @@
         }
 
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
-        if (modalBackdrop) {
-            modalBackdrop.addEventListener('click', () => {
-                const card = modal?.querySelector('.features-modal-dialog');
-                if (card) {
-                    card.classList.remove('modal-static-pulse');
-                    void (card as HTMLElement).offsetWidth;
-                    card.classList.add('modal-static-pulse');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                    const card = modal.querySelector('.service-modal-card, .features-modal-card');
+                    if (card) {
+                        card.classList.remove('modal-static-pulse');
+                        void (card as HTMLElement).offsetWidth;
+                        card.classList.add('modal-static-pulse');
+                    }
                 }
             });
         }
@@ -1169,13 +1172,15 @@
 
         if (btnOpenCreate) btnOpenCreate.addEventListener('click', openCreateServiceModal);
         if (createModalClose) createModalClose.addEventListener('click', closeCreateServiceModal);
-        if (createModalBackdrop) {
-            createModalBackdrop.addEventListener('click', () => {
-                const card = createModal?.querySelector('.features-modal-dialog');
-                if (card) {
-                    card.classList.remove('modal-static-pulse');
-                    void (card as HTMLElement).offsetWidth;
-                    card.classList.add('modal-static-pulse');
+        if (createModal) {
+            createModal.addEventListener('click', (e) => {
+                if (e.target === createModal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                    const card = createModal.querySelector('.features-modal-card');
+                    if (card) {
+                        card.classList.remove('modal-static-pulse');
+                        void (card as HTMLElement).offsetWidth;
+                        card.classList.add('modal-static-pulse');
+                    }
                 }
             });
         }

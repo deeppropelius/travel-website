@@ -6695,8 +6695,10 @@ select.input-success,
 /* --------------------------------------------------------------------------
    GLOBAL MODAL SCROLL-LOCK & OVERSCROLL CONTAINMENT
    -------------------------------------------------------------------------- */
+html.modal-open,
 body.modal-open {
     overflow: hidden !important;
+    overscroll-behavior: contain !important;
     touch-action: none !important;
     -webkit-overflow-scrolling: auto !important;
 }
