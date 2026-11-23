@@ -1232,33 +1232,23 @@
             if (!container || !text) return;
 
             // Stable caching check: If already rendered for this text and has an element, skip completely!
-            if (container.dataset.renderedText === text && container.querySelector('img, canvas, svg')) {
+            if (container.dataset.renderedText === text && container.querySelector('svg, img, canvas')) {
                 return;
             }
 
             container.dataset.renderedText = text;
 
-            function setSingleImage(src) {
-                container.innerHTML = '';
-                const img = document.createElement('img');
-                img.alt = 'Verified Ticket QR Pass';
-                img.src = src;
-                img.style.display = 'block';
-                img.style.width = size + 'px';
-                img.style.height = size + 'px';
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '100%';
-                img.style.objectFit = 'contain';
-                img.style.borderRadius = '8px';
-                img.style.margin = '0 auto';
-                container.appendChild(img);
+            // 1. Direct SVG Render via QRCode.renderTo (100% synchronous, reliable, zero network dependency)
+            if (typeof QRCode !== 'undefined' && typeof QRCode.renderTo === 'function') {
+                const ok = QRCode.renderTo(container, text, size, '#181E4B', '#FFFFFF');
+                if (ok) return;
             }
 
-            // Method 1: Local / CDN QRCode library
+            // 2. Direct QRCode library standard render
             if (typeof QRCode !== 'undefined') {
                 try {
-                    const temp = document.createElement('div');
-                    new QRCode(temp, {
+                    container.innerHTML = '';
+                    new QRCode(container, {
                         text: text,
                         width: size,
                         height: size,
@@ -1267,33 +1257,23 @@
                         correctLevel: QRCode.CorrectLevel.M
                     });
 
-                    const canvas = temp.querySelector('canvas');
+                    // Ensure canvas or img inside container is visible
+                    const canvas = container.querySelector('canvas');
                     if (canvas) {
-                        try {
-                            const dataUrl = canvas.toDataURL('image/png');
-                            if (dataUrl && dataUrl.length > 100 && !dataUrl.includes('data:,')) {
-                                setSingleImage(dataUrl);
-                                return;
-                            }
-                        } catch (_) {}
-                        container.innerHTML = '';
                         canvas.style.display = 'block';
-                        canvas.style.width = size + 'px';
-                        canvas.style.height = size + 'px';
                         canvas.style.maxWidth = '100%';
                         canvas.style.borderRadius = '8px';
                         canvas.style.margin = '0 auto';
-                        container.appendChild(canvas);
-                        return;
                     }
-
-                    const tempImg = temp.querySelector('img');
-                    if (tempImg && tempImg.src && tempImg.src.length > 50) {
-                        setSingleImage(tempImg.src);
-                        return;
+                    const img = container.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '8px';
+                        img.style.margin = '0 auto';
                     }
+                    return;
                 } catch (e) {
-                    console.warn('QRCode instance error, using fallback:', e);
+                    console.warn('QRCode standard instance failed, using fallback:', e);
                 }
             }
 
