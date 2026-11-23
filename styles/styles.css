@@ -1,7 +1,36 @@
+/* ==========================================================================
+   UNIVERSAL SCROLLBAR SUPPRESSION (Invisible WebKit & Standard Scrollbars)
+   Keeps all elements fully scrollable while completely hiding scrollbars.
+   ========================================================================== */
+::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    display: none !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-track {
+    display: none !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+}
+
+html, body, * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
 html {
     scroll-behavior: smooth;
-    width: 100%;
-    min-height: 100%;
     margin: 0;
     padding: 0;
     background-color: #FFFFFF;
@@ -3646,12 +3675,14 @@ footer {
 }
 
 .modal-body-scroll::-webkit-scrollbar {
-    width: 6px;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 .modal-body-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    display: none !important;
+    background: transparent !important;
 }
 
 .modal-section-title {
@@ -6510,15 +6541,19 @@ body.user-logged-in #destUserProfileDropdown {
   right: 0 !important;
   margin: 0 !important;
   width: 100% !important;
+  min-height: 72px !important;
   background: #FFFFFF !important;
   border-radius: 1.15rem !important;
-  padding: 0.85rem 1.25rem !important;
+  padding: 0.9rem 1.25rem 0.85rem 1.25rem !important;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.85rem !important;
   border-left: 4.5px solid #DF6951 !important;
   box-sizing: border-box !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  overflow: hidden !important;
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
               opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 0.3s ease !important;
@@ -6537,36 +6572,36 @@ body.user-logged-in #destUserProfileDropdown {
 
 .jadoo-toast.is-middle {
   z-index: 3 !important;
-  opacity: 0.7 !important;
-  transform: translate(0, -7px) scale(0.98) !important;
+  opacity: 0.75 !important;
+  transform: translate(0, -12px) scale(0.97) !important;
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   pointer-events: auto !important;
   cursor: pointer !important;
 }
 
 .jadoo-toast.is-middle:hover {
-  opacity: 0.92 !important;
-  transform: translate(0, -10px) scale(0.985) !important;
+  opacity: 0.95 !important;
+  transform: translate(0, -15px) scale(0.975) !important;
 }
 
 .jadoo-toast.is-back {
   z-index: 1 !important;
-  opacity: 0.45 !important;
-  transform: translate(0, -14px) scale(0.96) !important;
+  opacity: 0.5 !important;
+  transform: translate(0, -22px) scale(0.94) !important;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
   pointer-events: auto !important;
   cursor: pointer !important;
 }
 
 .jadoo-toast.is-back:hover {
-  opacity: 0.7 !important;
-  transform: translate(0, -18px) scale(0.965) !important;
+  opacity: 0.75 !important;
+  transform: translate(0, -25px) scale(0.945) !important;
 }
 
 .jadoo-toast.is-hidden {
   z-index: 0 !important;
   opacity: 0 !important;
-  transform: translate(0, -20px) scale(0.94) !important;
+  transform: translate(0, -28px) scale(0.91) !important;
   pointer-events: none !important;
 }
 
@@ -6609,10 +6644,10 @@ body.user-logged-in #destUserProfileDropdown {
     width: 100% !important;
   }
   .jadoo-toast.is-middle {
-    transform: translate(0, -6px) scale(0.98) !important;
+    transform: translate(0, -10px) scale(0.97) !important;
   }
   .jadoo-toast.is-back {
-    transform: translate(0, -12px) scale(0.96) !important;
+    transform: translate(0, -18px) scale(0.94) !important;
   }
 }
 

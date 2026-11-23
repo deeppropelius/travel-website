@@ -11,10 +11,10 @@
             // Older messages retain higher priority (rel 0 = front card). Newer messages get lower priority and less opacity.
             const rel = idx;
             t.classList.remove('is-front', 'is-middle', 'is-back', 'is-hidden');
+            t.style.removeProperty('z-index');
+            t.style.removeProperty('opacity');
             if (rel === 0) {
                 t.classList.add('is-front');
-                t.style.zIndex = '5';
-                t.style.opacity = '1';
                 t.setAttribute('aria-hidden', 'false');
                 if (typeof t._startTimer === 'function') {
                     t._startTimer();
@@ -22,8 +22,6 @@
             }
             else if (rel === 1) {
                 t.classList.add('is-middle');
-                t.style.zIndex = '3';
-                t.style.opacity = '0.7';
                 t.setAttribute('aria-hidden', 'true');
                 if (typeof t._pauseTimer === 'function') {
                     t._pauseTimer();
@@ -31,8 +29,6 @@
             }
             else if (rel === 2) {
                 t.classList.add('is-back');
-                t.style.zIndex = '1';
-                t.style.opacity = '0.45';
                 t.setAttribute('aria-hidden', 'true');
                 if (typeof t._pauseTimer === 'function') {
                     t._pauseTimer();
@@ -40,8 +36,6 @@
             }
             else {
                 t.classList.add('is-hidden');
-                t.style.zIndex = '0';
-                t.style.opacity = '0';
                 t.setAttribute('aria-hidden', 'true');
                 if (typeof t._pauseTimer === 'function') {
                     t._pauseTimer();
