@@ -1007,36 +1007,36 @@
 
 .jadoo-toast.is-middle {
   z-index: 3 !important;
-  opacity: 0.65 !important;
-  transform: translate(14px, -18px) scale(0.96) !important;
+  opacity: 0.75 !important;
+  transform: translate(0, -7px) scale(0.98) !important;
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   pointer-events: auto !important;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .jadoo-toast.is-middle:hover {
-  opacity: 0.88 !important;
-  transform: translate(14px, -22px) scale(0.97) !important;
+  opacity: 0.95 !important;
+  transform: translate(0, -10px) scale(0.985) !important;
 }
 
 .jadoo-toast.is-back {
   z-index: 1 !important;
-  opacity: 0.35 !important;
-  transform: translate(28px, -36px) scale(0.92) !important;
+  opacity: 0.5 !important;
+  transform: translate(0, -14px) scale(0.96) !important;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
   pointer-events: auto !important;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .jadoo-toast.is-back:hover {
-  opacity: 0.6 !important;
-  transform: translate(28px, -40px) scale(0.93) !important;
+  opacity: 0.75 !important;
+  transform: translate(0, -18px) scale(0.965) !important;
 }
 
 .jadoo-toast.is-hidden {
   z-index: 0 !important;
   opacity: 0 !important;
-  transform: translate(38px, -50px) scale(0.88) !important;
+  transform: translate(0, -20px) scale(0.94) !important;
   pointer-events: none !important;
 }
 
@@ -1156,6 +1156,14 @@
     width: 100%;
     box-sizing: border-box;
     padding: 0.8rem 1rem;
+  }
+
+  .jadoo-toast.is-middle {
+    transform: translate(0, -6px) scale(0.98) !important;
+  }
+
+  .jadoo-toast.is-back {
+    transform: translate(0, -12px) scale(0.96) !important;
   }
 }
 

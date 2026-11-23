@@ -259,13 +259,13 @@ function updateToastStack(container) {
         else if (rel === 1) {
             t.classList.add('is-middle');
             t.style.zIndex = '3';
-            t.style.opacity = '0.65';
+            t.style.opacity = '0.75';
             t.setAttribute('aria-hidden', 'true');
         }
         else if (rel === 2) {
             t.classList.add('is-back');
             t.style.zIndex = '1';
-            t.style.opacity = '0.35';
+            t.style.opacity = '0.5';
             t.setAttribute('aria-hidden', 'true');
         }
         else {
