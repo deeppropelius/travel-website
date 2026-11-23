@@ -4,6 +4,49 @@
     // ========================================== 
     // GLOBAL BOTTOM-CENTER TOAST NOTIFICATION HELPER
     // ========================================== 
+    function updateToastStackFallback(container) {
+        const activeToasts = Array.from(container.querySelectorAll('.jadoo-toast:not(.is-hiding)'));
+        const total = activeToasts.length;
+        activeToasts.forEach((t, idx) => {
+            // Older messages retain higher priority (rel 0 = front card). Newer messages get lower priority and less opacity.
+            const rel = idx;
+            t.classList.remove('is-front', 'is-middle', 'is-back', 'is-hidden');
+            t.style.removeProperty('z-index');
+            t.style.removeProperty('opacity');
+            if (rel === 0) {
+                t.classList.add('is-front');
+                t.setAttribute('aria-hidden', 'false');
+                if (typeof t._startTimer === 'function') {
+                    t._startTimer();
+                }
+            }
+            else if (rel === 1) {
+                t.classList.add('is-middle');
+                t.setAttribute('aria-hidden', 'true');
+                if (typeof t._pauseTimer === 'function') {
+                    t._pauseTimer();
+                }
+            }
+            else if (rel === 2) {
+                t.classList.add('is-back');
+                t.setAttribute('aria-hidden', 'true');
+                if (typeof t._pauseTimer === 'function') {
+                    t._pauseTimer();
+                }
+            }
+            else {
+                t.classList.add('is-hidden');
+                t.setAttribute('aria-hidden', 'true');
+                if (typeof t._pauseTimer === 'function') {
+                    t._pauseTimer();
+                }
+            }
+        });
+        if (activeToasts.length > 5) {
+            const excess = activeToasts.slice(5);
+            excess.forEach(t => t.remove());
+        }
+    }
     function showToastNotification(title, desc = '', type = 'info', duration = 4000) {
         const jToast = window.JadooToast;
         if (jToast && typeof jToast.show === 'function') {
@@ -42,24 +85,71 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         `;
+        const dismissToast = () => {
+            if (toast.classList.contains('is-hiding') || !toast.parentElement)
+                return;
+            if (typeof toast._pauseTimer === 'function') {
+                toast._pauseTimer();
+            }
+            toast.classList.remove('is-show');
+            toast.classList.add('is-hiding');
+            if (container)
+                updateToastStackFallback(container);
+            setTimeout(() => {
+                toast.remove();
+                if (container)
+                    updateToastStackFallback(container);
+            }, 320);
+        };
+        let timerId = null;
+        let remaining = duration;
+        let startTime = 0;
+        toast._startTimer = () => {
+            if (timerId !== null)
+                return;
+            startTime = Date.now();
+            timerId = setTimeout(() => {
+                timerId = null;
+                dismissToast();
+            }, remaining);
+        };
+        toast._pauseTimer = () => {
+            if (timerId !== null) {
+                clearTimeout(timerId);
+                timerId = null;
+                const elapsed = Date.now() - startTime;
+                remaining = Math.max(1000, remaining - elapsed);
+            }
+        };
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 320);
+                dismissToast();
             });
         }
-        container.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('is-show'));
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 350);
+        // Clicking background card brings it to the front
+        toast.addEventListener('click', (e) => {
+            if (e.target.closest('.toast-close'))
+                return;
+            if (toast.classList.contains('is-middle') || toast.classList.contains('is-back')) {
+                container.insertBefore(toast, container.firstElementChild);
+                updateToastStackFallback(container);
             }
-        }, duration);
+        });
+        toast.addEventListener('mouseenter', () => {
+            if (typeof toast._pauseTimer === 'function') {
+                toast._pauseTimer();
+            }
+        });
+        toast.addEventListener('mouseleave', () => {
+            if (toast.classList.contains('is-front') && typeof toast._startTimer === 'function') {
+                toast._startTimer();
+            }
+        });
+        container.appendChild(toast);
+        updateToastStackFallback(container);
+        requestAnimationFrame(() => toast.classList.add('is-show'));
     }
     window.showToastNotification = showToastNotification;
     if (typeof window.JadooToast === 'undefined') {
@@ -647,264 +737,12 @@
         catch (e) {
             console.error('Drawer init error:', e);
         }
-        // --- C. Functional Multilingual Translation System ---
-        const I18N_DICTIONARY = {
-            eng: {
-                home: 'Home',
-                destinations: 'Destinations',
-                services: 'Services',
-                bookings: 'Bookings',
-                testimonials: 'Testimonials',
-                login: 'Login',
-                signup: 'Sign Up',
-                logout: 'Log Out',
-                my_profile: 'My Profile',
-                my_tickets: 'My E-Tickets',
-                explore_dest: 'Explore Destinations',
-                hero_badge: 'Best Destinations around the world',
-                hero_title: 'Travel, enjoy and live a new and full life',
-                hero_sub: 'Discover handcrafted luxury journeys, verified VIP admission passes, and authentic destination experiences tailored for the modern voyager.',
-                find_out_more: 'Find out more',
-                play_demo: 'Play Demo',
-                cat_sub: 'CATEGORY',
-                cat_title: 'We Offer Best Services',
-                top_sub: 'Top Selling',
-                top_title: 'Top Destinations',
-                book_sub: 'Easy and Fast',
-                book_title: 'Book Your Next Trip In 3 Easy Steps',
-                test_sub: 'Testimonials',
-                test_title: 'What People Say About Us',
-                subs_title: 'Subscribe to get information, latest news and other interesting offers about Jadoo',
-                subs_btn: 'Subscribe',
-                back_popular: 'Back to Popular Locations',
-                search_placeholder: 'Search city, landmark, or category...',
-                filter_all: 'All',
-                filter_landmarks: 'Landmarks',
-                filter_museums: 'Museums',
-                filter_architecture: 'Architecture',
-                filter_nature: 'Nature',
-                filter_entertainment: 'Entertainment',
-                switched_msg: 'Language switched to English'
-            },
-            Guj: {
-                home: 'મુખ્ય પૃષ્ઠ',
-                destinations: 'પ્રવાસન સ્થળો',
-                services: 'સેવાઓ',
-                bookings: 'મારા બુકિંગ',
-                testimonials: 'અભિપ્રાયો',
-                login: 'પ્રવેશ કરો',
-                signup: 'સાઇન અપ',
-                logout: 'બહાર નીકળો',
-                my_profile: 'મારી પ્રોફાઇલ',
-                my_tickets: 'મારી ઈ-ટિકિટ્સ',
-                explore_dest: 'નવા સ્થળો શોધો',
-                hero_badge: 'સમગ્ર વિશ્વમાં શ્રેષ્ઠ પ્રવાસન સ્થળો',
-                hero_title: 'મુસાફરી કરો, આનંદ માણો અને નવું જીવન જીવો',
-                hero_sub: 'વિશ્વના સુંદર પ્રવાસ સ્થળો, માન્ય વીઆઇપી પાસ અને અવિસ્મરણીય યાદો સાથે તમારી યાત્રા શરૂ કરો.',
-                find_out_more: 'વધુ જાણો',
-                play_demo: 'ડેમો જુઓ',
-                cat_sub: 'શ્રેણીઓ',
-                cat_title: 'અમે શ્રેષ્ઠ સેવાઓ પ્રદાન કરીએ છીએ',
-                top_sub: 'લોકપ્રિય સ્થળો',
-                top_title: 'શ્રેષ્ઠ પ્રવાસન સ્થળો',
-                book_sub: 'સરળ અને ઝડપી',
-                book_title: 'માત્ર ૩ સરળ પગલાંમાં તમારી યાત્રા બુક કરો',
-                test_sub: 'અભિપ્રાયો',
-                test_title: 'મુસાફરો અમારા વિશે શું કહે છે',
-                subs_title: 'જાડૂ તરફથી નવીનતમ ઑફરો, પ્રવાસ માહિતી અને સમાચાર મેળવો',
-                subs_btn: 'જોડાઓ',
-                back_popular: 'લોકપ્રિય સ્થળો પર પાછા જાઓ',
-                search_placeholder: 'શહેર, પ્રવાસ સ્થળ અથવા કેટેગરી શોધો...',
-                filter_all: 'બધા',
-                filter_landmarks: 'ઐતિહાસિક સ્થળો',
-                filter_museums: 'સંગ્રહાલયો',
-                filter_architecture: 'સ્થાપત્ય',
-                filter_nature: 'કુદરતી સૌંદર્ય',
-                filter_entertainment: 'મનોરંજન',
-                switched_msg: 'ભાષા સફળતાપૂર્વક ગુજરાતીમાં બદલાઈ ગઈ છે'
-            },
-            Hi: {
-                home: 'होम',
-                destinations: 'गंतव्य स्थल',
-                services: 'सेवाएं',
-                bookings: 'मेरी बुकिंग्स',
-                testimonials: 'प्रशंसापत्र',
-                login: 'लॉग इन',
-                signup: 'साइन अप',
-                logout: 'लॉग आउट',
-                my_profile: 'मेरी प्रोफ़ाइल',
-                my_tickets: 'मेरी ई-टिकटें',
-                explore_dest: 'गंतव्य स्थल खोजें',
-                hero_badge: 'दुनिया भर के सर्वोत्तम गंतव्य स्थल',
-                hero_title: 'यात्रा करें, आनंद लें और नया जीवन जिएं',
-                hero_sub: 'दुनिया के मनमोहक पर्यटन स्थलों, वीआईपी पासेज और अविस्मरणीय अनुभवों के साथ अपनी यात्रा की योजना बनाएं।',
-                find_out_more: 'और जानें',
-                play_demo: 'डेमो देखें',
-                cat_sub: 'श्रेणियां',
-                cat_title: 'हम सर्वोत्तम सेवाएं प्रदान करते हैं',
-                top_sub: 'सर्वश्रेष्ठ बिक्री',
-                top_title: 'शीर्ष गंतव्य स्थल',
-                book_sub: 'आसान और तेज़',
-                book_title: 'केवल ३ आसान चरणों में अपनी यात्रा बुक करें',
-                test_sub: 'प्रशंसापत्र',
-                test_title: 'यात्री हमारे बारे में क्या कहते हैं',
-                subs_title: 'जादू से नवीनतम ऑफ़र, यात्रा युक्तियाँ और समाचार प्राप्त करने के लिए सदस्यता लें',
-                subs_btn: 'सब्सक्राइब',
-                back_popular: 'लोकप्रिय स्थानों पर वापस जाएं',
-                search_placeholder: 'शहर, स्मारक या श्रेणी खोजें...',
-                filter_all: 'सभी',
-                filter_landmarks: 'ऐतिहासिक स्थल',
-                filter_museums: 'संग्रहालय',
-                filter_architecture: 'स्थापत्य',
-                filter_nature: 'प्राकृतिक दृश्य',
-                filter_entertainment: 'मनोरंजन',
-                switched_msg: 'भाषा सफलतापूर्वक हिंदी में बदल दी गई है'
-            }
-        };
-        function applyLanguage(lang, notify = false) {
-            const dict = I18N_DICTIONARY[lang] || I18N_DICTIONARY.eng;
-            document.documentElement.lang = lang === 'Guj' ? 'gu' : lang === 'Hi' ? 'hi' : 'en';
-            // 1. Update Navigation Items
-            document.querySelectorAll('.navlink').forEach(link => {
-                const href = (link.getAttribute('href') || '').toLowerCase();
-                const id = link.getAttribute('id') || '';
-                if (href.includes('index.html') || href === '#home')
-                    link.textContent = dict.home;
-                else if (href.includes('destination'))
-                    link.textContent = dict.destinations;
-                else if (href.includes('service'))
-                    link.textContent = dict.services;
-                else if (href.includes('booking') || id === 'navBookingsTrigger')
-                    link.textContent = dict.bookings;
-                else if (href.includes('testimonial'))
-                    link.textContent = dict.testimonials;
-                else if (id === 'nav-login-link')
-                    link.textContent = dict.login;
-            });
-            const signupBtn = document.getElementById('nav-signup-btn');
-            if (signupBtn)
-                signupBtn.textContent = dict.signup;
-            // 2. Dropdown items
-            document.querySelectorAll('.dropdown-item').forEach(item => {
-                const span = item.querySelector('span');
-                if (!span)
-                    return;
-                const href = (item.getAttribute('href') || '').toLowerCase();
-                if (href.includes('profile'))
-                    span.textContent = dict.my_profile;
-                else if (href.includes('ticket'))
-                    span.textContent = dict.my_tickets;
-                else if (href.includes('destination'))
-                    span.textContent = dict.explore_dest;
-                else if (item.id === 'navLogoutBtn')
-                    span.textContent = dict.logout;
-            });
-            // 3. Main Landing Page Headlines & Content
-            const heroBadge = document.querySelector('.dtexts h4');
-            if (heroBadge)
-                heroBadge.textContent = dict.hero_badge;
-            const heroTitle = document.querySelector('.dtexts h1');
-            if (heroTitle) {
-                if (lang === 'Guj') {
-                    heroTitle.innerHTML = `મુસાફરી કરો, <span class="highlight-word">આનંદ માણો<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> અને નવું જીવન જીવો`;
-                }
-                else if (lang === 'Hi') {
-                    heroTitle.innerHTML = `यात्रा करें, <span class="highlight-word">आनंद लें<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> और नया जीवन जिएं`;
-                }
-                else {
-                    heroTitle.innerHTML = `Travel, <span class="highlight-word">enjoy<img src="./assets/red-stroke.png" alt="Underline highlight" class="red-stroke-img"></span> and live a new and full life`;
-                }
-            }
-            const heroSub = document.querySelector('.dtexts p');
-            if (heroSub && dict.hero_sub)
-                heroSub.textContent = dict.hero_sub;
-            const dobut = document.querySelector('.dobut');
-            if (dobut)
-                dobut.textContent = dict.find_out_more;
-            const demoText = document.querySelector('.playdemo p');
-            if (demoText)
-                demoText.textContent = dict.play_demo;
-            const catSub = document.querySelector('.firsttext h4');
-            if (catSub)
-                catSub.textContent = dict.cat_sub;
-            const catTitle = document.querySelector('.firsttext h1');
-            if (catTitle)
-                catTitle.textContent = dict.cat_title;
-            const topSub = document.querySelector('.secondtext h4');
-            if (topSub)
-                topSub.textContent = dict.top_sub;
-            const topTitle = document.querySelector('.secondtext h1');
-            if (topTitle)
-                topTitle.textContent = dict.top_title;
-            const bookSub = document.querySelector('.fleft-head h4');
-            if (bookSub)
-                bookSub.textContent = dict.book_sub;
-            const bookTitle = document.querySelector('.fleft-head h1');
-            if (bookTitle)
-                bookTitle.textContent = dict.book_title;
-            const testSub = document.querySelector('.tleft-head h4');
-            if (testSub)
-                testSub.textContent = dict.test_sub;
-            const testTitle = document.querySelector('.tleft-head h1');
-            if (testTitle)
-                testTitle.textContent = dict.test_title;
-            const subsH2 = document.querySelector('.subs-content h2');
-            if (subsH2)
-                subsH2.textContent = dict.subs_title;
-            const subsBtn = document.querySelector('.mailtext button');
-            if (subsBtn)
-                subsBtn.textContent = dict.subs_btn;
-            // 4. Destination Page Elements
-            const backPopBtn = document.querySelector('.btn-back-popular span');
-            if (backPopBtn)
-                backPopBtn.textContent = dict.back_popular;
-            const destInput = document.getElementById('dest-input');
-            if (destInput)
-                destInput.placeholder = dict.search_placeholder;
-            const chipAll = document.querySelector('.category-chip[data-category="all"]');
-            if (chipAll)
-                chipAll.innerHTML = `<i class="fa-solid fa-shapes"></i> ${dict.filter_all}`;
-            const chipLandmarks = document.querySelector('.category-chip[data-category="landmarks"]');
-            if (chipLandmarks)
-                chipLandmarks.innerHTML = `<i class="fa-solid fa-monument"></i> ${dict.filter_landmarks}`;
-            const chipMuseums = document.querySelector('.category-chip[data-category="museums"]');
-            if (chipMuseums)
-                chipMuseums.innerHTML = `<i class="fa-solid fa-palette"></i> ${dict.filter_museums}`;
-            const chipArch = document.querySelector('.category-chip[data-category="architecture"]');
-            if (chipArch)
-                chipArch.innerHTML = `<i class="fa-solid fa-landmark-dome"></i> ${dict.filter_architecture}`;
-            const chipNature = document.querySelector('.category-chip[data-category="nature"]');
-            if (chipNature)
-                chipNature.innerHTML = `<i class="fa-solid fa-mountain-sun"></i> ${dict.filter_nature}`;
-            const chipEnt = document.querySelector('.category-chip[data-category="entertainment"]');
-            if (chipEnt)
-                chipEnt.innerHTML = `<i class="fa-solid fa-film"></i> ${dict.filter_entertainment}`;
-            // Synchronize all select#lang on the page
-            document.querySelectorAll('select#lang').forEach(sel => {
-                sel.value = lang;
-            });
-            if (notify && typeof window.JadooToast !== 'undefined') {
-                window.JadooToast.show('Language Updated', dict.switched_msg, 'info');
-            }
-        }
+        // Default clean English localization
         try {
-            const savedLang = Storage.get(STORAGE_KEYS.LANGUAGE) || 'eng';
-            applyLanguage(savedLang, false);
-            const langSelects = document.querySelectorAll('select#lang, select[name="Language"]');
-            langSelects.forEach(sel => {
-                sel.value = savedLang;
-                sel.addEventListener('change', (e) => {
-                    const target = e.target;
-                    if (target) {
-                        Storage.set(STORAGE_KEYS.LANGUAGE, target.value);
-                        applyLanguage(target.value, true);
-                    }
-                });
-            });
+            document.documentElement.lang = 'en';
+            localStorage.removeItem('jadoo_language');
         }
-        catch (e) {
-            console.error('Language select init error:', e);
-        }
+        catch (_) { }
         // --- Prevent Booking from Previous Days (Dynamic Date Picker Min Validator) ---
         try {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -970,6 +808,104 @@
             console.error('initHomepageBookingTriggers error:', e);
         }
     });
+    // Global Modal Page Scroll Locks (Preserves exact scroll position and stops background scroll completely)
+    let savedPageScrollY = 0;
+    let isPageScrollLocked = false;
+    function isAnyModalOpen() {
+        const anyOpen = document.querySelectorAll('.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open, .features-modal-overlay.is-open, .features-modal-overlay.active, .jadoo-concierge-modal.is-open, .ticket-modal-overlay.is-active');
+        return anyOpen.length > 0;
+    }
+    function lockPageScroll() {
+        if (!isPageScrollLocked) {
+            savedPageScrollY = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            isPageScrollLocked = true;
+        }
+        document.body.classList.add('modal-open');
+        document.documentElement.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        // Keep scroll position firmly anchored so background page never moves to top
+        if (Math.abs((window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0) - savedPageScrollY) > 1) {
+            window.scrollTo(0, savedPageScrollY);
+        }
+    }
+    function unlockPageScroll() {
+        if (isAnyModalOpen())
+            return;
+        document.body.classList.remove('modal-open');
+        document.documentElement.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        if (isPageScrollLocked) {
+            const restoreY = savedPageScrollY;
+            isPageScrollLocked = false;
+            window.scrollTo(0, restoreY);
+        }
+    }
+    // Universal Modal Guardian (Blocks background scroll and outside dismissal)
+    const MODAL_OVERLAY_QUERY = '.place-modal-overlay, .features-modal-overlay, .booking-modal-overlay, .my-bookings-overlay, .ticket-modal-overlay, .modal-overlay, .jadoo-concierge-modal';
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+        if (!target)
+            return;
+        const overlay = target.closest(MODAL_OVERLAY_QUERY);
+        if (!overlay)
+            return;
+        const isOpen = overlay.classList.contains('active') || overlay.classList.contains('is-open') || overlay.classList.contains('is-active');
+        if (!isOpen)
+            return;
+        // If clicking legitimate close buttons, allow normal dismiss
+        if (target.closest('.modal-close-btn, .features-modal-close, .booking-modal-close, .my-bookings-close, .close-btn, .btn-secondary-flat, [data-modal-close], #modal-close-btn, #serviceModalClose, #createServiceModalClose')) {
+            return;
+        }
+        // Find the inner modal card
+        const card = overlay.querySelector('.place-modal-card, .service-modal-card, .features-modal-card, .booking-modal-card, .my-bookings-modal-card, .ticket-modal-card, .features-modal-dialog, .concierge-modal-dialog, .modal-card, .wallet-card-modal, .share-card-modal, .seat-map-card-modal');
+        // If clicking INSIDE the card, allow all normal clicks
+        if (card && card.contains(target)) {
+            return;
+        }
+        // The click is OUTSIDE the card: stop dismissal & trigger static backdrop pulse
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (card) {
+            card.classList.remove('modal-static-pulse');
+            void card.offsetWidth;
+            card.classList.add('modal-static-pulse');
+        }
+    }, true);
+    // Prevent background wheel scrolling whenever any modal is open
+    window.addEventListener('wheel', (e) => {
+        if (!isAnyModalOpen())
+            return;
+        const target = e.target;
+        if (target) {
+            const scrollable = target.closest('.modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]');
+            if (scrollable) {
+                const canScrollUp = scrollable.scrollTop > 0 && e.deltaY < 0;
+                const canScrollDown = (scrollable.scrollHeight - scrollable.clientHeight - scrollable.scrollTop > 1) && e.deltaY > 0;
+                if (canScrollUp || canScrollDown) {
+                    return;
+                }
+            }
+        }
+        e.preventDefault();
+    }, { passive: false });
+    // Prevent background touch dragging on backdrop
+    window.addEventListener('touchmove', (e) => {
+        if (!isAnyModalOpen())
+            return;
+        const target = e.target;
+        if (target) {
+            const scrollable = target.closest('.modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]');
+            if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
+                return;
+            }
+        }
+        e.preventDefault();
+    }, { passive: false });
+    window.lockPageScroll = lockPageScroll;
+    window.unlockPageScroll = unlockPageScroll;
     let activeBookingDetails = {
         placeName: 'Colosseum & Historic Walking Tour',
         destination: 'Rome, Italy',
@@ -1179,9 +1115,7 @@
         const logoutBtns = document.querySelectorAll('.dropdown-logout-btn, #navLogoutBtn, #destNavLogoutBtn');
         const handleLogout = (e) => {
             e.preventDefault();
-            if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
-                return;
-            }
+            // Direct logout with bottom-center notification
             userProfileDropdown?.classList.remove('open');
             destUserProfileDropdown?.classList.remove('open');
             userProfileBtn?.setAttribute('aria-expanded', 'false');
@@ -1241,16 +1175,12 @@
     // Modal & Booking Functions
     function openBookingModal(details) {
         const currentUser = AuthService.getCurrentUser();
-        if (!currentUser) {
-            const isComponent = window.location.pathname.toLowerCase().includes('components');
-            const authUrl = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
-            const proceed = confirm('You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.');
-            if (proceed) {
-                window.location.href = authUrl;
-            }
-            return;
-        }
         const modal = document.getElementById('bookingModalOverlay');
+        if (!modal)
+            return;
+        if (!currentUser) {
+            showToastNotification('Trip Reservation', 'Reserving as guest. Sign in anytime to sync bookings to your profile dashboard.', 'info');
+        }
         if (!modal)
             return;
         const isComponent = window.location.pathname.toLowerCase().includes('components');
@@ -1315,7 +1245,7 @@
         updateBookingPriceCalculation();
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        lockPageScroll();
     }
     function closeBookingModal() {
         const modal = document.getElementById('bookingModalOverlay');
@@ -1326,7 +1256,7 @@
         }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        unlockPageScroll();
     }
     function updateBookingPriceCalculation() {
         const guestsInput = document.getElementById('bookingGuests');
@@ -1369,7 +1299,20 @@
             }
         }
         if (totalAmountEl)
-            totalAmountEl.textContent = `$${total.toFixed(2)}`;
+            totalAmountEl.textContent = `${total.toFixed(2)}`;
+        // Update live per-traveler rate pill
+        const perTravelerRateEl = document.getElementById('summaryPerTravelerRate');
+        if (perTravelerRateEl) {
+            const perTraveler = total / guests;
+            perTravelerRateEl.textContent = `${perTraveler.toFixed(2)} / guest`;
+        }
+        // Sync active styling on package tier cards
+        const tierCards = document.querySelectorAll('.package-tier-card');
+        tierCards.forEach(card => {
+            const cardTier = card.getAttribute('data-tier') || '';
+            const isActive = cardTier.toLowerCase() === tierLabel.toLowerCase();
+            card.classList.toggle('is-active', isActive);
+        });
         return total;
     }
     function openMyBookingsModal() {
@@ -1451,8 +1394,8 @@
                     const bookingId = btn.getAttribute('data-cancel-id');
                     if (!bookingId)
                         return;
-                    const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?`);
-                    if (confirmCancel) {
+                    showToastNotification('Booking Cancelled', 'Booking #' + bookingId + ' has been cancelled.', 'info');
+                    if (true) {
                         BookingService.cancelBooking(bookingId);
                         openMyBookingsModal();
                     }
@@ -1461,7 +1404,7 @@
         }
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        lockPageScroll();
     }
     function closeMyBookingsModal() {
         const modal = document.getElementById('myBookingsModalOverlay');
@@ -1472,7 +1415,7 @@
         }
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        unlockPageScroll();
     }
     let bookingSystemInitialized = false;
     function initBookingSystem() {
@@ -1489,13 +1432,27 @@
         const myBookingsModal = document.getElementById('myBookingsModalOverlay');
         const myBookingsClose = document.getElementById('myBookingsClose');
         const myBookingsBackdrop = document.getElementById('myBookingsBackdrop');
-        // Close handlers for Booking Modal
+        // Close handlers for Booking Modal (Backdrop does NOT close - user must use Close or Cancel button)
         bookingClose?.addEventListener('click', closeBookingModal);
         bookingCancel?.addEventListener('click', closeBookingModal);
-        bookingBackdrop?.addEventListener('click', closeBookingModal);
-        // Close handlers for My Bookings Modal
+        bookingBackdrop?.addEventListener('click', () => {
+            const card = bookingModal?.querySelector('.booking-modal-card');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void card.offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
+        // Close handlers for My Bookings Modal (Backdrop does NOT close - user must use Close button)
         myBookingsClose?.addEventListener('click', closeMyBookingsModal);
-        myBookingsBackdrop?.addEventListener('click', closeMyBookingsModal);
+        myBookingsBackdrop?.addEventListener('click', () => {
+            const card = myBookingsModal?.querySelector('.my-bookings-modal-card');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void card.offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
         // Escape key closes modals
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1531,18 +1488,24 @@
         packageSelect?.addEventListener('change', () => {
             updateBookingPriceCalculation();
         });
+        // Interactive Package Tier Cards Selection
+        const packageTierCards = document.querySelectorAll('.package-tier-card');
+        packageTierCards.forEach(tierCard => {
+            tierCard.addEventListener('click', () => {
+                const tierVal = tierCard.getAttribute('data-tier') || 'Standard';
+                if (packageSelect) {
+                    packageSelect.value = tierVal;
+                    // Trigger change
+                    packageSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
         // Booking Form Submission
         tripBookingForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             const currentUser = AuthService.getCurrentUser();
-            if (!currentUser) {
-                showToastNotification('Authentication Required', 'You must be logged in to book a trip.', 'warning');
-                const isComponent = window.location.pathname.toLowerCase().includes('components');
-                setTimeout(() => {
-                    window.location.href = isComponent ? 'auth.html#signin' : 'components/auth.html#signin';
-                }, 1000);
-                return;
-            }
+            const guestId = 'guest_' + Math.random().toString(36).substring(2, 9);
+            const activeUserId = currentUser ? currentUser.id : guestId;
             const fullNameInput = document.getElementById('bookingFullName');
             const emailInput = document.getElementById('bookingEmail');
             const phoneInput = document.getElementById('bookingPhone');
@@ -1595,11 +1558,9 @@
             const targetLabel = placeName ? `${placeName} (${destName})` : destName;
             const dateLabel = formatDateDisplay(dateVal);
             const guestLabel = `${guests} ${guests > 1 ? 'guests' : 'guest'}`;
-            if (!confirm(`Are you sure you want to confirm your booking for ${targetLabel} on ${dateLabel} for ${guestLabel}? (Total: ${total.toFixed(2)})`)) {
-                return;
-            }
+            // Direct booking with bottom-center notification
             const newBooking = BookingService.createBooking({
-                userId: currentUser?.id,
+                userId: activeUserId,
                 userEmail: emailVal,
                 userName: nameVal,
                 phone: phoneInput?.value.trim() || '',
@@ -1641,6 +1602,9 @@
                 formContent.style.display = 'none';
             if (successView)
                 successView.style.display = 'block';
+            if (window.JadooConfetti && typeof window.JadooConfetti.burst === 'function') {
+                window.JadooConfetti.burst(50, 40, 75);
+            }
             // Wire success view buttons
             const viewBookingsBtn = document.getElementById('successViewBookingsBtn');
             const doneBtn = document.getElementById('successDoneBtn');
@@ -1664,6 +1628,18 @@
             price: 54,
             priceFormatted: '$5.42k',
             image: './assets/destination-rome.png',
+            gallery: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'VIP Imperial Arrival & Piazza Aperitivo', desc: 'Private luxury transfer to your boutique historic suite. Evening stroll across Piazza Navona and private Trevi Fountain aperitivo.', icon: 'fa-car-side', time: '14:00 - 20:00' },
+                { day: 2, title: 'Colosseum Gladiator Floor & Roman Forum VIP', desc: 'Skip-the-line gladiator arena access with an exclusive historian guide. Panoramic golden hour dinner overlooking Ancient Rome.', icon: 'fa-landmark', time: '09:30 - 18:00' },
+                { day: 3, title: 'Vatican Museums & Sistine Chapel Privileged Entry', desc: 'Early morning private entrance before public opening hours to admire Michelangelo\'s frescoes and St. Peter\'s Basilica dome.', icon: 'fa-church', time: '08:00 - 15:30' },
+                { day: 4, title: 'Handcrafted Pasta & Sommelier Tasting Masterclass', desc: 'Exclusive cooking masterclass with a celebrated Roman master chef, followed by private cellar reserve Brunello pairing.', icon: 'fa-utensils', time: '11:00 - 16:00' }
+            ],
             badge: 'Bestseller',
             rating: 4.9,
             reviews: 2840,
@@ -1678,6 +1654,17 @@
             price: 42,
             priceFormatted: '$4.2k',
             image: './assets/destination-london.jpeg',
+            gallery: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Royal Thames Arrival & High Tea at The Ritz', desc: 'Private chauffeur to Mayfair luxury hotel, signature traditional afternoon tea, followed by a twilight private Thames river yacht cruise.', icon: 'fa-ship', time: '13:30 - 19:30' },
+                { day: 2, title: 'Tower of London Early Access & Crown Jewels', desc: 'Exclusive private opening viewing of the Royal Crown Jewels, private Yeoman Warder tour, and historic Westminster Abbey exploration.', icon: 'fa-chess-rook', time: '09:00 - 16:00' },
+                { day: 3, title: 'West End VIP Gala & Kensington Palace', desc: 'Private curator tour of Kensington Palace State Apartments, Michelin-starred British dining, and premium orchestra West End theatre seats.', icon: 'fa-masks-theater', time: '14:00 - 22:30' }
+            ],
             badge: 'Popular',
             rating: 4.8,
             reviews: 3120,
@@ -1692,6 +1679,17 @@
             price: 58,
             priceFormatted: '$5.8k',
             image: './assets/destination-europe.png',
+            gallery: [
+                './assets/destination-europe.png',
+                'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1509299349698-dd22323b5963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Champagne Summit & Seine Gourmet Dinner', desc: 'Chauffeur transfer to luxury suite in the 8th Arrondissement. Sunset champagne toast atop the Eiffel Tower and gourmet Seine dinner cruise.', icon: 'fa-champagne-glasses', time: '15:00 - 21:30' },
+                { day: 2, title: 'Louvre Private Curator Tour & Montmartre', desc: 'Privileged skip-the-line access to the Mona Lisa and Winged Victory, bohemian artist quarter stroll, and sunset panoramic views from Sacré-Cœur.', icon: 'fa-palette', time: '09:30 - 17:00' },
+                { day: 3, title: 'Palace of Versailles Grand Royal Day', desc: 'Private chauffeur excursion to Versailles, Hall of Mirrors private view, golf cart cruise through royal fountains, and French pastry degustation.', icon: 'fa-crown', time: '08:30 - 16:30' }
+            ],
             badge: 'Trending',
             rating: 4.9,
             reviews: 3450,
@@ -1706,6 +1704,17 @@
             price: 68,
             priceFormatted: '$6.8k',
             image: './assets/easy-fast-trip-to-greece.jpeg',
+            gallery: [
+                './assets/easy-fast-trip-to-greece.jpeg',
+                'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Aegean Cliffside Villa Arrival & Oia Sunset', desc: 'Catamaran or helicopter arrival to cliffside Oia luxury cave villa with private heated plunge pool, infinity drinks, and iconic sunset.', icon: 'fa-umbrella-beach', time: '14:00 - 20:30' },
+                { day: 2, title: 'Private Catamaran Yacht & Volcanic Springs', desc: 'Exclusive private sailing yacht across the caldera, swimming in healing volcanic springs, and fresh Mediterranean lobster feast on board.', icon: 'fa-sailboat', time: '10:00 - 18:00' },
+                { day: 3, title: 'Ancient Akrotiri Ruins & Caldera Wine Pairing', desc: 'Private archaeologist tour of prehistoric Akrotiri, followed by volcanic Assyrtiko wine flight at Santo Wines overlooking the Aegean Sea.', icon: 'fa-wine-glass', time: '11:00 - 19:30' }
+            ],
             badge: 'Hot Deal',
             rating: 4.9,
             reviews: 2410,
@@ -1720,6 +1729,17 @@
             price: 48,
             priceFormatted: '$4.85k',
             image: './assets/destination-rome.png',
+            gallery: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Private Grand Canal Water Limousine', desc: 'Mahogany water taxi arrival through the Grand Canal. Check-in at 16th-century Palazzo, followed by a romantic twilight gondola serenade.', icon: 'fa-water', time: '14:00 - 20:00' },
+                { day: 2, title: 'Doge\'s Palace & Murano Master Glassblowing', desc: 'Secret Council chambers private access in St. Mark\'s, private watercraft to Murano for master glass-sculpting demonstration.', icon: 'fa-monument', time: '09:30 - 16:30' },
+                { day: 3, title: 'Chianti Hills & Tuscan Vineyard Feast', desc: 'Chauffeured drive through cypress-lined Tuscan hills, private olive oil and cellar reserve Brunello di Montalcino tasting.', icon: 'fa-wine-bottle', time: '09:00 - 18:00' }
+            ],
             badge: 'Romantic',
             rating: 4.7,
             reviews: 1680,
@@ -1734,6 +1754,17 @@
             price: 51,
             priceFormatted: '$5.1k',
             image: './assets/destination-london.jpeg',
+            gallery: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=700&q=80'
+            ],
+            itinerary: [
+                { day: 1, title: 'Neon Skyline & Shibuya Private Culinary Tour', desc: 'Luxury transfer to panoramic Shinjuku high-rise. Twilight Shibuya Crossing VIP lounge access and guided Omoide Yokocho culinary crawl.', icon: 'fa-city', time: '15:00 - 21:30' },
+                { day: 2, title: 'Ancient Asakusa & Imperial Gardens Tea Ceremony', desc: 'Morning blessing at historic Senso-ji temple, traditional private tea ceremony in Hamarikyu Imperial Gardens, followed by Ginza dining.', icon: 'fa-torii-gate', time: '09:00 - 16:30' },
+                { day: 3, title: 'Mount Fuji Bullet Train & Onsen Sanctuary', desc: 'First-class Shinkansen bullet train to Mount Fuji 5th station, Lake Kawaguchi cruise, and luxury Hakone private hot springs onsen retreat.', icon: 'fa-mountain-sun', time: '08:00 - 18:30' }
+            ],
             badge: 'Adventure',
             rating: 4.9,
             reviews: 2190,
@@ -1795,9 +1826,36 @@
                 modalWikiLink.style.display = "none";
             }
         }
+        // Render Day-by-Day Curated Itinerary Timeline
+        const itineraryList = document.getElementById("modalItineraryList");
+        if (itineraryList) {
+            const items = place.itinerary && place.itinerary.length > 0 ? place.itinerary : [
+                { day: 1, title: 'Arrival & Private Chauffeur Transfer', desc: `Check-in at luxury 5-star boutique suite, welcome champagne, and orientation stroll in ${place.destination}.`, icon: 'fa-plane-arrival', time: '14:00 - 19:30' },
+                { day: 2, title: 'Guided Historic Landmarks & VIP Access', desc: `Skip-the-line private access with a personal historian guide exploring ${place.placeName}.`, icon: 'fa-landmark', time: '09:30 - 16:30' },
+                { day: 3, title: 'Gourmet Culinary Masterclass & Sunset Panorama', desc: 'Artisanal dining tasting with sommelier wine pairing and picturesque golden hour views.', icon: 'fa-utensils', time: '12:00 - 21:00' }
+            ];
+            itineraryList.innerHTML = items.map((item, idx) => `
+                <div class="itinerary-card-item ${idx === 0 ? 'is-expanded' : ''}" data-day="${item.day}">
+                    <div class="itinerary-item-header" onclick="this.parentElement.classList.toggle('is-expanded')">
+                        <div class="itinerary-left-meta">
+                            <span class="itinerary-day-badge">Day 0${item.day}</span>
+                            <span class="itinerary-icon-bubble"><i class="fa-solid ${item.icon}"></i></span>
+                            <strong class="itinerary-day-title">${item.title}</strong>
+                        </div>
+                        <div class="itinerary-right-meta">
+                            <span class="itinerary-time-pill"><i class="fa-regular fa-clock"></i> ${item.time}</span>
+                            <i class="fa-solid fa-chevron-down itinerary-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="itinerary-item-body">
+                        <p>${item.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
         modalOverlay.classList.add("active");
         modalOverlay.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
+        lockPageScroll();
     }
     function closePlaceModal() {
         const modalOverlay = document.getElementById("place-modal-overlay");
@@ -1808,7 +1866,7 @@
         }
         modalOverlay.classList.remove("active");
         modalOverlay.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
+        unlockPageScroll();
     }
     function bindDestinationCardEvents(cards) {
         const carouselCards = document.querySelectorAll('#carouselTrack .tcard');
@@ -1946,10 +2004,21 @@
         const modalOverlay = document.getElementById("place-modal-overlay");
         const modalCloseBtn = document.getElementById("modal-close-btn");
         const modalBookCta = document.getElementById("modal-book-cta");
+        modalOverlay?.addEventListener("wheel", (e) => {
+            if (e.target === modalOverlay || e.target.classList.contains("place-modal-backdrop")) {
+                e.preventDefault();
+            }
+        }, { passive: false });
         modalCloseBtn?.addEventListener("click", closePlaceModal);
+        // Static backdrop: tapping outside does NOT close the place modal
         modalOverlay?.addEventListener("click", (e) => {
             if (e.target === modalOverlay || e.target.classList.contains("place-modal-backdrop")) {
-                closePlaceModal();
+                const card = modalOverlay.querySelector('.place-modal-card');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void card.offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
             }
         });
         window.addEventListener("keydown", (e) => {
@@ -1995,6 +2064,22 @@
         openMyBookingsModal,
         closeMyBookingsModal,
         openPlaceModal,
+        openPlaceModalByIndex: (idx) => {
+            const meta = destinationCardsData[idx] || DEFAULT_CACHED_DESTINATIONS[idx];
+            if (meta)
+                openPlaceModal(meta);
+        },
+        openBookingModalByIndex: (idx) => {
+            const meta = destinationCardsData[idx] || DEFAULT_CACHED_DESTINATIONS[idx];
+            if (meta) {
+                openBookingModal({
+                    placeName: meta.placeName,
+                    destination: meta.destination,
+                    price: meta.price,
+                    image: meta.image
+                });
+            }
+        },
         updateNavbar: updateNavbarAuthState
     };
     // Persist & Restore Non-Sensitive Form Fields (Strictly Excluding Passwords for Security)
@@ -2062,9 +2147,7 @@
                 const bannerLogoutBtn = document.getElementById('bannerLogoutBtn');
                 if (bannerLogoutBtn) {
                     bannerLogoutBtn.addEventListener('click', () => {
-                        if (!confirm('Are you sure you want to log out of your Jadoo account?')) {
-                            return;
-                        }
+                        // Direct logout with bottom-center notification
                         AuthService.logout();
                         banner.style.display = 'none';
                         showToastNotification('Logged Out', 'You have logged out successfully.', 'info');
@@ -2461,17 +2544,6 @@
                     updateNavbarAuthState();
                     initAuthForms();
                 }
-                if (e.key === STORAGE_KEYS.LANGUAGE) {
-                    const langSelect = document.getElementById('lang');
-                    if (langSelect && e.newValue) {
-                        try {
-                            langSelect.value = JSON.parse(e.newValue);
-                        }
-                        catch (err) {
-                            langSelect.value = e.newValue;
-                        }
-                    }
-                }
             });
             // Listen for OS system theme changes
             if (window.matchMedia) {
@@ -2601,6 +2673,69 @@
                     goTo(currentIndex - 1);
                 }
             }
+            function filterByCategory(cat) {
+                const normCat = (cat || 'all').toLowerCase();
+                let targetIndex = 0;
+                cards.forEach((card, idx) => {
+                    card.style.transition = 'all 0.4s ease';
+                    if (normCat === 'all') {
+                        card.classList.remove('is-category-dimmed');
+                        card.classList.add('is-category-matched');
+                        targetIndex = 0;
+                    }
+                    else if (normCat === 'historic') {
+                        // Rome (0), London (1), Paris (2)
+                        const isMatch = idx <= 2;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 0;
+                    }
+                    else if (normCat === 'coastal') {
+                        // Santorini (3), Venice & Tuscany (4)
+                        const isMatch = idx === 3 || idx === 4;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 3;
+                    }
+                    else if (normCat === 'mountain') {
+                        // Venice & Tuscany (4), Tokyo (5 - Mount Fuji)
+                        const isMatch = idx === 4 || idx === 5;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 3;
+                    }
+                    else if (normCat === 'city') {
+                        // Rome (0), London (1), Paris (2), Tokyo (5)
+                        const isMatch = idx === 0 || idx === 1 || idx === 2 || idx === 5;
+                        card.classList.toggle('is-category-matched', isMatch);
+                        card.classList.toggle('is-category-dimmed', !isMatch);
+                        targetIndex = 0;
+                    }
+                });
+                if (normCat === 'all') {
+                    setTimeout(() => {
+                        cards.forEach(c => c.classList.remove('is-category-matched'));
+                    }, 1000);
+                }
+                resetAutoPlay();
+                goTo(targetIndex, true);
+                // Update 'More' link dynamically
+                const moreLink = document.getElementById('destMoreLink');
+                if (moreLink) {
+                    moreLink.href = normCat === 'all'
+                        ? './components/destination-page.html'
+                        : `./components/destination-page.html?filter=${encodeURIComponent(normCat)}`;
+                }
+            }
+            // Expose JadooCarousel API globally for tabs and buttons
+            window.JadooCarousel = {
+                goTo,
+                next,
+                prev,
+                filterByCategory,
+                getCurrentIndex: () => currentIndex,
+                getTotal: () => TOTAL
+            };
             if (prevBtn) {
                 prevBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -2634,7 +2769,7 @@
                 if (!track || !carousel)
                     return;
                 const targetEl = e.target;
-                if (targetEl && targetEl.closest('.carousel-btn'))
+                if (targetEl && targetEl.closest('.carousel-btn, button, a, input, select, textarea, .place-card-btns, .place-view-btn, .place-book-btn'))
                     return;
                 isDragging = true;
                 hasDragged = false;

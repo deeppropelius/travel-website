@@ -137,12 +137,13 @@
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </button>
-                <div class="navitems" id="navitems">
+                                <div class="navitems" id="navitems">
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
-                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
-                        <li><a href="./services.html" class="navlink">Services</a></li>
-                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
+                        <li><a href="../index.html#destinations" class="navlink">Destinations</a></li>
+                        <li><a href="../index.html#services" class="navlink">Services</a></li>
+                        <li><a href="../index.html#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
+                        <li><a href="../index.html#testimonials" class="navlink">Testimonials</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button type="button" onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn" aria-label="Sign Up">Sign Up</button></li>
                         <li id="nav-user-li" class="nav-user-item">
@@ -162,7 +163,7 @@
                                             <i class="fa-solid fa-user user-fallback-icon" style="display: none;"></i>
                                         </div>
                                         <div class="dropdown-user-info">
-                                            <span class="dropdown-user-name" id="dropdownUserName">Traveler</span>
+                                            <span class="dropdown-user-name" id="dropdownUserName">Alex Johnson</span>
                                             <span class="dropdown-user-email" id="dropdownUserEmail">alex.traveler@example.com</span>
                                         </div>
                                     </div>
@@ -187,13 +188,6 @@
                                     </button>
                                 </div>
                             </div>
-                        </li>
-                        <li>
-                            <select name="Language" id="lang" aria-label="Select Language">
-                                <option value="eng">En</option>
-                                <option value="Guj">Guj</option>
-                                <option value="Hi">Hi</option>
-                            </select>
                         </li>
                     </ul>
                 </div>
@@ -750,6 +744,7 @@
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB } from '../scripts/db.js';
@@ -1212,11 +1207,16 @@
                 if (qrModal) qrModal.classList.remove('is-active');
             });
 
-            // Close modals when clicking outside card or pressing Escape
+            // Static backdrop: clicking outside does NOT dismiss ticket modals
             document.querySelectorAll('.ticket-modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) {
-                        overlay.classList.remove('is-active');
+                    if (e.target === overlay || (e.target as HTMLElement).classList.contains('ticket-modal-backdrop')) {
+                        const card = overlay.querySelector('.ticket-modal-card, .features-modal-card');
+                        if (card) {
+                            card.classList.remove('modal-static-pulse');
+                            void (card as HTMLElement).offsetWidth;
+                            card.classList.add('modal-static-pulse');
+                        }
                     }
                 });
             });
@@ -1413,7 +1413,7 @@
         }
 
         window.cancelAttachedService = async function(bookingId, serviceId, serviceTitle) {
-            if (!confirm(`Are you sure you want to cancel and remove "${serviceTitle}" from this voyage?`)) return;
+            // Direct service removal with bottom-center toast
             try {
                 const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) || localStorage.getItem('jadoo_auth_token') || '';
                 const res = await fetch('/api/services/detach', {
@@ -1800,7 +1800,7 @@
                 return;
             }
 
-            if (confirm(`Are you sure you want to cancel booking #${b.id} for ${b.attraction_name || b.destination_name}?`)) {
+            if (true) {
                 try {
                     JadooDB.cancelBooking(b.id);
                 } catch (_) {
@@ -1819,5 +1819,9 @@
             initTicketPage();
         }
     </script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 </html>

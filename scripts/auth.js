@@ -340,6 +340,9 @@
                 if (!isValid) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+                    if (typeof window.showToastNotification === 'function') {
+                        window.showToastNotification('Sign Up Incomplete', 'Please check the highlighted fields and correct errors.', 'error');
+                    }
                 }
             }, true); // Use capture phase to intercept before other handlers
         }
@@ -350,6 +353,9 @@
                 if (!isValid) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+                    if (typeof window.showToastNotification === 'function') {
+                        window.showToastNotification('Sign In Incomplete', 'Please check the highlighted fields and correct errors.', 'error');
+                    }
                 }
             }, true); // Use capture phase to intercept before other handlers
         }

@@ -46,6 +46,22 @@ testimonialRouter.get('/', async (req, res) => {
 testimonialRouter.post('/', async (req, res) => {
   try {
     const t = req.body;
+    const quote = (t.quote || '').trim();
+    if (!quote || quote.length < 10) {
+      return res.status(400).json({ error: 'Review quote must be at least 10 characters long.' });
+    }
+    if (t.author_name && (/\d/.test(t.author_name) || !/[a-zA-Z]/.test(t.author_name))) {
+      return res.status(400).json({ error: 'Author name must contain letters and cannot include numbers.' });
+    }
+    if (t.author_location && /^\d+$/.test(String(t.author_location).trim())) {
+      return res.status(400).json({ error: 'Location / City cannot be numbers only (e.g. London, UK).' });
+    }
+    if ((t.role_title || t.author_role) && /^\d+$/.test(String(t.role_title || t.author_role).trim())) {
+      return res.status(400).json({ error: 'Role or Profession cannot be numbers only.' });
+    }
+    if (t.trip_tag && /^\d+$/.test(String(t.trip_tag).trim())) {
+      return res.status(400).json({ error: 'Trip Tagline cannot be numbers only.' });
+    }
     const id = generateUUID();
 
     // Resolve customer_id safely against database foreign key

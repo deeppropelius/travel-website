@@ -109,12 +109,13 @@
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </button>
-                <div class="navitems" id="navitems">
+                                <div class="navitems" id="navitems">
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
-                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
-                        <li><a href="./services.html" class="navlink active-page">Services</a></li>
-                        <li><a href="./profile.html" class="navlink">My Profile</a></li>
+                        <li><a href="../index.html#destinations" class="navlink">Destinations</a></li>
+                        <li><a href="../index.html#services" class="navlink">Services</a></li>
+                        <li><a href="../index.html#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
+                        <li><a href="../index.html#testimonials" class="navlink">Testimonials</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button type="button" onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn" aria-label="Sign Up">Sign Up</button></li>
                         <li id="nav-user-li" class="nav-user-item">
@@ -152,10 +153,6 @@
                                         <i class="fa-solid fa-compass"></i>
                                         <span>Explore Destinations</span>
                                     </a>
-                                    <a href="./services.html" class="dropdown-item active-item" role="menuitem">
-                                        <i class="fa-solid fa-hand-holding-heart"></i>
-                                        <span>Travel Services</span>
-                                    </a>
                                     <div class="dropdown-divider"></div>
                                     <button type="button" class="dropdown-item dropdown-logout-btn" id="navLogoutBtn" onclick="window.handleLogoutAction(event)" role="menuitem">
                                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -163,13 +160,6 @@
                                     </button>
                                 </div>
                             </div>
-                        </li>
-                        <li>
-                            <select name="Language" id="lang" aria-label="Select Language">
-                                <option value="eng">En</option>
-                                <option value="Guj">Guj</option>
-                                <option value="Hi">Hi</option>
-                            </select>
                         </li>
                     </ul>
                 </div>
@@ -514,7 +504,9 @@
     </button>
 
     <!-- Scripts -->
+    <script src="../scripts/script.js"></script>
     <script type="module" src="../scripts/db.js"></script>
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB, getApiBase } from '../scripts/db.js';
@@ -875,7 +867,12 @@
 
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
+            if (typeof window.lockPageScroll === 'function') {
+                window.lockPageScroll();
+            } else {
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         async function populateModalTrips() {
@@ -966,7 +963,7 @@
                         const cancelBtn = document.getElementById('btnCancelServiceInModal');
                         if (cancelBtn) {
                             cancelBtn.onclick = async () => {
-                                if (!confirm(`Are you sure you want to cancel and remove "${sTitle}" from this voyage?`)) return;
+                                // Direct service removal with bottom-center toast
                                 try {
                                     cancelBtn.disabled = true;
                                     cancelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing...';
@@ -1014,12 +1011,28 @@
                 }
                 modal.classList.remove('is-open');
                 modal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
+                if (typeof window.unlockPageScroll === 'function') {
+                    window.unlockPageScroll();
+                } else {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
             }
         }
 
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
-        if (modalBackdrop) modalBackdrop.addEventListener('click', closeServiceModal);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                    const card = modal.querySelector('.service-modal-card, .features-modal-card');
+                    if (card) {
+                        card.classList.remove('modal-static-pulse');
+                        void (card as HTMLElement).offsetWidth;
+                        card.classList.add('modal-static-pulse');
+                    }
+                }
+            });
+        }
 
         // Submit Service Attachment to Selected Trip
         const form = document.getElementById('serviceInquiryForm');
@@ -1132,7 +1145,12 @@
             if (createModal) {
                 createModal.classList.add('is-open');
                 createModal.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
+                if (typeof window.lockPageScroll === 'function') {
+                    window.lockPageScroll();
+                } else {
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                }
             }
         }
 
@@ -1143,13 +1161,29 @@
                 }
                 createModal.classList.remove('is-open');
                 createModal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
+                if (typeof window.unlockPageScroll === 'function') {
+                    window.unlockPageScroll();
+                } else {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
             }
         }
 
         if (btnOpenCreate) btnOpenCreate.addEventListener('click', openCreateServiceModal);
         if (createModalClose) createModalClose.addEventListener('click', closeCreateServiceModal);
-        if (createModalBackdrop) createModalBackdrop.addEventListener('click', closeCreateServiceModal);
+        if (createModal) {
+            createModal.addEventListener('click', (e) => {
+                if (e.target === createModal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                    const card = createModal.querySelector('.features-modal-card');
+                    if (card) {
+                        card.classList.remove('modal-static-pulse');
+                        void (card as HTMLElement).offsetWidth;
+                        card.classList.add('modal-static-pulse');
+                    }
+                }
+            });
+        }
         if (createModalCancel) createModalCancel.addEventListener('click', closeCreateServiceModal);
 
         // Global ESC key listener to safely dismiss open modals
@@ -1233,6 +1267,10 @@
             initServices();
         }
     </script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 
 </html>

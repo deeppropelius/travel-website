@@ -4,7 +4,7 @@
  */
 import express from 'express';
 import { pool } from './db.js';
-import { authenticateToken, isUUID, generateUUID } from './authService.js';
+import { authenticateToken, isUUID, generateUUID, isValidPhone } from './authService.js';
 export function generateBookingRef() {
     return 'BK-' + Math.floor(10000 + Math.random() * 90000);
 }
@@ -141,6 +141,9 @@ bookingRouter.post('/', authenticateToken, async (req, res) => {
             return res.status(401).json({ error: 'Authentication required. Please log in to book a trip.' });
         }
         const phoneNumber = (b.phone_number || b.phone || b.phoneNumber || '').trim();
+        if (phoneNumber && !isValidPhone(phoneNumber)) {
+            return res.status(400).json({ error: 'Please enter a valid phone number (7-15 digits, international E.164 standard).' });
+        }
         const destName = (b.destination_name || b.destination || '').trim() || 'Rome';
         const attrName = (b.attraction_name || b.placeName || b.attraction || '').trim() || (destName + ' Tour');
         const travelDate = b.travel_date || b.travelDate || new Date().toISOString().split('T')[0];

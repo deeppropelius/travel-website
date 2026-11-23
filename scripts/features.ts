@@ -175,6 +175,151 @@ if (typeof window !== 'undefined') {
 // --------------------------------------------------------------------------
 // 1. FLOATING TOAST NOTIFICATION ENGINE
 // --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------
+// 1.5. CELEBRATION CONFETTI PARTICLE ENGINE (Zero external dependencies)
+// --------------------------------------------------------------------------
+export const JadooConfetti = {
+    burst(xPercent = 50, yPercent = 45, count = 60): void {
+        if (typeof document === 'undefined') return;
+
+        let canvas = document.getElementById('jadooConfettiCanvas') as HTMLCanvasElement | null;
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'jadooConfettiCanvas';
+            canvas.className = 'jadoo-confetti-canvas';
+            document.body.appendChild(canvas);
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#DF6951', '#F1A501', '#10B981', '#38BDF8', '#8B5CF6', '#EC4899', '#FBBF24'];
+        const particles: Array<{
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            size: number;
+            color: string;
+            rotation: number;
+            rotSpeed: number;
+            alpha: number;
+        }> = [];
+
+        const startX = (window.innerWidth * xPercent) / 100;
+        const startY = (window.innerHeight * yPercent) / 100;
+
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 8 + 3;
+            particles.push({
+                x: startX,
+                y: startY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 2.5,
+                size: Math.random() * 8 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 12,
+                alpha: 1
+            });
+        }
+
+        let animId: number;
+        const gravity = 0.22;
+        const friction = 0.98;
+
+        const render = () => {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let activeCount = 0;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                if (p.alpha <= 0.01) continue;
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += gravity;
+                p.vx *= friction;
+                p.vy *= friction;
+                p.rotation += p.rotSpeed;
+                p.alpha -= 0.014;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                ctx.restore();
+
+                activeCount++;
+            }
+
+            if (activeCount > 0) {
+                animId = requestAnimationFrame(render);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                cancelAnimationFrame(animId);
+            }
+        };
+
+        animId = requestAnimationFrame(render);
+    }
+};
+
+function updateToastStack(container: HTMLElement): void {
+    const activeToasts = Array.from(container.querySelectorAll<HTMLElement>('.jadoo-toast:not(.is-hiding)'));
+    const total = activeToasts.length;
+
+    activeToasts.forEach((t, idx) => {
+        // Older messages retain higher priority (rel 0 = front card). Newer messages get lower priority and less opacity.
+        const rel = idx;
+        t.classList.remove('is-front', 'is-middle', 'is-back', 'is-hidden');
+        t.style.removeProperty('z-index');
+        t.style.removeProperty('opacity');
+
+        if (rel === 0) {
+            t.classList.add('is-front');
+            t.setAttribute('aria-hidden', 'false');
+            if (typeof (t as any)._startTimer === 'function') {
+                (t as any)._startTimer();
+            }
+        } else if (rel === 1) {
+            t.classList.add('is-middle');
+            t.setAttribute('aria-hidden', 'true');
+            if (typeof (t as any)._pauseTimer === 'function') {
+                (t as any)._pauseTimer();
+            }
+        } else if (rel === 2) {
+            t.classList.add('is-back');
+            t.setAttribute('aria-hidden', 'true');
+            if (typeof (t as any)._pauseTimer === 'function') {
+                (t as any)._pauseTimer();
+            }
+        } else {
+            t.classList.add('is-hidden');
+            t.setAttribute('aria-hidden', 'true');
+            if (typeof (t as any)._pauseTimer === 'function') {
+                (t as any)._pauseTimer();
+            }
+        }
+    });
+
+    // Prune excessive hidden toasts if more than 5
+    if (activeToasts.length > 5) {
+        const excess = activeToasts.slice(5);
+        excess.forEach(t => t.remove());
+    }
+}
+
 export const JadooToast = {
     show(title: string, desc = '', type: 'success' | 'error' | 'info' | 'warning' | string = 'success', duration = 4000): void {
         let container = document.getElementById('jadooToastContainer');
@@ -206,32 +351,78 @@ export const JadooToast = {
             </button>
         `;
 
+        const dismissToast = () => {
+            if (toast.classList.contains('is-hiding') || !toast.parentElement) return;
+            if (typeof (toast as any)._pauseTimer === 'function') {
+                (toast as any)._pauseTimer();
+            }
+            toast.classList.remove('is-show');
+            toast.classList.add('is-hiding');
+            if (container) updateToastStack(container);
+            setTimeout(() => {
+                toast.remove();
+                if (container) updateToastStack(container);
+            }, 320);
+        };
+
+        let timerId: ReturnType<typeof setTimeout> | null = null;
+        let remaining = duration;
+        let startTime = 0;
+
+        (toast as any)._startTimer = () => {
+            if (timerId !== null) return;
+            startTime = Date.now();
+            timerId = setTimeout(() => {
+                timerId = null;
+                dismissToast();
+            }, remaining);
+        };
+
+        (toast as any)._pauseTimer = () => {
+            if (timerId !== null) {
+                clearTimeout(timerId);
+                timerId = null;
+                const elapsed = Date.now() - startTime;
+                remaining = Math.max(1000, remaining - elapsed);
+            }
+        };
+
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 320);
+                dismissToast();
             });
         }
 
+        // Clicking background card brings it to the front (promotes to index 0)
+        toast.addEventListener('click', (e) => {
+            if ((e.target as HTMLElement).closest('.toast-close')) return;
+            if (toast.classList.contains('is-middle') || toast.classList.contains('is-back')) {
+                container.insertBefore(toast, container.firstElementChild);
+                updateToastStack(container);
+            }
+        });
+
+        // Hover pause/resume on front toast
+        toast.addEventListener('mouseenter', () => {
+            if (typeof (toast as any)._pauseTimer === 'function') {
+                (toast as any)._pauseTimer();
+            }
+        });
+        toast.addEventListener('mouseleave', () => {
+            if (toast.classList.contains('is-front') && typeof (toast as any)._startTimer === 'function') {
+                (toast as any)._startTimer();
+            }
+        });
+
         container.appendChild(toast);
+        updateToastStack(container);
 
         // Force reflow for bottom-center slide-up transition
         requestAnimationFrame(() => {
             toast.classList.add('is-show');
         });
-
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => {
-                    toast.remove();
-                }, 350);
-            }
-        }, duration);
     }
 };
 
@@ -272,7 +463,16 @@ export class TestimonialReviewController {
             openBtn.addEventListener('click', () => this.open());
         }
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.reviewer-modal-dialog, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
         if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
 
         this.initStarRating();
@@ -304,7 +504,7 @@ export class TestimonialReviewController {
 
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -314,7 +514,7 @@ export class TestimonialReviewController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private initStarRating(): void {
@@ -693,7 +893,16 @@ export class BoardingPassController {
         const printBtn = document.getElementById('btnPrintTicketAction');
 
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.ticket-modal-card, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
         if (printBtn) {
             printBtn.addEventListener('click', () => {
                 if (this.currentBooking) {
@@ -711,7 +920,7 @@ export class BoardingPassController {
         this.renderTicket(booking);
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -721,7 +930,7 @@ export class BoardingPassController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private renderTicket(booking: DbBooking): void {
@@ -953,7 +1162,16 @@ export class ProfileDashboardController {
 
         if (openBtn) openBtn.addEventListener('click', () => this.open());
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.ticket-modal-card, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
 
         if (form) {
             form.addEventListener('submit', (e) => {
@@ -974,7 +1192,7 @@ export class ProfileDashboardController {
         this.renderStats();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -984,7 +1202,7 @@ export class ProfileDashboardController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private renderStats(): void {
@@ -1372,8 +1590,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('seatMapBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('seatMapClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('seatMapBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('seatMapClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const currentSavedSeat = localStorage.getItem(`jadoo_seat_${booking.id}`) || 'Suite 02A';
@@ -1442,6 +1670,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1468,8 +1697,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('shareBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('shareClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('shareBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('shareClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const ticketUrl = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(booking.id)}`;
@@ -1534,6 +1773,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1591,8 +1831,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('walletPassBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('walletPassClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('walletPassBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('walletPassClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const isApple = type === 'apple';
@@ -1664,6 +1914,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1690,8 +1941,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('luggageTagBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('luggageTagClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('luggageTagBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('luggageTagClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const destCode = booking.destination_name.substring(0, 3).toUpperCase();
@@ -1746,6 +2007,7 @@ export const JadooTicketUtilities = {
             `;
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1869,8 +2131,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('qrZoomBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('qrZoomClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('qrZoomBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('qrZoomClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const ticketUrl = this.getTicketQrUrl(booking.id);
@@ -1899,6 +2171,7 @@ export const JadooTicketUtilities = {
             }
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     }
 };
@@ -2370,6 +2643,411 @@ export const JadooNavAuth = {
 // --------------------------------------------------------------------------
 // 7. GLOBAL INITIALIZATION ENTRY POINT
 // --------------------------------------------------------------------------
+
+function initRichUIElements(): void {
+    // 1. Floating Back To Top Button
+    const backToTopBtn = document.getElementById('jadooBackToTop');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 280) {
+                backToTopBtn.classList.add('is-visible');
+            } else {
+                backToTopBtn.classList.remove('is-visible');
+            }
+        });
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+
+    // 1.3. Interactive Travel Concierge Modal Engine
+    function openTravelConciergeModal(): void {
+        let modal = document.getElementById('travelConciergeModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'travelConciergeModal';
+            modal.className = 'jadoo-concierge-modal';
+            modal.innerHTML = `
+                <div class="concierge-modal-backdrop" id="conciergeBackdrop"></div>
+                <div class="concierge-modal-dialog">
+                    <div class="concierge-modal-header">
+                        <div class="concierge-brand-badge">
+                            <i class="fa-solid fa-bell-concierge"></i>
+                            <span>Jadoo Concierge & Travel Hub</span>
+                        </div>
+                        <button type="button" class="concierge-close-btn" id="conciergeCloseBtn" aria-label="Close Concierge">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="concierge-modal-body">
+                        <div class="concierge-welcome-banner">
+                            <h3>How can we elevate your journey today?</h3>
+                            <p>Instant answers, verified travel advisories, and exclusive explorer perks at your fingertips.</p>
+                        </div>
+
+                        <!-- Exclusive Promo Codes -->
+                        <div class="concierge-section">
+                            <h4 class="concierge-section-title"><i class="fa-solid fa-tags" style="color: #DF6951;"></i> Exclusive Explorer Perks</h4>
+                            <div class="concierge-promos-grid">
+                                <div class="promo-card" data-code="JADOO20" title="Click to copy coupon code">
+                                    <div class="promo-meta">
+                                        <span class="promo-badge">20% OFF</span>
+                                        <strong>JADOO20</strong>
+                                        <p>Save 20% on any European voyage</p>
+                                    </div>
+                                    <button type="button" class="promo-copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                                </div>
+                                <div class="promo-card" data-code="WANDERLUST" title="Click to copy coupon code">
+                                    <div class="promo-meta">
+                                        <span class="promo-badge promo-badge-blue">$100 OFF</span>
+                                        <strong>WANDERLUST</strong>
+                                        <p>Flat discount on private resort packages</p>
+                                    </div>
+                                    <button type="button" class="promo-copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instant Travel Essentials Checklist -->
+                        <div class="concierge-section">
+                            <h4 class="concierge-section-title"><i class="fa-solid fa-clipboard-check" style="color: #10B981;"></i> Pre-Departure Checklist</h4>
+                            <div class="concierge-checklist">
+                                <label class="checklist-item"><input type="checkbox" checked> <span>Passport valid for at least 6 months</span></label>
+                                <label class="checklist-item"><input type="checkbox" checked> <span>Digital Boarding Pass saved to mobile offline</span></label>
+                                <label class="checklist-item"><input type="checkbox"> <span>Travel health insurance certificate</span></label>
+                                <label class="checklist-item"><input type="checkbox"> <span>Universal power adapter & power bank</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 24/7 Priority Assistance -->
+                        <div class="concierge-section concierge-support-box">
+                            <div class="concierge-support-info">
+                                <strong>Need personal itinerary assistance?</strong>
+                                <p>Our luxury travel concierges are on standby 24 hours a day, 7 days a week.</p>
+                            </div>
+                            <a href="mailto:concierge@jadootravel.com" class="concierge-cta-btn">
+                                <i class="fa-solid fa-paper-plane"></i> Contact Concierge
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('conciergeCloseBtn')?.addEventListener('click', () => {
+                modal?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
+            });
+
+            document.getElementById('conciergeBackdrop')?.addEventListener('click', () => {
+                const card = modal?.querySelector('.concierge-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+
+            // Promo code copy handlers
+            modal.querySelectorAll<HTMLElement>('.promo-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const code = card.getAttribute('data-code') || 'JADOO20';
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(code).then(() => {
+                            JadooToast.show('Promo Code Copied!', `Code "${code}" copied to clipboard.`, 'success');
+                            JadooConfetti.burst(50, 50, 40);
+                        }).catch(() => {
+                            JadooToast.show('Promo Code', `Your code is: ${code}`, 'info');
+                        });
+                    }
+                });
+            });
+        }
+
+        modal.classList.add('is-open');
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
+    }
+
+    // 1.4. Interactive Destination Category Tabs on Home Page
+    const catTabs = document.getElementById('destCategoryTabs');
+    if (catTabs) {
+        catTabs.querySelectorAll<HTMLButtonElement>('.dest-cat-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                catTabs.querySelectorAll('.dest-cat-btn').forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+
+                const cat = btn.getAttribute('data-cat') || 'all';
+                const jadooCarousel = (window as any).JadooCarousel;
+                if (jadooCarousel && typeof jadooCarousel.filterByCategory === 'function') {
+                    jadooCarousel.filterByCategory(cat);
+                }
+
+                const catLabels: Record<string, { title: string; desc: string }> = {
+                    all: { title: 'All Escapes', desc: 'Viewing all 6 curated luxury destinations.' },
+                    historic: { title: 'Historic Wonders', desc: 'Slid to Rome, London & Paris historic landmarks.' },
+                    coastal: { title: 'Coastal & Beach', desc: 'Slid to Santorini Caldera & Venetian Canals.' },
+                    mountain: { title: 'Mountain & Nature', desc: 'Slid to Mount Fuji vistas & Tuscan hillsides.' },
+                    city: { title: 'Iconic Capitals', desc: 'Exploring Paris, Tokyo, London & Rome capitals.' }
+                };
+
+                const info = catLabels[cat] || { title: 'Filtered Destinations', desc: `Displaying ${cat} collection.` };
+                if (typeof JadooToast !== 'undefined' && JadooToast?.show) {
+                    JadooToast.show(info.title, info.desc, 'info');
+                }
+            });
+        });
+    }
+
+    // 3. Testimonial Modal: Travel Style Quick Chips
+    const chipsGrid = document.getElementById('travelTypeChipsGrid');
+    const tripTagInput = document.getElementById('reviewTripTag') as HTMLInputElement | null;
+    if (chipsGrid && tripTagInput) {
+        chipsGrid.querySelectorAll<HTMLButtonElement>('.travel-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                chipsGrid.querySelectorAll('.travel-chip').forEach(c => c.classList.remove('is-selected'));
+                chip.classList.add('is-selected');
+                const tagVal = chip.getAttribute('data-tag') || '';
+                const currentDest = (document.getElementById('reviewDestinationSelect') as HTMLSelectElement | null)?.value || '';
+                if (currentDest) {
+                    tripTagInput.value = `${currentDest} • ${tagVal}`;
+                } else {
+                    tripTagInput.value = tagVal;
+                }
+                if ((window as any).JadooValidation) {
+                    (window as any).JadooValidation.validateField(tripTagInput);
+                }
+            });
+        });
+    }
+
+    // 4. Testimonial Modal: Live Quote Character Counter & Progress Meter
+    const quoteTextarea = document.getElementById('reviewQuote') as HTMLTextAreaElement | null;
+    const quoteFill = document.getElementById('reviewQuoteFill');
+    const quoteCountText = document.getElementById('reviewQuoteCountText');
+    const quoteMinBadge = document.getElementById('reviewQuoteMinBadge');
+
+    if (quoteTextarea && quoteFill && quoteCountText) {
+        const updateCounter = () => {
+            const len = quoteTextarea.value.length;
+            quoteCountText.textContent = `${len} / 500`;
+            const pct = Math.min(100, Math.round((len / 500) * 100));
+            quoteFill.style.width = `${pct}%`;
+            if (len >= 10) {
+                quoteFill.classList.add('is-valid');
+                if (quoteMinBadge) {
+                    quoteMinBadge.classList.add('is-satisfied');
+                    quoteMinBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Requirement Met';
+                }
+            } else {
+                quoteFill.classList.remove('is-valid');
+                if (quoteMinBadge) {
+                    quoteMinBadge.classList.remove('is-satisfied');
+                    quoteMinBadge.innerHTML = '<i class="fa-solid fa-circle-info"></i> Minimum 10 characters';
+                }
+            }
+        };
+        quoteTextarea.addEventListener('input', updateCounter);
+        quoteTextarea.addEventListener('keyup', updateCounter);
+    }
+
+    // 5. Testimonial Modal: Recommendation Switch Pills
+    const recGrid = document.getElementById('recommendPillSelector');
+    if (recGrid) {
+        recGrid.querySelectorAll<HTMLButtonElement>('.rec-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                recGrid.querySelectorAll('.rec-pill').forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+            });
+        });
+    }
+
+
+    // 7. 3D Card Perspective Tilt & Dynamic Glare Engine
+    function init3DCardTilt(): void {
+        if (typeof window === 'undefined') return;
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouch) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const targetCards = document.querySelectorAll<HTMLElement>('.carousel .tcard.place-card, .category .card, .fourth .fcard');
+        targetCards.forEach(card => {
+            let glare = card.querySelector<HTMLElement>('.card-tilt-glare');
+            if (!glare) {
+                glare = document.createElement('div');
+                glare.className = 'card-tilt-glare';
+                card.appendChild(glare);
+            }
+
+            let rafId: number | null = null;
+
+            const onMouseMove = (e: MouseEvent) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xRatio = Math.max(0, Math.min(1, x / rect.width));
+                const yRatio = Math.max(0, Math.min(1, y / rect.height));
+
+                const rotX = (-(yRatio - 0.5) * 10).toFixed(2);
+                const rotY = ((xRatio - 0.5) * 12).toFixed(2);
+
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(() => {
+                    card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-5px)`;
+                    if (glare) {
+                        glare.style.opacity = '1';
+                        glare.style.background = `radial-gradient(circle 300px at ${xRatio * 100}% ${yRatio * 100}%, rgba(255, 255, 255, 0.28), transparent 70%)`;
+                    }
+                });
+            };
+
+            const onMouseLeave = () => {
+                if (rafId) cancelAnimationFrame(rafId);
+                card.style.transform = '';
+                if (glare) {
+                    glare.style.opacity = '0';
+                }
+            };
+
+            card.addEventListener('mousemove', onMouseMove);
+            card.addEventListener('mouseleave', onMouseLeave);
+        });
+    }
+
+    // 8. Micro Image Scrubber on Destination Cards
+    function initCardImageScrubbers(): void {
+        const galleries: Record<number, string[]> = {
+            0: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=700&q=80'
+            ],
+            1: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=700&q=80'
+            ],
+            2: [
+                './assets/destination-europe.png',
+                'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1509299349698-dd22323b5963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=700&q=80'
+            ],
+            3: [
+                './assets/easy-fast-trip-to-greece.jpeg',
+                'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&q=80'
+            ],
+            4: [
+                './assets/destination-rome.png',
+                'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?auto=format&fit=crop&w=700&q=80'
+            ],
+            5: [
+                './assets/destination-london.jpeg',
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=700&q=80',
+                'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=700&q=80'
+            ]
+        };
+
+        const cardWraps = document.querySelectorAll<HTMLElement>('.place-card-img-wrap');
+        cardWraps.forEach((wrap, cardIdx) => {
+            const card = wrap.closest<HTMLElement>('.tcard.place-card');
+            const dataIdx = card ? parseInt(card.getAttribute('data-index') || String(cardIdx), 10) : cardIdx;
+            const photos = galleries[dataIdx] || galleries[cardIdx % 6];
+            if (!photos || photos.length < 2) return;
+
+            const img = wrap.querySelector<HTMLImageElement>('.place-img');
+            if (!img) return;
+
+            // Preload secondary images silently into browser cache
+            photos.slice(1).forEach(src => {
+                const preload = new Image();
+                preload.src = src;
+            });
+
+            // Build or select scrubber pills
+            let scrubber = wrap.querySelector<HTMLElement>('.card-scrubber');
+            if (!scrubber) {
+                scrubber = document.createElement('div');
+                scrubber.className = 'card-scrubber';
+                scrubber.innerHTML = `<div class="scrubber-pills">${photos.map((_, i) => `<span class="scrub-pill ${i === 0 ? 'is-active' : ''}" data-idx="${i}"></span>`).join('')}</div>`;
+                wrap.appendChild(scrubber);
+            }
+
+            const pills = scrubber.querySelectorAll<HTMLElement>('.scrub-pill');
+            let currentScrubIdx = 0;
+
+            const setPhoto = (idx: number) => {
+                if (idx === currentScrubIdx) return;
+                currentScrubIdx = idx;
+                pills.forEach((p, i) => p.classList.toggle('is-active', i === idx));
+                img.style.opacity = '0.85';
+                img.src = photos[idx];
+                setTimeout(() => { img.style.opacity = '1'; }, 100);
+            };
+
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const ratio = Math.max(0, Math.min(0.999, x / rect.width));
+                const targetIdx = Math.floor(ratio * photos.length);
+                setPhoto(targetIdx);
+            });
+
+            wrap.addEventListener('mouseleave', () => {
+                setPhoto(0);
+            });
+
+            pills.forEach((pill, pIdx) => {
+                pill.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setPhoto(pIdx);
+                });
+            });
+        });
+    }
+
+    try { init3DCardTilt(); } catch (e) { console.error('init3DCardTilt error:', e); }
+    try { initCardImageScrubbers(); } catch (e) { console.error('initCardImageScrubbers error:', e); }
+
+    // 6. Profile Upcoming Journey Countdown Hero Card
+    const daysEl = document.getElementById('countdownDays');
+    const hoursEl = document.getElementById('countdownHours');
+    const minsEl = document.getElementById('countdownMins');
+    const secsEl = document.getElementById('countdownSecs');
+    if (daysEl && hoursEl && minsEl && secsEl) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 14);
+        targetDate.setHours(targetDate.getHours() + 8);
+        targetDate.setMinutes(targetDate.getMinutes() + 45);
+
+        const updateClock = () => {
+            const now = new Date().getTime();
+            const diff = Math.max(0, targetDate.getTime() - now);
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            daysEl.textContent = String(d).padStart(2, '0');
+            hoursEl.textContent = String(h).padStart(2, '0');
+            minsEl.textContent = String(m).padStart(2, '0');
+            secsEl.textContent = String(s).padStart(2, '0');
+        };
+        updateClock();
+        setInterval(updateClock, 1000);
+    }
+}
+
 export function initAdvancedFeatures(): {
     theme: typeof JadooTheme;
     toast: typeof JadooToast;
@@ -2386,6 +3064,9 @@ export function initAdvancedFeatures(): {
 
     // 2. Initialize Universal Navbar Auth & Mobile Navigation
     JadooNavAuth.init();
+
+    // 3. Initialize Rich UI Interactive Elements
+    initRichUIElements();
 
     const boardingPass = new BoardingPassController();
     const reviews = new TestimonialReviewController();
@@ -2421,6 +3102,7 @@ export function initAdvancedFeatures(): {
         (window as any).JadooTicketUtilities = JadooTicketUtilities;
         (window as any).TicketSecurityMiddleware = TicketSecurityMiddleware;
         (window as any).JadooNavAuth = JadooNavAuth;
+        (window as any).JadooConfetti = JadooConfetti;
     }
 
     return {

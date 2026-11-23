@@ -603,10 +603,10 @@ function createPlaceCard(place: Place, index: number): HTMLElement {
 function openBookingModalForPlace(place: Place): void {
   const currentUser = (window as any).JadooDB?.getCurrentUser() || (window as any).JadooAuth?.getCurrentUser();
   if (!currentUser) {
-    const proceed = confirm("You must be logged in to book a trip or ticket.\n\nClick OK to Sign In or Create an Account.");
-    if (proceed) {
-      window.location.href = "auth.html#signin";
+    if (typeof (window as any).JadooToast?.show === 'function') {
+      (window as any).JadooToast.show("Authentication Required", "Please sign in or create an account to book your trip.", "warning");
     }
+    setTimeout(() => { window.location.href = "auth.html#signin"; }, 1200);
     return;
   }
 
@@ -897,7 +897,14 @@ function openPlaceModal(place: Place) {
 
   modalOverlay.classList.add("active");
   modalOverlay.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
+  if (typeof (window as any).lockPageScroll === 'function') {
+    (window as any).lockPageScroll();
+  } else {
+    document.body.classList.add("modal-open");
+    document.documentElement.classList.add("modal-open");
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+  }
 }
 
 function closePlaceModal() {
@@ -907,11 +914,28 @@ function closePlaceModal() {
   }
   modalOverlay.classList.remove("active");
   modalOverlay.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  if (typeof (window as any).unlockPageScroll === 'function') {
+    (window as any).unlockPageScroll();
+  } else {
+    document.body.classList.remove("modal-open");
+    document.documentElement.classList.remove("modal-open");
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+  }
 }
 
 modalCloseBtn?.addEventListener("click", closePlaceModal);
-modalOverlay?.querySelector(".place-modal-backdrop")?.addEventListener("click", closePlaceModal);
+// Static backdrop: tapping outside does NOT close the modal
+modalOverlay?.addEventListener("click", (e: MouseEvent) => {
+  if (e.target === modalOverlay || (e.target as HTMLElement).classList.contains("place-modal-backdrop")) {
+    const card = modalOverlay.querySelector('.place-modal-card');
+    if (card) {
+      card.classList.remove('modal-static-pulse');
+      void (card as HTMLElement).offsetWidth;
+      card.classList.add('modal-static-pulse');
+    }
+  }
+});
 
 modalBookCta?.addEventListener("click", () => {
   if (currentModalPlace) {
@@ -947,9 +971,7 @@ btnToggleWishlistLandmark?.addEventListener("click", () => {
   const existingIdx = saved.findIndex((item: any) => item.title === place.name || item.id === placeId);
 
   if (existingIdx >= 0) {
-    if (!confirm(`Are you sure you want to remove "${place.name}" from your saved destinations?`)) {
-      return;
-    }
+    // Direct removal with bottom-center notification
     saved.splice(existingIdx, 1);
     try { localStorage.setItem("jadoo_saved_wishlist", JSON.stringify(saved)); } catch (_) {}
     if (typeof (window as any).JadooToast !== "undefined") {

@@ -1,3 +1,33 @@
+/* ==========================================================================
+   UNIVERSAL SCROLLBAR SUPPRESSION (Invisible WebKit & Standard Scrollbars)
+   ========================================================================== */
+::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    display: none !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-track {
+    display: none !important;
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+}
+
+html, body, * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
 
 [data-theme="dark"] {
   --bg-primary:       #090D16;          /* Deep luxury obsidian slate */
@@ -2019,7 +2049,8 @@ body.mobile-nav-open .theme-toggle {
 [data-theme="dark"] .inquiry-modal-content::-webkit-scrollbar-thumb,
 [data-theme="dark"] .service-create-modal::-webkit-scrollbar-thumb,
 [data-theme="dark"] .navitems::-webkit-scrollbar-thumb {
-  background: rgba(223, 105, 81, 0.4) !important;
+  display: none !important;
+  background: transparent !important;
 }
 
 /* Dark Theme Ticket Suite Adapters */
@@ -2281,4 +2312,32 @@ body.mobile-nav-open .theme-toggle {
 [data-theme="dark"] .review-user-synced-pill {
     background: rgba(16, 185, 129, 0.18) !important;
     color: #34D399 !important;
+}
+
+/* ── Stacked Toast Notifications Dark Theme (Matching .com in Testimonials) ── */
+[data-theme="dark"] .jadoo-toast {
+  background: var(--bg-card) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+}
+
+[data-theme="dark"] .jadoo-toast.is-front {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-left: 4.5px solid #DF6951 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(223, 105, 81, 0.15) !important;
+}
+
+[data-theme="dark"] .jadoo-toast.is-middle {
+  background: var(--bg-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 4.5px solid rgba(223, 105, 81, 0.7) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .jadoo-toast.is-back {
+  background: #0B101D !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-left: 4.5px solid rgba(223, 105, 81, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }

@@ -137,12 +137,13 @@
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </button>
-                <div class="navitems" id="navitems">
+                                <div class="navitems" id="navitems">
                     <ul>
                         <li><a href="../index.html" class="navlink">Home</a></li>
-                        <li><a href="./destination-page.html" class="navlink">Destinations</a></li>
-                        <li><a href="./services.html" class="navlink">Services</a></li>
-                        <li><a href="./profile.html" class="navlink active-page">My Profile</a></li>
+                        <li><a href="../index.html#destinations" class="navlink">Destinations</a></li>
+                        <li><a href="../index.html#services" class="navlink">Services</a></li>
+                        <li><a href="../index.html#bookings" class="navlink" id="navBookingsTrigger">Bookings</a></li>
+                        <li><a href="../index.html#testimonials" class="navlink">Testimonials</a></li>
                         <li id="nav-login-li"><a href="./auth.html#signin" class="navlink" id="nav-login-link">Login</a></li>
                         <li id="nav-signup-li"><button type="button" onclick="window.location.href='./auth.html#signup'" class="signup" id="nav-signup-btn" aria-label="Sign Up">Sign Up</button></li>
                         <li id="nav-user-li" class="nav-user-item">
@@ -187,13 +188,6 @@
                                     </button>
                                 </div>
                             </div>
-                        </li>
-                        <li>
-                            <select name="Language" id="lang" aria-label="Select Language">
-                                <option value="eng">En</option>
-                                <option value="Guj">Guj</option>
-                                <option value="Hi">Hi</option>
-                            </select>
                         </li>
                     </ul>
                 </div>
@@ -288,6 +282,121 @@
                 <div class="stat-metric-info">
                     <span class="stat-val" id="statTotalExpended">$0</span>
                     <span class="stat-lbl">Total Travel Value</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Upcoming Journey Countdown Hero Card -->
+        <div class="profile-countdown-hero" id="profileUpcomingJourneyCard">
+            <div class="countdown-hero-media">
+                <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=400&q=80" alt="Destination Preview" id="countdownHeroImg">
+            </div>
+            <div class="countdown-hero-body">
+                <span class="countdown-badge-pill"><i class="fa-solid fa-compass"></i> Next Scheduled Adventure</span>
+                <h2 class="countdown-destination-title" id="countdownHeroDestTitle">Santorini, Greece</h2>
+                <p class="countdown-subtitle" id="countdownHeroSubtitle">Santorini Sunset Tour • Confirmed Itinerary</p>
+                <div class="countdown-timer-grid">
+                    <div class="countdown-unit">
+                        <span class="countdown-digit" id="countdownDays">14</span>
+                        <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-digit" id="countdownHours">08</span>
+                        <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-digit" id="countdownMins">45</span>
+                        <span class="countdown-label">Mins</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-digit" id="countdownSecs">30</span>
+                        <span class="countdown-label">Secs</span>
+                    </div>
+                </div>
+            </div>
+            <a href="./ticket.html" class="countdown-action-btn" id="countdownHeroActionBtn">
+                <i class="fa-solid fa-ticket"></i>
+                <span>View E-Ticket</span>
+            </a>
+        </div>
+
+        <!-- Digital Traveler Passport & Achievements Showcase -->
+        <div class="passport-achievements-card">
+            <div class="achievements-header">
+                <div class="achievements-title-wrap">
+                    <h3><i class="fa-solid fa-award" style="color: #DF6951;"></i> Traveler Passport & Achievement Stamps</h3>
+                    <p>Collect digital explorer stamps as you journey across the globe with Jadoo.</p>
+                </div>
+                <div class="achievements-progress-pill">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span id="achievementsUnlockedCount">5 / 6 Unlocked</span>
+                </div>
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement-badge-item is-unlocked">
+                    <div class="badge-icon-wrap emerald">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">Verified Nomad</span>
+                        <span class="badge-desc">Identity & email verified</span>
+                        <span class="badge-status-tag">Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="achievement-badge-item is-unlocked">
+                    <div class="badge-icon-wrap coral">
+                        <i class="fa-solid fa-plane-departure"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">First Departure</span>
+                        <span class="badge-desc">Booked first voyage</span>
+                        <span class="badge-status-tag">Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="achievement-badge-item is-unlocked">
+                    <div class="badge-icon-wrap gold">
+                        <i class="fa-solid fa-feather-pointed"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">Storyteller</span>
+                        <span class="badge-desc">Shared travel review</span>
+                        <span class="badge-status-tag">Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="achievement-badge-item is-unlocked">
+                    <div class="badge-icon-wrap purple">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">Globe Trotter</span>
+                        <span class="badge-desc">Explored global destinations</span>
+                        <span class="badge-status-tag">Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="achievement-badge-item is-unlocked">
+                    <div class="badge-icon-wrap gold">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">Gold Voyager</span>
+                        <span class="badge-desc">Loyalty Tier Level 4</span>
+                        <span class="badge-status-tag">Unlocked</span>
+                    </div>
+                </div>
+
+                <div class="achievement-badge-item is-locked">
+                    <div class="badge-icon-wrap">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="badge-meta">
+                        <span class="badge-title">Eco Explorer</span>
+                        <span class="badge-desc">Book 5 green eco tours</span>
+                        <span class="badge-status-tag">Locked</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -433,27 +542,30 @@
 
                     <div class="booking-form-grid">
                         <div class="booking-field-group">
-                            <label for="settingsFullName">Full Name</label>
+                            <label for="settingsFullName">Full Name <span class="required-star">*</span></label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-user input-icon"></i>
-                                <input type="text" id="settingsFullName" required>
+                                <input type="text" id="settingsFullName" required autocomplete="name">
                             </div>
+                            <span class="field-error-msg" id="settingsFullName-error"></span>
                         </div>
 
                         <div class="booking-field-group">
-                            <label for="settingsEmail">Email Address</label>
+                            <label for="settingsEmail">Email Address <span class="required-star">*</span></label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-envelope input-icon"></i>
-                                <input type="email" id="settingsEmail" required>
+                                <input type="email" id="settingsEmail" required autocomplete="email">
                             </div>
+                            <span class="field-error-msg" id="settingsEmail-error"></span>
                         </div>
 
                         <div class="booking-field-group">
                             <label for="settingsPhone">Phone Number</label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-phone input-icon"></i>
-                                <input type="tel" id="settingsPhone" placeholder="+1 (555) 234-5678">
+                                <input type="tel" id="settingsPhone" placeholder="+1 (555) 234-5678" autocomplete="tel">
                             </div>
+                            <span class="field-error-msg" id="settingsPhone-error"></span>
                         </div>
 
                         <div class="booking-field-group">
@@ -462,6 +574,7 @@
                                 <i class="fa-solid fa-passport input-icon"></i>
                                 <input type="text" id="settingsNationality" placeholder="e.g. United States, United Kingdom, Canada">
                             </div>
+                            <span class="field-error-msg" id="settingsNationality-error"></span>
                         </div>
 
                         <div class="booking-field-group">
@@ -477,20 +590,23 @@
                                     <option value="gluten-free">Gluten-Free</option>
                                 </select>
                             </div>
+                            <span class="field-error-msg" id="settingsDiet-error"></span>
                         </div>
 
                         <div class="booking-field-group">
                             <label for="settingsEmergency">Emergency Contact</label>
                             <div class="booking-input-wrap">
                                 <i class="fa-solid fa-heart-pulse input-icon"></i>
-                                <input type="text" id="settingsEmergency" placeholder="Name & Phone Number">
+                                <input type="text" id="settingsEmergency" placeholder="Name & Phone Number (e.g. +1 555-0199)">
                             </div>
+                            <span class="field-error-msg" id="settingsEmergency-error"></span>
                         </div>
                     </div>
 
                     <div class="booking-field-group full-width">
                         <label for="settingsBio">Traveler Bio</label>
                         <textarea id="settingsBio" rows="3" placeholder="Tell fellow wanderers what drives your passion for discovering the world..."></textarea>
+                        <span class="field-error-msg" id="settingsBio-error"></span>
                     </div>
 
                     <div class="form-submit-row">
@@ -519,6 +635,19 @@
             <div class="features-modal-body">
                 <form id="testimonialReviewForm">
                     <input type="hidden" id="editingReviewId" value="">
+                    <!-- Reviewer Identity Bar -->
+                    <div class="reviewer-identity-bar">
+                        <div class="reviewer-avatar-wrap">
+                            <img src="../assets/testimonials-avatar-1.png" alt="Traveler Avatar" class="reviewer-mini-avatar" id="reviewModalAvatarPreview">
+                        </div>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-name-badge">
+                                <span class="reviewer-active-name" id="reviewModalActiveName">Alex Johnson</span>
+                                <span class="verified-tag"><i class="fa-solid fa-circle-check"></i> Verified Traveler</span>
+                            </div>
+                            <span class="reviewer-sub">Your review is linked to your verified traveler profile</span>
+                        </div>
+                    </div>
                     <div class="booking-field-group">
                         <label>Trip Experience Rating <span class="required-star">*</span></label>
                         <div class="star-rating-picker" id="starRatingPicker">
@@ -567,6 +696,18 @@
                         </div>
                     </div>
 
+                    <!-- Travel Style Quick Tag Chips -->
+                    <div class="travel-type-chips-wrap">
+                        <label class="sub-label"><i class="fa-solid fa-tags"></i> Quick Travel Category / Style:</label>
+                        <div class="travel-chips-grid" id="travelTypeChipsGrid">
+                            <button type="button" class="travel-chip" data-tag="Solo Adventure"><i class="fa-solid fa-person-walking-luggage"></i> Solo Adventure</button>
+                            <button type="button" class="travel-chip" data-tag="Family Holiday"><i class="fa-solid fa-people-roof"></i> Family Holiday</button>
+                            <button type="button" class="travel-chip" data-tag="Romantic Getaway"><i class="fa-solid fa-heart"></i> Romantic Getaway</button>
+                            <button type="button" class="travel-chip" data-tag="Cultural Tour"><i class="fa-solid fa-landmark"></i> Cultural Tour</button>
+                            <button type="button" class="travel-chip" data-tag="Luxury Voyage"><i class="fa-solid fa-gem"></i> Luxury Voyage</button>
+                            <button type="button" class="travel-chip" data-tag="Eco & Nature"><i class="fa-solid fa-leaf"></i> Eco & Nature</button>
+                        </div>
+                    </div>
                     <div class="booking-field-group full-width">
                         <label for="reviewTripTag">Trip Tagline / Package Name</label>
                         <div class="booking-input-wrap">
@@ -580,27 +721,7 @@
                         <textarea id="reviewQuote" rows="3" placeholder="Tell other travelers about your unforgettable moments with Jadoo..." required></textarea>
                     </div>
 
-                    <div class="booking-field-group full-width">
-                        <label>Choose Your Traveler Avatar</label>
-                        <div class="avatar-selection-grid" id="avatarSelectionGrid">
-                            <div class="avatar-chip is-selected" data-avatar="../assets/testimonials-avatar-1.png">
-                                <img src="../assets/testimonials-avatar-1.png" alt="Avatar 1">
-                            </div>
-                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-2.png">
-                                <img src="../assets/testimonials-avatar-2.png" alt="Avatar 2">
-                            </div>
-                            <div class="avatar-chip" data-avatar="../assets/testimonials-avatar-3.png">
-                                <img src="../assets/testimonials-avatar-3.png" alt="Avatar 3">
-                            </div>
-                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80">
-                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar 4">
-                            </div>
-                            <div class="avatar-chip" data-avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80">
-                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Avatar 5">
-                            </div>
-                        </div>
                     </div>
-
                     <div class="form-submit-row">
                         <button type="button" class="btn-secondary-flat" id="reviewCancelBtn">Cancel</button>
                         <button type="submit" class="btn-primary-glow" id="reviewSubmitBtn">
@@ -677,6 +798,7 @@
         <i class="fa-solid fa-moon" id="themeIcon"></i>
     </button>
 
+    <script src="../scripts/validation.js"></script>
     <script type="module" src="../scripts/features.js"></script>
     <script type="module">
         import { JadooDB, getApiBase } from '../scripts/db.js';
@@ -782,7 +904,7 @@
 
         // Global Cancel Action (syncs to backend and cache)
         window.cancelTripAction = async function (id) {
-            if (confirm(`Are you sure you want to cancel booking #${id}?`)) {
+            if (true) {
                 await JadooDB.updateBookingStatusAsync(id, 'cancelled');
                 JadooDB.updateBookingStatus(id, 'cancelled');
                 const user = JadooDB.getCurrentUser();
@@ -873,28 +995,197 @@
                 JadooToast.show('Passes Updated', 'All boarding passes and gate tokens are up to date.', 'info');
             });
 
-            // Settings Form Save with Validation
+            // --- Full Settings Live Validation & Submission Controller ---
             const settingsForm = document.getElementById('profileFullSettingsForm');
+            const nameInput = document.getElementById('settingsFullName');
+            const emailInput = document.getElementById('settingsEmail');
+            const phoneInput = document.getElementById('settingsPhone');
+            const natInput = document.getElementById('settingsNationality');
+            const dietInput = document.getElementById('settingsDiet');
+            const emergInput = document.getElementById('settingsEmergency');
+            const bioInput = document.getElementById('settingsBio');
+
+            // Explicit live validator functions for profile inputs
+            const validateProfileName = (val) => {
+                if (window.JadooValidation && typeof window.JadooValidation.validateFullName === 'function') {
+                    return window.JadooValidation.validateFullName(val);
+                }
+                const t = (val || '').trim();
+                if (!t) return 'Full Name is required.';
+                if (/\d/.test(t)) return 'Full Name must contain only letters (no numbers).';
+                if (t.length < 2) return 'Full Name must be at least 2 characters.';
+                if (t.length > 60) return 'Full Name cannot exceed 60 characters.';
+                if (!/^[a-zA-Z\u00C0-\u024F\s'.-]+$/.test(t)) return 'Full Name can only contain letters, spaces, hyphens, and apostrophes.';
+                const letters = (t.match(/[a-zA-Z\u00C0-\u024F]/g) || []).length;
+                if (letters < 2) return 'Full Name must contain at least 2 letters.';
+                return '';
+            };
+
+            const validateProfileEmail = (val) => {
+                if (window.JadooValidation && typeof window.JadooValidation.validateEmail === 'function') {
+                    return window.JadooValidation.validateEmail(val);
+                }
+                const t = (val || '').trim();
+                if (!t) return 'Email address is required.';
+                if (/\s/.test(t)) return 'Email address cannot contain spaces.';
+                if (!t.includes('@')) return 'Email address must include an "@" symbol.';
+                const parts = t.split('@');
+                if (parts.length !== 2 || !parts[0] || !parts[1]) return 'Please enter a valid email address (e.g. name@domain.com).';
+                const [local, dom] = parts;
+                if (local.startsWith('.') || local.endsWith('.') || local.includes('..')) return 'Invalid email username.';
+                if (!dom.includes('.')) return 'Email domain must include a top-level domain (e.g. .com).';
+                if (dom.startsWith('.') || dom.endsWith('.') || dom.includes('..')) return 'Invalid email domain.';
+                const dParts = dom.split('.');
+                const tld = dParts[dParts.length - 1];
+                if (!tld || tld.length < 2) return 'Please enter a valid domain extension (e.g. .com, .org).';
+                return '';
+            };
+
+            const validateProfilePhone = (val) => {
+                if (window.JadooValidation && typeof window.JadooValidation.validateStrictPhone === 'function') {
+                    return window.JadooValidation.validateStrictPhone(val, false, 'Phone number');
+                }
+                const t = (val || '').trim();
+                if (!t) return '';
+                if (/[a-zA-Z]/.test(t)) return 'Phone number cannot contain letters.';
+                const plusCount = (t.match(/\+/g) || []).length;
+                if (plusCount > 1 || (plusCount === 1 && !t.startsWith('+'))) return "'+' is only permitted once at the beginning of the phone number.";
+                if (!/^\+?[0-9\s\-().]+$/.test(t)) return 'Phone number can only contain digits and standard separators.';
+                const digits = t.replace(/\D/g, '');
+                if (digits.length < 7) return 'Phone number is too short (minimum 7 digits required).';
+                if (digits.length > 15) return 'Phone number cannot exceed 15 digits (ITU-T E.164 standard).';
+                if (t.startsWith('+0')) return 'Invalid country code: country codes cannot start with 0.';
+                if (/^(\d)\1+$/.test(digits)) return 'Please enter a realistic phone number (cannot be repeating identical digits).';
+                const asc = '0123456789012345';
+                const desc = '9876543210987654';
+                if (asc.includes(digits) || desc.includes(digits)) return 'Please enter a realistic phone number (sequential test numbers are not permitted).';
+                return '';
+            };
+
+            const validateProfileEmergency = (val) => {
+                if (window.JadooValidation && typeof window.JadooValidation.validateEmergencyContact === 'function') {
+                    return window.JadooValidation.validateEmergencyContact(val);
+                }
+                const t = (val || '').trim();
+                if (!t) return '';
+                const digits = t.replace(/\D/g, '');
+                if (digits.length === 0) return 'Emergency contact must include a reachable phone number (minimum 7 digits).';
+                if (digits.length < 7) return 'Emergency contact phone number is too short (minimum 7 digits required).';
+                if (digits.length > 15) return 'Emergency contact phone number cannot exceed 15 digits (E.164 standard).';
+                if (/^(\d)\1+$/.test(digits)) return 'Emergency contact phone number cannot be repeating identical digits.';
+                const asc = '0123456789012345';
+                const desc = '9876543210987654';
+                if (asc.includes(digits) || desc.includes(digits)) return 'Emergency contact phone number cannot be sequential test digits.';
+                return '';
+            };
+
+            const validateProfileNationality = (val) => {
+                if (window.JadooValidation && typeof window.JadooValidation.validateNationality === 'function') {
+                    return window.JadooValidation.validateNationality(val);
+                }
+                const t = (val || '').trim();
+                if (!t) return '';
+                if (/\d/.test(t)) return 'Passport nationality must contain only letters (no numbers).';
+                if (t.length < 2) return 'Nationality must be at least 2 characters.';
+                if (t.length > 50) return 'Nationality cannot exceed 50 characters.';
+                if (!/^[a-zA-Z\u00C0-\u024F\s'.-]+$/.test(t)) return 'Nationality can only contain letters and spaces.';
+                const letters = (t.match(/[a-zA-Z\u00C0-\u024F]/g) || []).length;
+                if (letters < 2) return 'Nationality must contain at least 2 letters.';
+                return '';
+            };
+
+            function showProfileFieldError(inputEl, msg) {
+                if (!inputEl) return;
+                inputEl.classList.add('input-error');
+                inputEl.classList.remove('input-success');
+                const errEl = document.getElementById(inputEl.id + '-error');
+                if (errEl) {
+                    errEl.textContent = msg;
+                    errEl.classList.add('visible');
+                }
+            }
+
+            function clearProfileFieldError(inputEl) {
+                if (!inputEl) return;
+                inputEl.classList.remove('input-error');
+                const errEl = document.getElementById(inputEl.id + '-error');
+                if (errEl) {
+                    errEl.textContent = '';
+                    errEl.classList.remove('visible');
+                }
+                if (inputEl.value && inputEl.value.trim().length > 0) {
+                    inputEl.classList.add('input-success');
+                } else {
+                    inputEl.classList.remove('input-success');
+                }
+            }
+
+            function bindProfileLiveInput(inputEl, validatorFn) {
+                if (!inputEl) return null;
+                const check = () => {
+                    const err = validatorFn(inputEl.value);
+                    if (err) {
+                        showProfileFieldError(inputEl, err);
+                        return false;
+                    } else {
+                        clearProfileFieldError(inputEl);
+                        return true;
+                    }
+                };
+                inputEl.addEventListener('input', check);
+                inputEl.addEventListener('keyup', check);
+                inputEl.addEventListener('blur', check);
+                inputEl.addEventListener('change', check);
+                return check;
+            }
+
+            // Bind live validation to each field
+            const checkName = bindProfileLiveInput(nameInput, validateProfileName);
+            const checkEmail = bindProfileLiveInput(emailInput, validateProfileEmail);
+            const checkPhone = bindProfileLiveInput(phoneInput, validateProfilePhone);
+            const checkNat = bindProfileLiveInput(natInput, validateProfileNationality);
+            const checkEmerg = bindProfileLiveInput(emergInput, validateProfileEmergency);
+
+            settingsForm?.setAttribute('novalidate', 'true');
             settingsForm?.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const nameInput = document.getElementById('settingsFullName');
-                const phoneInput = document.getElementById('settingsPhone');
+                e.stopImmediatePropagation();
+
+                const isNameValid = checkName ? checkName() : true;
+                const isEmailValid = checkEmail ? checkEmail() : true;
+                const isPhoneValid = checkPhone ? checkPhone() : true;
+                const isNatValid = checkNat ? checkNat() : true;
+                const isEmergValid = checkEmerg ? checkEmerg() : true;
+
+                if (!isNameValid || !isEmailValid || !isPhoneValid || !isNatValid || !isEmergValid) {
+                    if (!isNameValid && nameInput) nameInput.focus();
+                    else if (!isEmailValid && emailInput) emailInput.focus();
+                    else if (!isPhoneValid && phoneInput) phoneInput.focus();
+                    else if (!isEmergValid && emergInput) emergInput.focus();
+                    else if (!isNatValid && natInput) natInput.focus();
+
+                    JadooToast.show('Validation Error', 'Please check highlighted fields and correct errors.', 'error');
+                    return;
+                }
+
                 const name = nameInput ? nameInput.value.trim() : '';
+                const email = emailInput ? emailInput.value.trim() : '';
                 const phone = phoneInput ? phoneInput.value.trim() : '';
+                const nationality = natInput ? natInput.value.trim() : '';
+                const dietary = dietInput ? dietInput.value : 'none';
+                const emergency_contact = emergInput ? emergInput.value.trim() : '';
+                const bio = bioInput ? bioInput.value.trim() : '';
 
-                if (!name || name.length < 2) {
-                    if (nameInput) nameInput.focus();
-                    JadooToast.show('Validation Error', 'Full name must be at least 2 characters.', 'error');
-                    return;
-                }
+                JadooDB.updateProfile({
+                    full_name: name,
+                    email: email,
+                    phone: phone,
+                    nationality: nationality,
+                    dietary: dietary,
+                    emergency_contact: emergency_contact,
+                    bio: bio
+                });
 
-                if (phone && !/^[\d\s+\-().]{6,25}$/.test(phone)) {
-                    if (phoneInput) phoneInput.focus();
-                    JadooToast.show('Validation Error', 'Please enter a valid phone number (6-25 digits/symbols).', 'error');
-                    return;
-                }
-
-                JadooDB.updateProfile({ full_name: name, phone });
                 renderProfileHeader(JadooDB.getCurrentUser());
                 JadooNavAuth.updateNavbar();
                 JadooToast.show('Account Updated', 'Your profile details and travel preferences have been saved.', 'success');
@@ -1071,11 +1362,20 @@
             if (nameInput) nameInput.value = user?.full_name || '';
             if (emailInput) emailInput.value = user?.email || '';
             if (phoneInput) phoneInput.value = user?.phone || '';
+            const natInp = document.getElementById('settingsNationality');
+            const dietInp = document.getElementById('settingsDiet');
+            const emergInp = document.getElementById('settingsEmergency');
+            const bioInp = document.getElementById('settingsBio');
+            if (natInp && user?.nationality) natInp.value = user.nationality;
+            if (dietInp && user?.dietary) dietInp.value = user.dietary;
+            if (emergInp && user?.emergency_contact) emergInp.value = user.emergency_contact;
+            if (bioInp && user?.bio) bioInp.value = user.bio;
         }
 
         function renderStats(user) {
             const bookings = JadooDB.getUserBookings(user?.email);
-            const confirmedCount = bookings.filter(b => (b.status || '').toLowerCase() === 'confirmed').length;
+            const confirmedBookings = bookings.filter(b => (b.status || '').toLowerCase() === 'confirmed');
+            const confirmedCount = confirmedBookings.length;
             const totalSpent = bookings.reduce((sum, b) => (b.status || '').toLowerCase() !== 'cancelled' ? sum + (parseFloat(b.total_price) || 0) : sum, 0);
 
             const allTestimonials = JadooDB.getTestimonials();
@@ -1099,6 +1399,32 @@
             if (badgeReviews) badgeReviews.textContent = String(userReviews.length);
             const badgeWishlist = document.getElementById('badgeWishlistCount');
             if (badgeWishlist) badgeWishlist.textContent = String(getSavedWishlist().length);
+
+            // Dynamic Sync of Next Upcoming Journey Hero Card
+            const nextTrip = confirmedBookings[0] || bookings[0];
+            const heroCard = document.getElementById('profileUpcomingJourneyCard');
+            const heroTitle = document.getElementById('countdownHeroDestTitle');
+            const heroSub = document.getElementById('countdownHeroSubtitle');
+            const heroImg = document.getElementById('countdownHeroImg');
+            const heroBtn = document.getElementById('countdownHeroActionBtn');
+
+            if (nextTrip && heroCard) {
+                if (heroTitle) heroTitle.textContent = nextTrip.destination_name || 'Santorini, Greece';
+                if (heroSub) heroSub.textContent = `${nextTrip.attraction_name || nextTrip.destination_name} • ${nextTrip.guests_count || 1} Guest${(nextTrip.guests_count || 1) > 1 ? 's' : ''} • ${(nextTrip.status || 'Confirmed').toUpperCase()}`;
+                if (heroBtn) heroBtn.href = `./ticket.html?id=${nextTrip.id}`;
+                if (heroImg && nextTrip.image_url) heroImg.src = nextTrip.image_url;
+            }
+
+            // Dynamic Achievements Calculation
+            let unlocked = 0;
+            if (user?.email) unlocked++; // Verified Nomad
+            if (bookings.length >= 1) unlocked++; // First Departure
+            if (userReviews.length >= 1) unlocked++; // Storyteller
+            const distinctDests = new Set(bookings.map(b => b.destination_name)).size;
+            if (distinctDests >= 2 || bookings.length >= 2) unlocked++; // Globe Trotter
+            if (confirmedCount >= 1 || user?.role_title) unlocked++; // Gold Voyager
+            const achieveCountEl = document.getElementById('achievementsUnlockedCount');
+            if (achieveCountEl) achieveCountEl.textContent = `${unlocked} / 6 Unlocked`;
         }
 
         // ── SAVED WISHLIST CONTROLLER & PERSISTENCE ENGINE ──────────
@@ -1266,9 +1592,7 @@
             const items = getSavedWishlist();
             const target = items.find(x => x.id === id);
             const targetName = target ? target.title : 'this destination';
-            if (!confirm(`Are you sure you want to remove "${targetName}" from your saved destinations?`)) {
-                return;
-            }
+            // Direct removal with bottom-center toast
             const updated = items.filter(x => x.id !== id);
             saveWishlist(updated);
             renderWishlist();
@@ -1278,16 +1602,14 @@
         window.clearAllWishlist = function() {
             const items = getSavedWishlist();
             if (items.length === 0) return;
-            if (!confirm(`Are you sure you want to remove all ${items.length} destinations from your saved wishlist?`)) {
-                return;
-            }
+            // Direct clear with bottom-center toast
             saveWishlist([]);
             renderWishlist();
             JadooToast.show('Wishlist Cleared', 'All saved destinations have been removed.', 'info');
         };
 
         window.restoreDefaultWishlist = function() {
-            if (!confirm('Restore the default curated destinations to your saved wishlist?')) return;
+            // Direct restore with bottom-center toast
             saveWishlist(DEFAULT_WISHLIST);
             renderWishlist();
             JadooToast.show('Wishlist Restored', 'Curated destinations have been restored to your wishlist.', 'success');
@@ -1619,12 +1941,7 @@
                 }
             }
 
-            // Sync user avatar if available
-            if (user?.avatar_url) {
-                syncReviewAvatarChips(user.avatar_url);
-            } else {
-                syncReviewAvatarChips('../assets/testimonials-avatar-1.png');
-            }
+            profileSelectedAvatar = user?.avatar_url || '../assets/testimonials-avatar-1.png';
 
             setProfileStarRating(5);
 
@@ -1718,9 +2035,7 @@
             const t = allTestimonials.find(item => item.id === id);
             const reviewLabel = t ? `"${t.destination_name || 'your review'}"` : 'this review';
 
-            if (!confirm(`Are you sure you want to delete your review for ${reviewLabel}? This action cannot be undone.`)) {
-                return;
-            }
+            // Direct review delete with bottom-center toast
 
             try {
                 await JadooDB.deleteTestimonialAsync(id);
@@ -1754,7 +2069,15 @@
             document.body.style.overflow = '';
         }
         document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
-        document.getElementById('reviewModalBackdrop')?.addEventListener('click', closeReviewModal);
+        // Static backdrop: tapping outside does NOT close the modal
+        document.getElementById('reviewModalBackdrop')?.addEventListener('click', () => {
+            const card = document.querySelector('.reviewer-modal-dialog, .features-modal-dialog');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void (card as HTMLElement).offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
         document.getElementById('reviewCancelBtn')?.addEventListener('click', closeReviewModal);
 
         // Star rating picker
@@ -1784,15 +2107,7 @@
             });
         });
 
-        // Avatar chips
-        const avatarChips = document.querySelectorAll('#avatarSelectionGrid .avatar-chip');
-        avatarChips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                avatarChips.forEach(c => c.classList.remove('is-selected'));
-                chip.classList.add('is-selected');
-                profileSelectedAvatar = chip.getAttribute('data-avatar') || '../assets/testimonials-avatar-1.png';
-            });
-        });
+// Avatar chips removed per user specification
 
         // Submit Review Form (handles both Create and Update with Review ID and User ID sync)
         const reviewForm = document.getElementById('testimonialReviewForm');
@@ -1806,25 +2121,56 @@
             const submitBtn = reviewForm.querySelector('button[type="submit"]');
             const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
 
+            const nameInput = document.getElementById('reviewAuthorName');
+            const destInput = document.getElementById('reviewDestinationSelect');
+            const locInput = document.getElementById('reviewAuthorLocation');
+            const roleInput = document.getElementById('reviewRoleTitle');
+            const tagInput = document.getElementById('reviewTripTag');
+            const quoteInput = document.getElementById('reviewQuote');
+
+            const valApi = window.JadooValidation;
+            if (valApi) {
+                const isNameOk = valApi.validateField(nameInput);
+                const isDestOk = valApi.validateField(destInput);
+                const isLocOk = valApi.validateField(locInput);
+                const isRoleOk = valApi.validateField(roleInput);
+                const isTagOk = valApi.validateField(tagInput);
+                const isQuoteOk = valApi.validateField(quoteInput);
+
+                if (!isNameOk || !isDestOk || !isLocOk || !isRoleOk || !isTagOk || !isQuoteOk) {
+                    if (!isNameOk && nameInput) nameInput.focus();
+                    else if (!isDestOk && destInput) destInput.focus();
+                    else if (!isLocOk && locInput) locInput.focus();
+                    else if (!isRoleOk && roleInput) roleInput.focus();
+                    else if (!isTagOk && tagInput) tagInput.focus();
+                    else if (!isQuoteOk && quoteInput) quoteInput.focus();
+
+                    JadooToast.show('Validation Error', 'Please check highlighted fields and correct errors.', 'error');
+                    return;
+                }
+            }
+
             const user = JadooDB.getCurrentUser();
             const editingId = document.getElementById('editingReviewId')?.value.trim();
-            const author_name = document.getElementById('reviewAuthorName')?.value.trim() || user?.full_name || 'Traveler';
-            const destination_name = document.getElementById('reviewDestinationSelect')?.value || 'Rome, Italy';
-            const author_location = document.getElementById('reviewAuthorLocation')?.value.trim() || 'Global Traveler';
-            const author_role = document.getElementById('reviewRoleTitle')?.value.trim() || 'Explorer';
-            const trip_tag = document.getElementById('reviewTripTag')?.value.trim() || `${destination_name} Tour`;
-            const quote = document.getElementById('reviewQuote')?.value.trim();
+            const author_name = nameInput?.value.trim() || user?.full_name || 'Traveler';
+            const destination_name = destInput?.value || 'Rome, Italy';
+            const author_location = locInput?.value.trim() || 'Global Traveler';
+            const author_role = roleInput?.value.trim() || 'Explorer';
+            const trip_tag = tagInput?.value.trim() || `${destination_name} Tour`;
+            const quote = quoteInput?.value.trim() || '';
 
-            if (!quote) {
-                JadooToast.show('Missing Feedback', 'Please write a brief summary of your journey.', 'warning');
+            if (!destination_name) {
+                JadooToast.show('Destination Required', 'Please select which destination you visited.', 'warning');
+                return;
+            }
+            if (!quote || quote.length < 10) {
+                JadooToast.show('Missing Feedback', 'Please write a review with at least 10 characters.', 'warning');
                 return;
             }
 
             if (editingId) {
                 // Editing existing review - UPDATE matching review ID and sync User ID
-                if (!confirm(`Are you sure you want to update review #${editingId.slice(0, 8)} for "${destination_name}"?`)) {
-                    return;
-                }
+                // Direct review update with bottom-center toast
 
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -1866,9 +2212,7 @@
                 JadooToast.show('Review Updated!', `Review #${editingId.slice(0, 8)} updated and synced with your User ID.`, 'success');
             } else {
                 // Creating new review
-                if (!confirm(`Are you sure you want to publish your review for "${destination_name}"?`)) {
-                    return;
-                }
+                // Direct review publish with bottom-center toast
 
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -1912,6 +2256,10 @@
             }
         });
     </script>
+  <!-- Floating Back to Top Button -->
+  <button type="button" class="jadoo-back-to-top" id="jadooBackToTop" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
 </body>
 
 </html>
