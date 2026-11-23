@@ -862,6 +862,13 @@
             JadooTheme.init();
             JadooNavAuth.init();
 
+            // Pre-render instant verified pass QR code into #stubQrCanvas
+            const initialStub = document.getElementById('stubQrCanvas');
+            if (initialStub && !initialStub.hasChildNodes()) {
+                const initUrl = window.location.href || 'https://jadoo-travel.app/ticket';
+                renderSingleTicketQr(initialStub, initUrl, 114);
+            }
+
             // Clear legacy seed booking pollution from localStorage
             try {
                 localStorage.removeItem('jadoo_schema_bookings');
@@ -1210,11 +1217,11 @@
             // Static backdrop: clicking outside does NOT dismiss ticket modals
             document.querySelectorAll('.ticket-modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay || (e.target as HTMLElement).classList.contains('ticket-modal-backdrop')) {
+                    if (e.target === overlay || (e.target).classList.contains('ticket-modal-backdrop')) {
                         const card = overlay.querySelector('.ticket-modal-card, .features-modal-card');
                         if (card) {
                             card.classList.remove('modal-static-pulse');
-                            void (card as HTMLElement).offsetWidth;
+                            void card.offsetWidth;
                             card.classList.add('modal-static-pulse');
                         }
                     }

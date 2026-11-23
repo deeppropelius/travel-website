@@ -51,6 +51,11 @@ export interface DbCustomer {
     avatar_url?: string;
     logged_in_at?: string;
     token?: string;
+    nationality?: string;
+    dietary?: string;
+    emergency_contact?: string;
+    bio?: string;
+    role_title?: string;
 }
 export type DbUser = DbCustomer;
 export type Customer = DbCustomer;
@@ -189,6 +194,15 @@ export function getStoredAuthToken(): string | null {
     if (typeof localStorage !== 'undefined') {
         const local = localStorage.getItem('jadoo_auth_token');
         if (local) return local;
+        try {
+            const rawUser = localStorage.getItem('jadoo_current_user');
+            if (rawUser) {
+                const parsed = JSON.parse(rawUser);
+                if (parsed && (parsed.token || parsed.authToken)) {
+                    return parsed.token || parsed.authToken;
+                }
+            }
+        } catch (_) {}
     }
     if (typeof document !== 'undefined') {
         const match = document.cookie.match(/(?:^|; )jadoo_auth_token=([^;]*)/);
@@ -988,6 +1002,12 @@ class JadooDatabase {
                         email: legacy.email || '',
                         phone: legacy.phone || '',
                         avatar_url: avatar,
+                        nationality: legacy.nationality || '',
+                        dietary: legacy.dietary || 'none',
+                        emergency_contact: legacy.emergency_contact || '',
+                        bio: legacy.bio || '',
+                        role_title: legacy.role_title || '',
+                        token: legacy.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('jadoo_auth_token') : null) || undefined,
                         created_at: legacy.createdAt || legacy.created_at || new Date().toISOString(),
                         logged_in_at: legacy.loggedInAt || legacy.logged_in_at || new Date().toISOString(),
                         updated_at: new Date().toISOString()
@@ -1030,6 +1050,11 @@ class JadooDatabase {
             email: dbUser.email,
             phone: dbUser.phone,
             avatar_url: dbUser.avatar_url,
+            nationality: (user as any).nationality || (dbUser as any).nationality || '',
+            dietary: (user as any).dietary || (dbUser as any).dietary || 'none',
+            emergency_contact: (user as any).emergency_contact || (dbUser as any).emergency_contact || '',
+            bio: (user as any).bio || (dbUser as any).bio || '',
+            role_title: (user as any).role_title || (dbUser as any).role_title || '',
             createdAt: dbUser.created_at,
             loggedInAt: dbUser.logged_in_at,
             token: dbUser.token

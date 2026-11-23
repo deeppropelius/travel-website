@@ -4072,10 +4072,7 @@ body.user-logged-in #destUserProfileDropdown {
   border-radius: 8px;
 }
 
-#stubQrCanvas canvas {
-  display: none !important;
-}
-
+#stubQrCanvas canvas,
 #stubQrCanvas img,
 #stubQrCanvas svg {
   max-width: 114px;
