@@ -372,7 +372,16 @@ export class TestimonialReviewController {
             openBtn.addEventListener('click', () => this.open());
         }
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.reviewer-modal-dialog, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
         if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
 
         this.initStarRating();
@@ -404,7 +413,7 @@ export class TestimonialReviewController {
 
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -414,7 +423,7 @@ export class TestimonialReviewController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private initStarRating(): void {
@@ -793,7 +802,16 @@ export class BoardingPassController {
         const printBtn = document.getElementById('btnPrintTicketAction');
 
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.ticket-modal-card, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
         if (printBtn) {
             printBtn.addEventListener('click', () => {
                 if (this.currentBooking) {
@@ -811,7 +829,7 @@ export class BoardingPassController {
         this.renderTicket(booking);
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -821,7 +839,7 @@ export class BoardingPassController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private renderTicket(booking: DbBooking): void {
@@ -1053,7 +1071,16 @@ export class ProfileDashboardController {
 
         if (openBtn) openBtn.addEventListener('click', () => this.open());
         if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-        if (backdrop) backdrop.addEventListener('click', () => this.close());
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                const card = document.querySelector('.ticket-modal-card, .features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
 
         if (form) {
             form.addEventListener('submit', (e) => {
@@ -1074,7 +1101,7 @@ export class ProfileDashboardController {
         this.renderStats();
         this.modal.classList.add('is-open');
         this.modal.setAttribute('aria-hidden', 'false');
-        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     public close(): void {
@@ -1084,7 +1111,7 @@ export class ProfileDashboardController {
         }
         this.modal.classList.remove('is-open');
         this.modal.setAttribute('aria-hidden', 'true');
-        document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+        if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
     }
 
     private renderStats(): void {
@@ -1472,8 +1499,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('seatMapBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('seatMapClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('seatMapBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('seatMapClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const currentSavedSeat = localStorage.getItem(`jadoo_seat_${booking.id}`) || 'Suite 02A';
@@ -1542,6 +1579,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1568,8 +1606,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('shareBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('shareClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('shareBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('shareClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const ticketUrl = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(booking.id)}`;
@@ -1634,6 +1682,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1691,8 +1740,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('walletPassBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('walletPassClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('walletPassBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('walletPassClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const isApple = type === 'apple';
@@ -1764,6 +1823,7 @@ export const JadooTicketUtilities = {
             });
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1790,8 +1850,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('luggageTagBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('luggageTagClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('luggageTagBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('luggageTagClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const destCode = booking.destination_name.substring(0, 3).toUpperCase();
@@ -1846,6 +1916,7 @@ export const JadooTicketUtilities = {
             `;
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     },
 
@@ -1969,8 +2040,18 @@ export const JadooTicketUtilities = {
             `;
             document.body.appendChild(overlay);
 
-            document.getElementById('qrZoomBackdrop')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
-            document.getElementById('qrZoomClose')?.addEventListener('click', () => overlay?.classList.remove('is-open'));
+            document.getElementById('qrZoomBackdrop')?.addEventListener('click', () => {
+                const card = overlay?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+            document.getElementById('qrZoomClose')?.addEventListener('click', () => {
+                overlay?.classList.remove('is-open');
+                if (typeof (window as any).unlockPageScroll === 'function') (window as any).unlockPageScroll();
+            });
         }
 
         const ticketUrl = this.getTicketQrUrl(booking.id);
@@ -1999,6 +2080,7 @@ export const JadooTicketUtilities = {
             }
         }
 
+        if (typeof (window as any).lockPageScroll === 'function') (window as any).lockPageScroll();
         overlay.classList.add('is-open');
     }
 };
@@ -2564,12 +2646,16 @@ function initRichUIElements(): void {
 
             document.getElementById('conciergeCloseBtn')?.addEventListener('click', () => {
                 modal?.classList.remove('is-open');
-                document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+                if (typeof (window as any).unlockPageScroll === 'function') { (window as any).unlockPageScroll(); } else { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; }
             });
 
             document.getElementById('conciergeBackdrop')?.addEventListener('click', () => {
-                modal?.classList.remove('is-open');
-                document.documentElement.classList.remove('modal-open'); document.body.classList.remove('modal-open'); document.documentElement.style.overflow = ''; document.body.style.overflow = '';
+                const card = modal?.querySelector('.concierge-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
             });
 
             // Promo code copy handlers
@@ -2589,7 +2675,7 @@ function initRichUIElements(): void {
         }
 
         modal.classList.add('is-open');
-        document.documentElement.classList.add('modal-open'); document.body.classList.add('modal-open'); document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden';
+        if (typeof (window as any).lockPageScroll === 'function') { (window as any).lockPageScroll(); } else { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; }
     }
 
     // 1.4. Interactive Destination Category Tabs on Home Page

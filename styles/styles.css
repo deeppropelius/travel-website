@@ -6646,10 +6646,8 @@ select.input-success,
 /* --------------------------------------------------------------------------
    GLOBAL MODAL SCROLL-LOCK & OVERSCROLL CONTAINMENT
    -------------------------------------------------------------------------- */
-html.modal-open,
 body.modal-open {
     overflow: hidden !important;
-    height: 100% !important;
     touch-action: none !important;
     -webkit-overflow-scrolling: auto !important;
 }
@@ -6658,7 +6656,9 @@ body.modal-open {
 .booking-modal-overlay,
 .my-bookings-overlay,
 .demo-modal-overlay,
-.modal-overlay {
+.modal-overlay,
+.features-modal-overlay,
+.jadoo-concierge-modal {
     overscroll-behavior: contain !important;
 }
 
@@ -6666,6 +6666,24 @@ body.modal-open {
 .booking-modal-card,
 .modal-body-scroll,
 .my-bookings-modal-card,
-.my-bookings-body {
+.my-bookings-body,
+.features-modal-dialog,
+.concierge-modal-dialog {
     overscroll-behavior: contain !important;
+}
+
+/* Static Backdrop Tap Hint Animation: subtly pulses card without dismissing */
+@keyframes jadooModalStaticPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.place-modal-card.modal-static-pulse,
+.booking-modal-card.modal-static-pulse,
+.my-bookings-modal-card.modal-static-pulse,
+.features-modal-dialog.modal-static-pulse,
+.concierge-modal-dialog.modal-static-pulse,
+.modal-card.modal-static-pulse {
+    animation: jadooModalStaticPulse 0.22s cubic-bezier(0.2, 0.8, 0.4, 1) !important;
 }

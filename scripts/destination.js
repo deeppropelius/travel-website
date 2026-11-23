@@ -815,7 +815,13 @@ function openPlaceModal(place) {
     }
     modalOverlay.classList.add("active");
     modalOverlay.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+    if (typeof window.lockPageScroll === 'function') {
+        window.lockPageScroll();
+    }
+    else {
+        document.body.classList.add("modal-open");
+        document.body.style.overflow = "hidden";
+    }
 }
 function closePlaceModal() {
     if (!modalOverlay)
@@ -825,10 +831,24 @@ function closePlaceModal() {
     }
     modalOverlay.classList.remove("active");
     modalOverlay.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+    if (typeof window.unlockPageScroll === 'function') {
+        window.unlockPageScroll();
+    }
+    else {
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow = "";
+    }
 }
 modalCloseBtn?.addEventListener("click", closePlaceModal);
-modalOverlay?.querySelector(".place-modal-backdrop")?.addEventListener("click", closePlaceModal);
+// Static backdrop: tapping outside does NOT close the modal
+modalOverlay?.querySelector(".place-modal-backdrop")?.addEventListener("click", () => {
+    const card = modalOverlay.querySelector('.place-modal-card');
+    if (card) {
+        card.classList.remove('modal-static-pulse');
+        void card.offsetWidth;
+        card.classList.add('modal-static-pulse');
+    }
+});
 modalBookCta?.addEventListener("click", () => {
     if (currentModalPlace) {
         closePlaceModal();

@@ -2069,7 +2069,15 @@
             document.body.style.overflow = '';
         }
         document.getElementById('reviewModalClose')?.addEventListener('click', closeReviewModal);
-        document.getElementById('reviewModalBackdrop')?.addEventListener('click', closeReviewModal);
+        // Static backdrop: tapping outside does NOT close the modal
+        document.getElementById('reviewModalBackdrop')?.addEventListener('click', () => {
+            const card = document.querySelector('.reviewer-modal-dialog, .features-modal-dialog');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void (card as HTMLElement).offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
         document.getElementById('reviewCancelBtn')?.addEventListener('click', closeReviewModal);
 
         // Star rating picker

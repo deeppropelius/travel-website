@@ -790,24 +790,52 @@ interface Window {
         try { initHomepageBookingTriggers(); } catch (e) { console.error('initHomepageBookingTriggers error:', e); }
     });
 
-    // Global Modal Page Scroll Locks (Stops background scroll completely)
+    // Global Modal Page Scroll Locks (Preserves exact scroll position and stops background scroll completely)
+    let savedPageScrollY: number = 0;
+    let isPageScrollLocked: boolean = false;
+
     function lockPageScroll(): void {
-        document.documentElement.classList.add('modal-open');
+        if (!isPageScrollLocked) {
+            savedPageScrollY = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            isPageScrollLocked = true;
+        }
         document.body.classList.add('modal-open');
-        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
+
+        // Keep scroll position firmly anchored so background page never moves to top
+        if (Math.abs((window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0) - savedPageScrollY) > 1) {
+            window.scrollTo(0, savedPageScrollY);
+        }
+        requestAnimationFrame(() => {
+            if (isPageScrollLocked) {
+                const currentY = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || 0;
+                if (Math.abs(currentY - savedPageScrollY) > 1) {
+                    window.scrollTo(0, savedPageScrollY);
+                }
+            }
+        });
     }
 
     function unlockPageScroll(): void {
         const anyModalOpen = document.querySelectorAll(
-            '.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open'
+            '.place-modal-overlay.active, .booking-modal-overlay.active, .my-bookings-overlay.active, .modal-overlay.active, .modal-overlay.is-open, .features-modal-overlay.is-open, .features-modal-overlay.active, .jadoo-concierge-modal.is-open'
         );
         if (anyModalOpen.length > 0) return;
-        document.documentElement.classList.remove('modal-open');
+
         document.body.classList.remove('modal-open');
-        document.documentElement.style.overflow = '';
+        document.documentElement.classList.remove('modal-open');
         document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+
+        if (isPageScrollLocked) {
+            const restoreY = savedPageScrollY;
+            isPageScrollLocked = false;
+            window.scrollTo(0, restoreY);
+        }
     }
+
+    (window as any).lockPageScroll = lockPageScroll;
+    (window as any).unlockPageScroll = unlockPageScroll;
 
     let activeBookingDetails = {
         placeName: 'Colosseum & Historic Walking Tour',
@@ -1349,14 +1377,28 @@ interface Window {
         const myBookingsClose = document.getElementById('myBookingsClose');
         const myBookingsBackdrop = document.getElementById('myBookingsBackdrop');
 
-        // Close handlers for Booking Modal
+        // Close handlers for Booking Modal (Backdrop does NOT close - user must use Close or Cancel button)
         bookingClose?.addEventListener('click', closeBookingModal);
         bookingCancel?.addEventListener('click', closeBookingModal);
-        bookingBackdrop?.addEventListener('click', closeBookingModal);
+        bookingBackdrop?.addEventListener('click', () => {
+            const card = bookingModal?.querySelector('.booking-modal-card');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void (card as HTMLElement).offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
 
-        // Close handlers for My Bookings Modal
+        // Close handlers for My Bookings Modal (Backdrop does NOT close - user must use Close button)
         myBookingsClose?.addEventListener('click', closeMyBookingsModal);
-        myBookingsBackdrop?.addEventListener('click', closeMyBookingsModal);
+        myBookingsBackdrop?.addEventListener('click', () => {
+            const card = myBookingsModal?.querySelector('.my-bookings-modal-card');
+            if (card) {
+                card.classList.remove('modal-static-pulse');
+                void (card as HTMLElement).offsetWidth;
+                card.classList.add('modal-static-pulse');
+            }
+        });
 
         // Escape key closes modals
         window.addEventListener('keydown', (e) => {
@@ -1944,9 +1986,15 @@ interface Window {
             }
         }, { passive: false });
         modalCloseBtn?.addEventListener("click", closePlaceModal);
+        // Static backdrop: tapping outside does NOT close the place modal
         modalOverlay?.addEventListener("click", (e: MouseEvent) => {
             if (e.target === modalOverlay || (e.target as HTMLElement).classList.contains("place-modal-backdrop")) {
-                closePlaceModal();
+                const card = modalOverlay.querySelector('.place-modal-card');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
             }
         });
 

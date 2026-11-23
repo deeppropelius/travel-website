@@ -870,7 +870,12 @@
 
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
+            if (typeof window.lockPageScroll === 'function') {
+                window.lockPageScroll();
+            } else {
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         async function populateModalTrips() {
@@ -1009,12 +1014,26 @@
                 }
                 modal.classList.remove('is-open');
                 modal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
+                if (typeof window.unlockPageScroll === 'function') {
+                    window.unlockPageScroll();
+                } else {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
             }
         }
 
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
-        if (modalBackdrop) modalBackdrop.addEventListener('click', closeServiceModal);
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', () => {
+                const card = modal?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
 
         // Submit Service Attachment to Selected Trip
         const form = document.getElementById('serviceInquiryForm');
@@ -1127,7 +1146,12 @@
             if (createModal) {
                 createModal.classList.add('is-open');
                 createModal.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
+                if (typeof window.lockPageScroll === 'function') {
+                    window.lockPageScroll();
+                } else {
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                }
             }
         }
 
@@ -1138,13 +1162,27 @@
                 }
                 createModal.classList.remove('is-open');
                 createModal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
+                if (typeof window.unlockPageScroll === 'function') {
+                    window.unlockPageScroll();
+                } else {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
             }
         }
 
         if (btnOpenCreate) btnOpenCreate.addEventListener('click', openCreateServiceModal);
         if (createModalClose) createModalClose.addEventListener('click', closeCreateServiceModal);
-        if (createModalBackdrop) createModalBackdrop.addEventListener('click', closeCreateServiceModal);
+        if (createModalBackdrop) {
+            createModalBackdrop.addEventListener('click', () => {
+                const card = createModal?.querySelector('.features-modal-dialog');
+                if (card) {
+                    card.classList.remove('modal-static-pulse');
+                    void (card as HTMLElement).offsetWidth;
+                    card.classList.add('modal-static-pulse');
+                }
+            });
+        }
         if (createModalCancel) createModalCancel.addEventListener('click', closeCreateServiceModal);
 
         // Global ESC key listener to safely dismiss open modals
