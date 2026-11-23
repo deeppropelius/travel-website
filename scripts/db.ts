@@ -51,6 +51,11 @@ export interface DbCustomer {
     avatar_url?: string;
     logged_in_at?: string;
     token?: string;
+    nationality?: string;
+    dietary?: string;
+    emergency_contact?: string;
+    bio?: string;
+    role_title?: string;
 }
 export type DbUser = DbCustomer;
 export type Customer = DbCustomer;
@@ -189,6 +194,15 @@ export function getStoredAuthToken(): string | null {
     if (typeof localStorage !== 'undefined') {
         const local = localStorage.getItem('jadoo_auth_token');
         if (local) return local;
+        try {
+            const rawUser = localStorage.getItem('jadoo_current_user');
+            if (rawUser) {
+                const parsed = JSON.parse(rawUser);
+                if (parsed && (parsed.token || parsed.authToken)) {
+                    return parsed.token || parsed.authToken;
+                }
+            }
+        } catch (_) {}
     }
     if (typeof document !== 'undefined') {
         const match = document.cookie.match(/(?:^|; )jadoo_auth_token=([^;]*)/);
@@ -574,18 +588,41 @@ class JadooDatabase {
 
     getBookings(): DbBooking[] {
         const cache = (window as any).__jadoo_bookings_cache;
-        if (Array.isArray(cache)) return cache;
+        if (Array.isArray(cache) && cache.length > 0) return cache;
         try {
             const ls = localStorage.getItem('jadoo_bookings');
             if (ls) {
                 const parsed = JSON.parse(ls);
-                if (Array.isArray(parsed)) {
-                    (window as any).__jadoo_bookings_cache = parsed;
-                    return parsed;
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    const normalized: DbBooking[] = parsed.map(b => ({
+                        id: b.id || b.booking_ref || b.bookingRef || 'BK-' + Math.floor(10000 + Math.random() * 90000),
+                        booking_ref: b.booking_ref || b.bookingRef || b.bookingReference || b.id || 'BK-92841',
+                        customer_id: b.customer_id || b.customerId || b.user_id || b.userId || '',
+                        destination_id: b.destination_id || b.destinationId || '',
+                        destination_name: b.destination_name || b.destination || 'Global Destination',
+                        attraction_name: b.attraction_name || b.attraction || b.placeName || 'Voyage Tour Package',
+                        travel_date: b.travel_date || b.travelDate || '',
+                        guests_count: Number(b.guests_count || b.guests || 1),
+                        package_type: ((b.package_type || b.packageType || 'standard').toLowerCase()) as any,
+                        price_per_person: Number(b.price_per_person || b.pricePerPerson || 0),
+                        total_price: Number(b.total_price || b.totalPrice || 0),
+                        status: ((b.status || 'confirmed').toLowerCase()) as any,
+                        user_name: b.user_name || b.userName || 'Traveler',
+                        user_email: b.user_email || b.userEmail || b.email || '',
+                        phone_number: b.phone_number || b.phoneNumber || b.phone || '',
+                        special_request: b.special_request || b.specialRequests || '',
+                        created_at: b.created_at || b.createdAt || new Date().toISOString(),
+                        updated_at: b.updated_at || b.updatedAt || new Date().toISOString(),
+                        image_url: b.image_url || b.image || '../assets/destination-rome.png',
+                        is_boarded: Boolean(b.is_boarded || b.isBoarded),
+                        seat_number: b.seat_number || b.seatNumber || '01A VIP'
+                    }));
+                    (window as any).__jadoo_bookings_cache = normalized;
+                    return normalized;
                 }
             }
         } catch (_) {}
-        return [];
+        return (window as any).__jadoo_bookings_cache || [];
     }
 
     getUserBookings(email?: string, filter?: string): DbBooking[] {
@@ -988,6 +1025,12 @@ class JadooDatabase {
                         email: legacy.email || '',
                         phone: legacy.phone || '',
                         avatar_url: avatar,
+                        nationality: legacy.nationality || '',
+                        dietary: legacy.dietary || 'none',
+                        emergency_contact: legacy.emergency_contact || '',
+                        bio: legacy.bio || '',
+                        role_title: legacy.role_title || '',
+                        token: legacy.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('jadoo_auth_token') : null) || undefined,
                         created_at: legacy.createdAt || legacy.created_at || new Date().toISOString(),
                         logged_in_at: legacy.loggedInAt || legacy.logged_in_at || new Date().toISOString(),
                         updated_at: new Date().toISOString()
@@ -1030,6 +1073,11 @@ class JadooDatabase {
             email: dbUser.email,
             phone: dbUser.phone,
             avatar_url: dbUser.avatar_url,
+            nationality: (user as any).nationality || (dbUser as any).nationality || '',
+            dietary: (user as any).dietary || (dbUser as any).dietary || 'none',
+            emergency_contact: (user as any).emergency_contact || (dbUser as any).emergency_contact || '',
+            bio: (user as any).bio || (dbUser as any).bio || '',
+            role_title: (user as any).role_title || (dbUser as any).role_title || '',
             createdAt: dbUser.created_at,
             loggedInAt: dbUser.logged_in_at,
             token: dbUser.token

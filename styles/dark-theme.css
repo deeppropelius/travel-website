@@ -1004,79 +1004,230 @@ body.mobile-nav-open .theme-toggle {
   color: #EF4444 !important;
 }
 
-/* Modals in Dark Theme */
-[data-theme="dark"] .booking-modal-card,
+/* ==========================================================================
+   Modals in Dark Theme - Polished Glassmorphism & High Contrast
+   ========================================================================== */
+[data-theme="dark"] .booking-modal-backdrop {
+  background: rgba(8, 12, 26, 0.82) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+[data-theme="dark"] .booking-modal-card {
+  background: linear-gradient(165deg, #141B3B 0%, #0E1328 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
+}
+
 [data-theme="dark"] .my-bookings-modal-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-medium);
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .booking-modal-title,
+[data-theme="dark"] .booking-modal-card::-webkit-scrollbar-thumb {
+  background: rgba(223, 105, 81, 0.45) !important;
+}
+
+[data-theme="dark"] .booking-modal-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(223, 105, 81, 0.75) !important;
+}
+
+[data-theme="dark"] .booking-modal-close {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .booking-modal-close:hover {
+  background: #DF6951 !important;
+  border-color: #DF6951 !important;
+  color: #FFFFFF !important;
+  transform: rotate(90deg) !important;
+}
+
+[data-theme="dark"] .booking-badge {
+  background: rgba(223, 105, 81, 0.16) !important;
+  border: 1px solid rgba(223, 105, 81, 0.35) !important;
+  color: #FF7D66 !important;
+  box-shadow: 0 0 12px rgba(223, 105, 81, 0.18) !important;
+}
+
+[data-theme="dark"] .booking-modal-title {
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .booking-modal-subtitle {
+  color: #94A3B8 !important;
+}
+
 [data-theme="dark"] .my-bookings-title,
 [data-theme="dark"] .success-title,
 [data-theme="dark"] .bookings-empty-state h3 {
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .booking-modal-subtitle,
 [data-theme="dark"] .my-bookings-subtitle,
 [data-theme="dark"] .success-subtitle,
 [data-theme="dark"] .bookings-empty-state p {
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .booking-modal-close,
 [data-theme="dark"] .my-bookings-close {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .booking-trip-preview,
+[data-theme="dark"] .booking-trip-preview {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
 [data-theme="dark"] .booking-receipt-card,
 [data-theme="dark"] .booking-item-card {
   background: var(--bg-card);
   border-color: var(--border-light);
 }
 
-[data-theme="dark"] .preview-title,
-[data-theme="dark"] .preview-rate-val,
+[data-theme="dark"] .preview-img-wrap {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .preview-destination {
+  color: #FF7D66 !important;
+}
+
+[data-theme="dark"] .preview-title {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .preview-price-tag {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .preview-rate-val {
+  color: #FF7D66 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="dark"] .preview-rate-unit {
+  color: #64748B !important;
+}
+
 [data-theme="dark"] .receipt-item strong,
 [data-theme="dark"] .booking-place-title,
-[data-theme="dark"] .booking-price-highlight,
-[data-theme="dark"] .booking-field-group label {
+[data-theme="dark"] .booking-price-highlight {
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .booking-field-group label {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="dark"] .booking-input-wrap .input-icon {
+  color: #64748B !important;
+}
+
+[data-theme="dark"] .booking-input-wrap:focus-within .input-icon {
+  color: #FF7D66 !important;
 }
 
 [data-theme="dark"] .booking-input-wrap input,
 [data-theme="dark"] .booking-input-wrap select,
 [data-theme="dark"] .booking-field-group textarea {
-  background: var(--bg-surface);
-  border-color: var(--border-light);
-  color: var(--text-primary);
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .booking-input-wrap select option {
+  background: #141B3B !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .booking-input-wrap input:focus,
+[data-theme="dark"] .booking-input-wrap select:focus,
+[data-theme="dark"] .booking-field-group textarea:focus {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: #DF6951 !important;
+  box-shadow: 0 0 0 3px rgba(223, 105, 81, 0.25) !important;
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85) !important;
+  cursor: pointer;
 }
 
 [data-theme="dark"] .stepper-input-wrap {
-  background: var(--bg-surface);
-  border-color: var(--border-light);
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 [data-theme="dark"] .stepper-btn {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .stepper-btn:hover {
+  background: rgba(223, 105, 81, 0.22) !important;
+  color: #FF7D66 !important;
 }
 
 [data-theme="dark"] .stepper-input-wrap input {
-  color: var(--text-primary);
+  color: #F8FAFC !important;
+  font-weight: 700 !important;
 }
 
 [data-theme="dark"] .booking-price-summary {
-  background: rgba(223, 105, 81, 0.08);
-  border-color: rgba(223, 105, 81, 0.35);
+  background: linear-gradient(135deg, rgba(223, 105, 81, 0.09) 0%, rgba(20, 27, 59, 0.65) 100%) !important;
+  border: 1px solid rgba(223, 105, 81, 0.32) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] .price-row {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .price-row.fee-row .price-value {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] .price-divider {
+  background: rgba(223, 105, 81, 0.25) !important;
 }
 
 [data-theme="dark"] .price-row.total-row {
-  color: var(--text-primary);
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .price-row.total-row .total-value {
+  color: #FF7D66 !important;
+  text-shadow: 0 0 16px rgba(223, 105, 81, 0.35) !important;
+}
+
+[data-theme="dark"] .booking-btn-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #CBD5E1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .booking-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .booking-btn-primary {
+  background: linear-gradient(135deg, #DF6951 0%, #F15A24 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 18px rgba(223, 105, 81, 0.45) !important;
+}
+
+[data-theme="dark"] .booking-btn-primary:hover {
+  box-shadow: 0 6px 22px rgba(223, 105, 81, 0.6) !important;
 }
 
 [data-theme="dark"] .booking-item-title {

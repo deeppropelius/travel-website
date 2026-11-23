@@ -611,4 +611,56 @@ var QRCode;
 	 * @name QRCode.CorrectLevel
 	 */
 	QRCode.CorrectLevel = QRErrorCorrectLevel;
+
+	/**
+	 * Generate standalone, self-contained SVG string of the QR Code
+	 * 100% offline, synchronous, vector-sharp across all resolutions and print/PDF engines.
+	 */
+	QRCode.generateSVGString = function (text, size, colorDark, colorLight) {
+		size = size || 120;
+		colorDark = colorDark || '#181E4B';
+		colorLight = colorLight || '#FFFFFF';
+		try {
+			var typeNum = _getTypeNumber(text, QRErrorCorrectLevel.M);
+			var qr = new QRCodeModel(typeNum, QRErrorCorrectLevel.M);
+			qr.addData(text);
+			qr.make();
+			var nCount = qr.getModuleCount();
+			var rects = [];
+			for (var row = 0; row < nCount; row++) {
+				for (var col = 0; col < nCount; col++) {
+					if (qr.isDark(row, col)) {
+						rects.push('<rect x="' + col + '" y="' + row + '" width="1" height="1" fill="' + colorDark + '"/>');
+					}
+				}
+			}
+			return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + nCount + ' ' + nCount + '" width="' + size + '" height="' + size + '" shape-rendering="crispEdges" style="display:block;margin:0 auto;border-radius:8px;background:' + colorLight + ';box-sizing:border-box;">' +
+				'<rect width="100%" height="100%" fill="' + colorLight + '"/>' +
+				rects.join('') +
+				'</svg>';
+		} catch (e) {
+			console.error('QRCode.generateSVGString error:', e);
+			return null;
+		}
+	};
+
+	/**
+	 * Render directly into any DOM container
+	 */
+	QRCode.renderTo = function (container, text, size, colorDark, colorLight) {
+		if (!container) return false;
+		var svg = QRCode.generateSVGString(text, size, colorDark, colorLight);
+		if (svg) {
+			container.innerHTML = svg;
+			return true;
+		}
+		return false;
+	};
 })();
+
+if (typeof window !== 'undefined') {
+	window.QRCode = QRCode;
+}
+if (typeof globalThis !== 'undefined') {
+	globalThis.QRCode = QRCode;
+}

@@ -1023,11 +1023,11 @@
         if (modalClose) modalClose.addEventListener('click', closeServiceModal);
         if (modal) {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                if (e.target === modal || (e.target).classList.contains('features-modal-backdrop')) {
                     const card = modal.querySelector('.service-modal-card, .features-modal-card');
                     if (card) {
                         card.classList.remove('modal-static-pulse');
-                        void (card as HTMLElement).offsetWidth;
+                        void card.offsetWidth;
                         card.classList.add('modal-static-pulse');
                     }
                 }
@@ -1174,11 +1174,11 @@
         if (createModalClose) createModalClose.addEventListener('click', closeCreateServiceModal);
         if (createModal) {
             createModal.addEventListener('click', (e) => {
-                if (e.target === createModal || (e.target as HTMLElement).classList.contains('features-modal-backdrop')) {
+                if (e.target === createModal || (e.target).classList.contains('features-modal-backdrop')) {
                     const card = createModal.querySelector('.features-modal-card');
                     if (card) {
                         card.classList.remove('modal-static-pulse');
-                        void (card as HTMLElement).offsetWidth;
+                        void card.offsetWidth;
                         card.classList.add('modal-static-pulse');
                     }
                 }
