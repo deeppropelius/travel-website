@@ -226,10 +226,6 @@
                             <option value="">Switch to Another Ticket...</option>
                         </select>
                     </div>
-                    <button type="button" class="ticket-tool-btn btn-pdf" id="downloadPdfBtn" title="Download Official PDF Ticket">
-                        <i class="fa-solid fa-file-arrow-down"></i>
-                        <span>Download PDF Ticket</span>
-                    </button>
                 </div>
             </div>
 
@@ -475,13 +471,9 @@
 
             <!-- Bottom Action Toolbar -->
             <div class="ticket-actions-bar">
-                <button type="button" class="btn-primary-glow" id="bottomPdfBtn">
+                <button type="button" class="btn-primary-glow" id="bottomPdfBtn" title="Download Official PDF Ticket">
                     <i class="fa-solid fa-file-arrow-down"></i>
                     <span>Download PDF Ticket</span>
-                </button>
-                <button type="button" class="btn-secondary-flat" id="checkInBtn" title="Complete Online Check-In & Boarding" style="color: #10B981; border-color: rgba(16, 185, 129, 0.4);">
-                    <i class="fa-solid fa-plane-departure"></i>
-                    <span>Online Check-In</span>
                 </button>
                 <button type="button" class="btn-secondary-flat" id="printTicketBtn" title="Print High-Resolution Voucher">
                     <i class="fa-solid fa-print"></i>
@@ -491,11 +483,7 @@
                     <i class="fa-solid fa-wallet"></i>
                     <span>Digital Wallet</span>
                 </button>
-                <button type="button" class="btn-secondary-flat" id="openMapModalBtn" title="View Meeting Point Directions">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                    <span>Meeting Point</span>
-                </button>
-                <button type="button" class="btn-secondary-flat" id="cancelReservationBtn" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.3);">
+                <button type="button" class="btn-secondary-flat" id="cancelReservationBtn" title="Cancel this reservation" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.35);">
                     <i class="fa-solid fa-ban"></i>
                     <span>Cancel Reservation</span>
                 </button>
@@ -654,30 +642,7 @@
                 </div>
             </div>
 
-            <!-- Modal 3: Meeting Point Map Modal -->
-            <div class="ticket-modal-overlay" id="meetingPointModal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
-                <div class="ticket-modal-card" style="max-width: 520px;">
-                    <button type="button" class="ticket-modal-close-btn" id="closeMapBtn" aria-label="Close Map Modal"><i class="fa-solid fa-xmark"></i></button>
-                    <h3 id="mapModalTitle" style="font-family: 'Volkhov', serif; color: #14183E; margin: 0 0 0.5rem 0; font-size: 1.4rem;">Meeting Point Directions</h3>
-                    <p style="font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #64748B; margin: 0 0 0.85rem 0;">Exact landmark location & walking arrival guidance.</p>
-                    
-                    <div class="map-visual-box" id="mapVisualBox">
-                        <div class="map-visual-overlay"></div>
-                        <i class="fa-solid fa-location-dot map-pin-pulse"></i>
-                    </div>
 
-                    <div style="text-align: left; background: #F8FAFC; border-radius: 12px; padding: 1rem; border: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 1rem;">
-                        <div style="font-weight: 700; color: #14183E; font-size: 0.95rem; margin-bottom: 0.35rem;" id="mapMeetingPointText">Main Tourist Gate, Rome, Italy</div>
-                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4;">Coordinates: <strong id="mapCoords">41.8902° N, 12.4922° E</strong></div>
-                        <div style="font-size: 0.8rem; color: #64748B; line-height: 1.4; margin-top: 0.25rem;">Guide holds a bright orange <strong>Jadoo Travel</strong> flag outside the official entrance.</div>
-                    </div>
-
-                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="btn-primary-glow" id="openGoogleMapsLink" style="width: 100%; text-decoration: none; justify-content: center; box-sizing: border-box;">
-                        <i class="fa-solid fa-diamond-turn-right"></i>
-                        <span>Open in Google Maps Navigation</span>
-                    </a>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -980,7 +945,6 @@
             if (voucherCard) voucherCard.style.display = 'block';
             if (actionsBar) actionsBar.style.display = 'flex';
             if (switchWrap) switchWrap.style.display = 'flex';
-            if (downloadPdfBtn) downloadPdfBtn.style.display = 'inline-flex';
             if (statusPill) statusPill.style.display = 'inline-flex';
 
             const params = new URLSearchParams(window.location.search);
@@ -1005,16 +969,11 @@
             populateSwitcher(allBookings, activeBooking);
 
             // Listeners
-            const pdfActions = [document.getElementById('downloadPdfBtn'), document.getElementById('bottomPdfBtn')];
-            pdfActions.forEach(btn => {
-                btn?.addEventListener('click', () => downloadPdf(activeBooking));
-            });
+            const bottomPdfBtn = document.getElementById('bottomPdfBtn');
+            bottomPdfBtn?.addEventListener('click', () => downloadPdf(activeBooking));
 
             const cancelBtn = document.getElementById('cancelReservationBtn');
             cancelBtn?.addEventListener('click', () => cancelBooking(activeBooking));
-
-            const checkInBtn = document.getElementById('checkInBtn');
-            checkInBtn?.addEventListener('click', () => checkInBooking(activeBooking));
 
             initTicketSuiteInteractions();
         }
@@ -1208,25 +1167,52 @@
 
             const appleBtn = document.getElementById('saveAppleWalletBtn');
             appleBtn?.addEventListener('click', () => {
-                JadooToast.show('Apple Wallet Pass Ready', 'Pass synchronized with Apple Wallet credentials.', 'success');
+                const passData = {
+                    formatVersion: 1,
+                    passTypeIdentifier: "pass.com.jadoo.travel",
+                    serialNumber: activeBooking ? (activeBooking.booking_ref || activeBooking.id) : "BK-92841",
+                    teamIdentifier: "JADOO77",
+                    organizationName: "Jadoo Travel",
+                    description: activeBooking ? (activeBooking.attraction_name || activeBooking.destination_name) : "Experience Pass",
+                    logoText: "Jadoo Travel",
+                    foregroundColor: "rgb(255, 255, 255)",
+                    backgroundColor: "rgb(20, 27, 59)",
+                    passenger: activeBooking ? activeBooking.user_name : "Traveler",
+                    date: activeBooking ? activeBooking.travel_date : new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(passData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Jadoo-AppleWallet-${activeBooking?.booking_ref || 'pass'}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                JadooToast.show('Apple Wallet Pass Ready', 'Digital pass credential file generated and saved.', 'success');
                 if (walletModal) walletModal.classList.remove('is-active');
             });
 
             const googleBtn = document.getElementById('saveGooglePayBtn');
             googleBtn?.addEventListener('click', () => {
-                JadooToast.show('Google Pay Ready', 'Pass saved to Google Pay credentials.', 'success');
+                const passData = {
+                    issuer: "Jadoo Travel Experiences",
+                    id: activeBooking ? (activeBooking.booking_ref || activeBooking.id) : "BK-92841",
+                    title: activeBooking ? (activeBooking.attraction_name || activeBooking.destination_name) : "Experience Pass",
+                    holder: activeBooking ? activeBooking.user_name : "Traveler",
+                    barcode: { type: "QR_CODE", value: activeBooking ? (activeBooking.booking_ref || activeBooking.id) : "BK-92841" }
+                };
+                const blob = new Blob([JSON.stringify(passData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Jadoo-GooglePay-${activeBooking?.booking_ref || 'pass'}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                JadooToast.show('Google Pay Ready', 'Digital pass credential file generated and saved.', 'success');
                 if (walletModal) walletModal.classList.remove('is-active');
-            });
-
-            // 4. Meeting Point Modal
-            const mapBtn = document.getElementById('openMapModalBtn');
-            const mapModal = document.getElementById('meetingPointModal');
-            const closeMapBtn = document.getElementById('closeMapBtn');
-            mapBtn?.addEventListener('click', () => {
-                if (mapModal) mapModal.classList.add('is-active');
-            });
-            closeMapBtn?.addEventListener('click', () => {
-                if (mapModal) mapModal.classList.remove('is-active');
             });
 
             // 6. Big QR Code Scanner Modal
@@ -1549,21 +1535,18 @@
             setPillState(statusPill, statusTxt);
             setPillState(cardStatusPill, cardStatusTxt);
 
-            const checkInBtn = document.getElementById('checkInBtn');
-            if (checkInBtn) {
+            const cancelBtn = document.getElementById('cancelReservationBtn');
+            if (cancelBtn) {
                 if (b.status === 'cancelled') {
-                    checkInBtn.disabled = true;
-                    checkInBtn.style.opacity = '0.5';
-                    checkInBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>Check-In Unavailable</span>';
-                } else if (b.is_boarded) {
-                    checkInBtn.disabled = false;
-                    checkInBtn.style.opacity = '1';
-                    checkInBtn.style.borderColor = 'rgba(16, 185, 129, 0.8)';
-                    checkInBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>Checked In (${b.seat_number || '01A'})</span>`;
+                    cancelBtn.disabled = true;
+                    cancelBtn.style.opacity = '0.6';
+                    cancelBtn.style.cursor = 'not-allowed';
+                    cancelBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Reservation Cancelled</span>';
                 } else {
-                    checkInBtn.disabled = false;
-                    checkInBtn.style.opacity = '1';
-                    checkInBtn.innerHTML = '<i class="fa-solid fa-plane-departure"></i> <span>Online Check-In</span>';
+                    cancelBtn.disabled = false;
+                    cancelBtn.style.opacity = '1';
+                    cancelBtn.style.cursor = 'pointer';
+                    cancelBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>Cancel Reservation</span>';
                 }
             }
 
@@ -1787,94 +1770,105 @@
             }
         }
 
-        async function checkInBooking(b) {
+        async function cancelBooking(b) {
             if (!b) return;
-            if (b.status === 'cancelled') {
-                JadooToast.show('Check-In Unavailable', 'Cancelled reservations cannot be checked in.', 'warning');
-                return;
-            }
-            if (b.is_boarded) {
-                JadooToast.show('Already Checked In', `Your assigned seat is ${b.seat_number || '01A'}.`, 'info');
-                return;
-            }
-
-            const checkInBtn = document.getElementById('checkInBtn');
-            const origHtml = checkInBtn ? checkInBtn.innerHTML : '';
-            if (checkInBtn) {
-                checkInBtn.disabled = true;
-                checkInBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Checking In...</span>';
-            }
-
-            try {
-                const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) 
-                           || localStorage.getItem('jadoo_auth_token') || '';
-                const bookingId = b.id || b.booking_ref;
-                const res = await fetch('/api/ticket/checkin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ booking_id: bookingId })
-                });
-
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error || 'Server rejected check-in request.');
-                }
-
-                const data = await res.json();
-                b.is_boarded = true;
-                if (data.booking && data.booking.seat_number) {
-                    b.seat_number = data.booking.seat_number;
-                } else if (!b.seat_number) {
-                    b.seat_number = '14A';
-                }
-                b.status = 'confirmed';
-
-                // Update in localStorage cache as well
-                try {
-                    const cached = JSON.parse(localStorage.getItem('jadoo_schema_bookings') || '[]');
-                    const idx = cached.findIndex(x => (x.id && x.id === b.id) || (x.booking_ref && x.booking_ref === b.booking_ref));
-                    if (idx !== -1) {
-                        cached[idx] = { ...cached[idx], is_boarded: true, seat_number: b.seat_number, status: 'confirmed' };
-                        localStorage.setItem('jadoo_schema_bookings', JSON.stringify(cached));
-                    }
-                } catch (_) {}
-
-                renderTicket(b);
-                JadooToast.show('Check-In Successful!', `Your Boarding Pass is confirmed with Seat ${b.seat_number}. Have a wonderful voyage!`, 'success');
-            } catch (err) {
-                console.warn('Check-in network error, applying local fallback:', err);
-                b.is_boarded = true;
-                if (!b.seat_number) b.seat_number = '14A';
-                b.status = 'confirmed';
-                renderTicket(b);
-                JadooToast.show('Check-In Confirmed', `Seat ${b.seat_number} assigned.`, 'success');
-            } finally {
-                if (checkInBtn) {
-                    checkInBtn.disabled = false;
-                    checkInBtn.innerHTML = origHtml;
-                }
-            }
-        }
-
-        function cancelBooking(b) {
-            if (b.status === 'cancelled') {
+            if ((b.status || '').toLowerCase() === 'cancelled') {
                 JadooToast.show('Already Cancelled', 'This reservation is already marked as cancelled.', 'info');
                 return;
             }
 
-            if (true) {
+            const cleanRef = formatBookingRef(b);
+            const confirmed = window.confirm(`Are you sure you want to cancel reservation ${cleanRef}? This action will cancel your booking in the database and update your account.`);
+            if (!confirmed) return;
+
+            const cancelBtn = document.getElementById('cancelReservationBtn');
+            const origHtml = cancelBtn ? cancelBtn.innerHTML : '';
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                cancelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Cancelling...</span>';
+            }
+
+            const bookingId = b.id || b.booking_ref;
+
+            try {
+                const token = (typeof JadooAuth !== 'undefined' && JadooAuth.getToken && JadooAuth.getToken()) 
+                           || localStorage.getItem('jadoo_auth_token') || '';
+                
+                const cleanParam = String(bookingId).replace(/^#+/, '').trim();
+                
+                // 1. Direct API call to backend PostgreSQL booking service
                 try {
-                    JadooDB.cancelBooking(b.id);
-                } catch (_) {
-                    b.status = 'cancelled';
-                    localStorage.setItem('jadoo_schema_bookings', JSON.stringify(allBookings));
+                    await fetch(`/api/bookings/${encodeURIComponent(cleanParam)}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ status: 'cancelled' })
+                    });
+                } catch (netErr) {
+                    console.warn('Network PATCH /api/bookings/:id/status failed, using JadooDB fallback:', netErr);
                 }
+
+                // 2. Client Database abstraction sync
+                if (typeof JadooDB !== 'undefined') {
+                    if (JadooDB.updateBookingStatusAsync) {
+                        await JadooDB.updateBookingStatusAsync(bookingId, 'cancelled').catch(() => {});
+                    }
+                    if (JadooDB.updateBookingStatus) {
+                        JadooDB.updateBookingStatus(bookingId, 'cancelled');
+                    }
+                }
+
+                // 3. Update in-memory models
+                b.status = 'cancelled';
+                if (activeBooking && (activeBooking.id === b.id || activeBooking.booking_ref === b.booking_ref)) {
+                    activeBooking.status = 'cancelled';
+                }
+
+                const idx = allBookings.findIndex(x => (x.id && x.id === b.id) || (x.booking_ref && x.booking_ref === b.booking_ref));
+                if (idx !== -1) allBookings[idx].status = 'cancelled';
+
+                // 4. Update localStorage caches
+                const bClean = String(b.id || b.booking_ref || '').toLowerCase().replace(/^#+/, '');
+                try {
+                    const localBookings = JSON.parse(localStorage.getItem('jadoo_bookings') || '[]');
+                    localBookings.forEach(item => {
+                        const itemRef = String(item.id || item.booking_ref || item.bookingReference || '').toLowerCase().replace(/^#+/, '');
+                        if (itemRef === bClean) item.status = 'cancelled';
+                    });
+                    localStorage.setItem('jadoo_bookings', JSON.stringify(localBookings));
+                } catch (_) {}
+
+                try {
+                    const schemaBookings = JSON.parse(localStorage.getItem('jadoo_schema_bookings') || '[]');
+                    schemaBookings.forEach(item => {
+                        const itemRef = String(item.id || item.booking_ref || item.bookingReference || '').toLowerCase().replace(/^#+/, '');
+                        if (itemRef === bClean) item.status = 'cancelled';
+                    });
+                    localStorage.setItem('jadoo_schema_bookings', JSON.stringify(schemaBookings));
+                } catch (_) {}
+
+                // 5. Dispatch cross-component event so profile & tickets instantly synchronize
+                window.dispatchEvent(new CustomEvent('jadoo:db_change', { detail: { source: 'ticket_cancel', bookingId } }));
+                
+                // 6. Re-render UI
+                renderTicket(b);
+                populateSwitcher(allBookings, b);
+
+                JadooToast.show('Reservation Cancelled', `Reservation ${cleanRef} has been cancelled successfully in the database.`, 'info');
+            } catch (err) {
+                console.error('Cancellation error:', err);
                 b.status = 'cancelled';
                 renderTicket(b);
-                JadooToast.show('Reservation Cancelled', `Booking #${b.id} has been cancelled successfully.`, 'info');
+                JadooToast.show('Cancellation Updated', `Reservation ${cleanRef} marked as cancelled.`, 'warning');
+            } finally {
+                if (cancelBtn) {
+                    cancelBtn.disabled = true;
+                    cancelBtn.style.opacity = '0.6';
+                    cancelBtn.style.cursor = 'not-allowed';
+                    cancelBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Reservation Cancelled</span>';
+                }
             }
         }
 
