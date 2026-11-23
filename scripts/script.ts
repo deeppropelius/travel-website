@@ -86,32 +86,45 @@ interface Window {
         const activeToasts = Array.from(container.querySelectorAll<HTMLElement>('.jadoo-toast:not(.is-hiding)'));
         const total = activeToasts.length;
         activeToasts.forEach((t, idx) => {
-            const rel = total - 1 - idx;
+            // Older messages retain higher priority (rel 0 = front card). Newer messages get lower priority and less opacity.
+            const rel = idx;
             t.classList.remove('is-front', 'is-middle', 'is-back', 'is-hidden');
             if (rel === 0) {
                 t.classList.add('is-front');
                 t.style.zIndex = '5';
                 t.style.opacity = '1';
                 t.setAttribute('aria-hidden', 'false');
+                if (typeof (t as any)._startTimer === 'function') {
+                    (t as any)._startTimer();
+                }
             } else if (rel === 1) {
                 t.classList.add('is-middle');
                 t.style.zIndex = '3';
-                t.style.opacity = '0.75';
+                t.style.opacity = '0.7';
                 t.setAttribute('aria-hidden', 'true');
+                if (typeof (t as any)._pauseTimer === 'function') {
+                    (t as any)._pauseTimer();
+                }
             } else if (rel === 2) {
                 t.classList.add('is-back');
                 t.style.zIndex = '1';
-                t.style.opacity = '0.5';
+                t.style.opacity = '0.45';
                 t.setAttribute('aria-hidden', 'true');
+                if (typeof (t as any)._pauseTimer === 'function') {
+                    (t as any)._pauseTimer();
+                }
             } else {
                 t.classList.add('is-hidden');
                 t.style.zIndex = '0';
                 t.style.opacity = '0';
                 t.setAttribute('aria-hidden', 'true');
+                if (typeof (t as any)._pauseTimer === 'function') {
+                    (t as any)._pauseTimer();
+                }
             }
         });
         if (activeToasts.length > 5) {
-            const excess = activeToasts.slice(0, activeToasts.length - 5);
+            const excess = activeToasts.slice(5);
             excess.forEach(t => t.remove());
         }
     }
@@ -151,6 +164,9 @@ interface Window {
         `;
         const dismissToast = () => {
             if (toast.classList.contains('is-hiding') || !toast.parentElement) return;
+            if (typeof (toast as any)._pauseTimer === 'function') {
+                (toast as any)._pauseTimer();
+            }
             toast.classList.remove('is-show');
             toast.classList.add('is-hiding');
             if (container) updateToastStackFallback(container);
@@ -159,6 +175,28 @@ interface Window {
                 if (container) updateToastStackFallback(container);
             }, 320);
         };
+        let timerId: ReturnType<typeof setTimeout> | null = null;
+        let remaining = duration;
+        let startTime = 0;
+
+        (toast as any)._startTimer = () => {
+            if (timerId !== null) return;
+            startTime = Date.now();
+            timerId = setTimeout(() => {
+                timerId = null;
+                dismissToast();
+            }, remaining);
+        };
+
+        (toast as any)._pauseTimer = () => {
+            if (timerId !== null) {
+                clearTimeout(timerId);
+                timerId = null;
+                const elapsed = Date.now() - startTime;
+                remaining = Math.max(1000, remaining - elapsed);
+            }
+        };
+
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
@@ -166,19 +204,27 @@ interface Window {
                 dismissToast();
             });
         }
+        // Clicking background card brings it to the front
         toast.addEventListener('click', (e) => {
             if ((e.target as HTMLElement).closest('.toast-close')) return;
             if (toast.classList.contains('is-middle') || toast.classList.contains('is-back')) {
-                container.appendChild(toast);
+                container.insertBefore(toast, container.firstElementChild);
                 updateToastStackFallback(container);
+            }
+        });
+        toast.addEventListener('mouseenter', () => {
+            if (typeof (toast as any)._pauseTimer === 'function') {
+                (toast as any)._pauseTimer();
+            }
+        });
+        toast.addEventListener('mouseleave', () => {
+            if (toast.classList.contains('is-front') && typeof (toast as any)._startTimer === 'function') {
+                (toast as any)._startTimer();
             }
         });
         container.appendChild(toast);
         updateToastStackFallback(container);
         requestAnimationFrame(() => toast.classList.add('is-show'));
-        setTimeout(() => {
-            dismissToast();
-        }, duration);
     }
     (window as any).showToastNotification = showToastNotification;
     if (typeof (window as any).JadooToast === 'undefined') {
