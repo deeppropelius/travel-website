@@ -4287,6 +4287,8 @@ button.dropdown-item:hover span {
     max-width: 660px;
     max-height: 90vh;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     background: #FFFFFF;
     border-radius: 28px;
     padding: 2.25rem;

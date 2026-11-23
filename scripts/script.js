@@ -874,22 +874,54 @@
             card.classList.add('modal-static-pulse');
         }
     }, true);
-    // Prevent background wheel scrolling whenever any modal is open
+    // Prevent background wheel scrolling whenever any modal is open while allowing free modal scrolling
     window.addEventListener('wheel', (e) => {
         if (!isAnyModalOpen())
             return;
         const target = e.target;
-        if (target) {
-            const scrollable = target.closest('.modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]');
-            if (scrollable) {
-                const canScrollUp = scrollable.scrollTop > 0 && e.deltaY < 0;
-                const canScrollDown = (scrollable.scrollHeight - scrollable.clientHeight - scrollable.scrollTop > 1) && e.deltaY > 0;
-                if (canScrollUp || canScrollDown) {
+        if (!target) {
+            e.preventDefault();
+            return;
+        }
+        // Check if the scroll target is inside any modal dialog / card
+        const modalContent = target.closest('.place-modal-card, .booking-modal-card, .service-modal-card, .features-modal-card, .features-modal-dialog, .ticket-modal-card, .my-bookings-modal-card, .concierge-modal-dialog, .modal-card, .modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .booking-form-content, .booking-form, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]');
+        if (modalContent) {
+            // Find scrollable ancestor or container
+            let scrollEl = modalContent;
+            while (scrollEl && scrollEl !== document.body && scrollEl !== document.documentElement) {
+                const overflowY = window.getComputedStyle(scrollEl).overflowY;
+                const isScrollable = (overflowY === 'auto' || overflowY === 'scroll') && (scrollEl.scrollHeight > scrollEl.clientHeight);
+                if (isScrollable) {
+                    const canScrollUp = scrollEl.scrollTop > 0 && e.deltaY < 0;
+                    const canScrollDown = (scrollEl.scrollHeight - scrollEl.clientHeight - scrollEl.scrollTop > 1) && e.deltaY > 0;
+                    if (canScrollUp || canScrollDown) {
+                        return; // Allow smooth, natural internal scrolling!
+                    }
+                    // Reached boundary: prevent bleed into background page
+                    e.preventDefault();
                     return;
                 }
+                scrollEl = scrollEl.parentElement;
             }
+            return; // Allow normal scroll inside modal
         }
+        // If wheel is on the backdrop or background, block it completely
         e.preventDefault();
+    }, { passive: false });
+    // Prevent background touch dragging on backdrop while allowing modal scrolling
+    window.addEventListener('touchmove', (e) => {
+        if (!isAnyModalOpen())
+            return;
+        const target = e.target;
+        if (!target) {
+            e.preventDefault();
+            return;
+        }
+        const modalContent = target.closest('.place-modal-card, .booking-modal-card, .service-modal-card, .features-modal-card, .features-modal-dialog, .ticket-modal-card, .my-bookings-modal-card, .concierge-modal-dialog, .modal-card, .modal-body-scroll, .service-modal-body, .features-modal-body, .booking-form-scroll, .booking-form-content, .booking-form, .my-bookings-body, .page-modal-scroll, .modal-front-content, [data-modal-scroll]');
+        if (modalContent) {
+            return; // Allow touch scrolling inside modal!
+        }
+        e.preventDefault(); // Block touch dragging on backdrop
     }, { passive: false });
     // Prevent background touch dragging on backdrop
     window.addEventListener('touchmove', (e) => {
