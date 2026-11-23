@@ -4,6 +4,37 @@
     // ========================================== 
     // GLOBAL BOTTOM-CENTER TOAST NOTIFICATION HELPER
     // ========================================== 
+    function updateToastStackFallback(container) {
+        const activeToasts = Array.from(container.querySelectorAll('.jadoo-toast:not(.is-hiding)'));
+        const total = activeToasts.length;
+        activeToasts.forEach((t, idx) => {
+            const stackIdx = total - 1 - idx;
+            t.setAttribute('data-stack-idx', String(stackIdx));
+            t.style.setProperty('--stack-index', String(stackIdx));
+            let badge = t.querySelector('.toast-stack-count');
+            if (stackIdx === 0 && total > 1) {
+                if (!badge) {
+                    const titleEl = t.querySelector('.toast-title');
+                    if (titleEl) {
+                        badge = document.createElement('span');
+                        badge.className = 'toast-stack-count';
+                        titleEl.appendChild(badge);
+                    }
+                }
+                if (badge) {
+                    badge.textContent = `+${total - 1}`;
+                    badge.title = `${total} notifications in stack`;
+                }
+            }
+            else if (badge) {
+                badge.remove();
+            }
+        });
+        if (activeToasts.length > 5) {
+            const excess = activeToasts.slice(0, activeToasts.length - 5);
+            excess.forEach(t => t.remove());
+        }
+    }
     function showToastNotification(title, desc = '', type = 'info', duration = 4000) {
         const jToast = window.JadooToast;
         if (jToast && typeof jToast.show === 'function') {
@@ -42,23 +73,31 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         `;
+        const dismissToast = () => {
+            if (toast.classList.contains('is-hiding') || !toast.parentElement)
+                return;
+            toast.classList.remove('is-show');
+            toast.classList.add('is-hiding');
+            if (container)
+                updateToastStackFallback(container);
+            setTimeout(() => {
+                toast.remove();
+                if (container)
+                    updateToastStackFallback(container);
+            }, 320);
+        };
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 320);
+                dismissToast();
             });
         }
         container.appendChild(toast);
+        updateToastStackFallback(container);
         requestAnimationFrame(() => toast.classList.add('is-show'));
         setTimeout(() => {
-            if (toast.parentElement) {
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 350);
-            }
+            dismissToast();
         }, duration);
     }
     window.showToastNotification = showToastNotification;

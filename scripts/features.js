@@ -243,6 +243,40 @@ export const JadooConfetti = {
         animId = requestAnimationFrame(render);
     }
 };
+function updateToastStack(container) {
+    const activeToasts = Array.from(container.querySelectorAll('.jadoo-toast:not(.is-hiding)'));
+    const total = activeToasts.length;
+    activeToasts.forEach((t, idx) => {
+        // Last child in DOM is newest notification (stack index 0 = front of stack)
+        const stackIdx = total - 1 - idx;
+        t.setAttribute('data-stack-idx', String(stackIdx));
+        t.style.setProperty('--stack-index', String(stackIdx));
+        // Manage stack count badge on the front card
+        let badge = t.querySelector('.toast-stack-count');
+        if (stackIdx === 0 && total > 1) {
+            if (!badge) {
+                const titleEl = t.querySelector('.toast-title');
+                if (titleEl) {
+                    badge = document.createElement('span');
+                    badge.className = 'toast-stack-count';
+                    titleEl.appendChild(badge);
+                }
+            }
+            if (badge) {
+                badge.textContent = `+${total - 1}`;
+                badge.title = `${total} notifications in stack (hover to view all)`;
+            }
+        }
+        else if (badge) {
+            badge.remove();
+        }
+    });
+    // Prune excessive hidden toasts if more than 5
+    if (activeToasts.length > 5) {
+        const excess = activeToasts.slice(0, activeToasts.length - 5);
+        excess.forEach(t => t.remove());
+    }
+}
 export const JadooToast = {
     show(title, desc = '', type = 'success', duration = 4000) {
         let container = document.getElementById('jadooToastContainer');
@@ -276,28 +310,34 @@ export const JadooToast = {
                 <i class="fa-solid fa-xmark"></i>
             </button>
         `;
+        const dismissToast = () => {
+            if (toast.classList.contains('is-hiding') || !toast.parentElement)
+                return;
+            toast.classList.remove('is-show');
+            toast.classList.add('is-hiding');
+            if (container)
+                updateToastStack(container);
+            setTimeout(() => {
+                toast.remove();
+                if (container)
+                    updateToastStack(container);
+            }, 320);
+        };
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => toast.remove(), 320);
+                dismissToast();
             });
         }
         container.appendChild(toast);
+        updateToastStack(container);
         // Force reflow for bottom-center slide-up transition
         requestAnimationFrame(() => {
             toast.classList.add('is-show');
         });
         setTimeout(() => {
-            if (toast.parentElement) {
-                toast.classList.remove('is-show');
-                toast.classList.add('is-hiding');
-                setTimeout(() => {
-                    toast.remove();
-                }, 350);
-            }
+            dismissToast();
         }, duration);
     }
 };
