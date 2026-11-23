@@ -6485,7 +6485,7 @@ body.user-logged-in #destUserProfileDropdown {
 }
 
 /* ========================================================================== 
-   GLOBAL BOTTOM-CENTER NOTIFICATION TOAST ENGINE (STACKED 3D DECK)
+   GLOBAL BOTTOM-CENTER NOTIFICATION TOAST ENGINE (STACKED ON TOP LIKE TESTIMONIAL .COM)
    ========================================================================== */
 .jadoo-toast-container {
   position: fixed !important;
@@ -6499,18 +6499,16 @@ body.user-logged-in #destUserProfileDropdown {
   pointer-events: none !important;
   max-width: 90vw !important;
   width: 440px !important;
-  height: 68px !important;
+  height: 76px !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .jadoo-toast {
   position: absolute !important;
   bottom: 0 !important;
-  left: 50% !important;
+  left: 0 !important;
+  right: 0 !important;
   margin: 0 !important;
-  pointer-events: auto !important;
-  min-width: 320px !important;
-  max-width: 480px !important;
   width: 100% !important;
   background: #FFFFFF !important;
   border-radius: 1.15rem !important;
@@ -6520,98 +6518,62 @@ body.user-logged-in #destUserProfileDropdown {
   align-items: center !important;
   gap: 0.85rem !important;
   border-left: 4.5px solid #DF6951 !important;
-  transform-origin: bottom center !important;
-  transform: translateX(-50%) translateY(35px) scale(0.92) !important;
-  opacity: 0 !important;
   box-sizing: border-box !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 0.3s ease !important;
-  will-change: transform, opacity;
+  will-change: transform, opacity !important;
+  pointer-events: auto !important;
 }
 
-/* --- Stacked Card Levels (When not hovered: compact, non-intrusive 3D deck) --- */
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="0"] {
-  transform: translateX(-50%) translateY(0) scale(1) !important;
-  opacity: 1 !important;
-  z-index: 30 !important;
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="1"] {
-  transform: translateX(-50%) translateY(-14px) scale(0.95) !important;
-  opacity: 0.92 !important;
-  z-index: 20 !important;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="2"] {
-  transform: translateX(-50%) translateY(-26px) scale(0.90) !important;
-  opacity: 0.75 !important;
-  z-index: 10 !important;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="3"],
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="4"],
-.jadoo-toast-container:not(:hover) .jadoo-toast:not([data-stack-idx="0"]):not([data-stack-idx="1"]):not([data-stack-idx="2"]) {
-  transform: translateX(-50%) translateY(-36px) scale(0.85) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
+/* Layered Stacking Positions (Like .com in Testimonials with distinct z-indexes) */
+.jadoo-toast.is-front {
   z-index: 5 !important;
-}
-
-/* --- Expanded Fan-Out on Hover (Smoothly expands so user can view all) --- */
-.jadoo-toast-container:hover {
-  display: flex !important;
-  flex-direction: column-reverse !important;
-  align-items: center !important;
-  gap: 0.65rem !important;
-  height: auto !important;
-  pointer-events: auto !important;
-}
-
-.jadoo-toast-container:hover .jadoo-toast {
-  position: relative !important;
-  bottom: auto !important;
-  left: auto !important;
-  transform: translateY(0) scale(1) !important;
   opacity: 1 !important;
+  transform: translate(0, 0) scale(1) !important;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
   pointer-events: auto !important;
-  z-index: 20 !important;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.jadoo-toast.is-middle {
+  z-index: 3 !important;
+  opacity: 0.65 !important;
+  transform: translate(14px, -18px) scale(0.96) !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.jadoo-toast.is-middle:hover {
+  opacity: 0.88 !important;
+  transform: translate(14px, -22px) scale(0.97) !important;
+}
+
+.jadoo-toast.is-back {
+  z-index: 1 !important;
+  opacity: 0.35 !important;
+  transform: translate(28px, -36px) scale(0.92) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.jadoo-toast.is-back:hover {
+  opacity: 0.6 !important;
+  transform: translate(28px, -40px) scale(0.93) !important;
+}
+
+.jadoo-toast.is-hidden {
+  z-index: 0 !important;
+  opacity: 0 !important;
+  transform: translate(38px, -50px) scale(0.88) !important;
+  pointer-events: none !important;
 }
 
 .jadoo-toast.is-hiding {
-  transform: translateX(-50%) translateY(25px) scale(0.92) !important;
+  transform: translate(0, 25px) scale(0.92) !important;
   opacity: 0 !important;
   pointer-events: none !important;
-}
-
-.jadoo-toast-container:hover .jadoo-toast.is-hiding {
-  transform: translateY(20px) scale(0.92) !important;
-  opacity: 0 !important;
-}
-
-/* Stack Badge Indicator on Front Toast */
-.toast-stack-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(223, 105, 81, 0.12);
-  color: #DF6951;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.1rem 0.45rem;
-  border-radius: 9999px;
-  margin-left: 0.5rem;
-  border: 1px solid rgba(223, 105, 81, 0.25);
-  vertical-align: middle;
-  line-height: 1.2;
-}
-
-.jadoo-toast-container:hover .toast-stack-count {
-  opacity: 0;
-  display: none;
 }
 
 .jadoo-toast.toast-success {

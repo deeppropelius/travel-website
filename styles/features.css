@@ -956,7 +956,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. FLOATING TOAST NOTIFICATIONS ENGINE (STACKED 3D DECK)
+   6. FLOATING TOAST NOTIFICATIONS ENGINE (STACKED ON TOP LIKE TESTIMONIAL .COM)
    -------------------------------------------------------------------------- */
 
 .jadoo-toast-container {
@@ -969,18 +969,16 @@
   pointer-events: none;
   max-width: 90vw;
   width: 440px;
-  height: 68px;
+  height: 76px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .jadoo-toast {
   position: absolute;
   bottom: 0;
-  left: 50%;
+  left: 0;
+  right: 0;
   margin: 0;
-  pointer-events: auto;
-  min-width: 320px;
-  max-width: 480px;
   width: 100%;
   background: #FFFFFF;
   border-radius: 1.15rem;
@@ -990,98 +988,62 @@
   align-items: center;
   gap: 0.85rem;
   border-left: 4.5px solid #DF6951;
-  transform-origin: bottom center;
-  transform: translateX(-50%) translateY(35px) scale(0.92);
-  opacity: 0;
   box-sizing: border-box;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 0.3s ease;
   will-change: transform, opacity;
-}
-
-/* --- Stacked Card Levels (When not hovered: compact, non-intrusive 3D deck) --- */
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="0"] {
-  transform: translateX(-50%) translateY(0) scale(1);
-  opacity: 1;
-  z-index: 30;
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="1"] {
-  transform: translateX(-50%) translateY(-14px) scale(0.95);
-  opacity: 0.92;
-  z-index: 20;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="2"] {
-  transform: translateX(-50%) translateY(-26px) scale(0.90);
-  opacity: 0.75;
-  z-index: 10;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
-}
-
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="3"],
-.jadoo-toast-container:not(:hover) .jadoo-toast[data-stack-idx="4"],
-.jadoo-toast-container:not(:hover) .jadoo-toast:not([data-stack-idx="0"]):not([data-stack-idx="1"]):not([data-stack-idx="2"]) {
-  transform: translateX(-50%) translateY(-36px) scale(0.85);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* --- Expanded Fan-Out on Hover (Smoothly expands so user can view all) --- */
-.jadoo-toast-container:hover {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  gap: 0.65rem;
-  height: auto;
   pointer-events: auto;
 }
 
-.jadoo-toast-container:hover .jadoo-toast {
-  position: relative !important;
-  bottom: auto !important;
-  left: auto !important;
-  transform: translateY(0) scale(1) !important;
+/* Layered Stacking Positions (Like .com in Testimonials with distinct z-indexes) */
+.jadoo-toast.is-front {
+  z-index: 5 !important;
   opacity: 1 !important;
+  transform: translate(0, 0) scale(1) !important;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
   pointer-events: auto !important;
-  z-index: 20 !important;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
 }
 
-.jadoo-toast.is-hiding {
-  transform: translateX(-50%) translateY(25px) scale(0.92) !important;
+.jadoo-toast.is-middle {
+  z-index: 3 !important;
+  opacity: 0.65 !important;
+  transform: translate(14px, -18px) scale(0.96) !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.jadoo-toast.is-middle:hover {
+  opacity: 0.88 !important;
+  transform: translate(14px, -22px) scale(0.97) !important;
+}
+
+.jadoo-toast.is-back {
+  z-index: 1 !important;
+  opacity: 0.35 !important;
+  transform: translate(28px, -36px) scale(0.92) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.jadoo-toast.is-back:hover {
+  opacity: 0.6 !important;
+  transform: translate(28px, -40px) scale(0.93) !important;
+}
+
+.jadoo-toast.is-hidden {
+  z-index: 0 !important;
   opacity: 0 !important;
+  transform: translate(38px, -50px) scale(0.88) !important;
   pointer-events: none !important;
 }
 
-.jadoo-toast-container:hover .jadoo-toast.is-hiding {
-  transform: translateY(20px) scale(0.92) !important;
+.jadoo-toast.is-hiding {
+  transform: translate(0, 25px) scale(0.92) !important;
   opacity: 0 !important;
-}
-
-/* Stack Badge Indicator on Front Toast */
-.toast-stack-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(223, 105, 81, 0.12);
-  color: #DF6951;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.1rem 0.45rem;
-  border-radius: 9999px;
-  margin-left: 0.5rem;
-  border: 1px solid rgba(223, 105, 81, 0.25);
-  vertical-align: middle;
-  line-height: 1.2;
-}
-
-.jadoo-toast-container:hover .toast-stack-count {
-  opacity: 0;
-  display: none;
+  pointer-events: none !important;
 }
 
 .jadoo-toast.toast-success {

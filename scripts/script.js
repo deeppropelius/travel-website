@@ -8,26 +8,31 @@
         const activeToasts = Array.from(container.querySelectorAll('.jadoo-toast:not(.is-hiding)'));
         const total = activeToasts.length;
         activeToasts.forEach((t, idx) => {
-            const stackIdx = total - 1 - idx;
-            t.setAttribute('data-stack-idx', String(stackIdx));
-            t.style.setProperty('--stack-index', String(stackIdx));
-            let badge = t.querySelector('.toast-stack-count');
-            if (stackIdx === 0 && total > 1) {
-                if (!badge) {
-                    const titleEl = t.querySelector('.toast-title');
-                    if (titleEl) {
-                        badge = document.createElement('span');
-                        badge.className = 'toast-stack-count';
-                        titleEl.appendChild(badge);
-                    }
-                }
-                if (badge) {
-                    badge.textContent = `+${total - 1}`;
-                    badge.title = `${total} notifications in stack`;
-                }
+            const rel = total - 1 - idx;
+            t.classList.remove('is-front', 'is-middle', 'is-back', 'is-hidden');
+            if (rel === 0) {
+                t.classList.add('is-front');
+                t.style.zIndex = '5';
+                t.style.opacity = '1';
+                t.setAttribute('aria-hidden', 'false');
             }
-            else if (badge) {
-                badge.remove();
+            else if (rel === 1) {
+                t.classList.add('is-middle');
+                t.style.zIndex = '3';
+                t.style.opacity = '0.65';
+                t.setAttribute('aria-hidden', 'true');
+            }
+            else if (rel === 2) {
+                t.classList.add('is-back');
+                t.style.zIndex = '1';
+                t.style.opacity = '0.35';
+                t.setAttribute('aria-hidden', 'true');
+            }
+            else {
+                t.classList.add('is-hidden');
+                t.style.zIndex = '0';
+                t.style.opacity = '0';
+                t.setAttribute('aria-hidden', 'true');
             }
         });
         if (activeToasts.length > 5) {
@@ -93,6 +98,14 @@
                 dismissToast();
             });
         }
+        toast.addEventListener('click', (e) => {
+            if (e.target.closest('.toast-close'))
+                return;
+            if (toast.classList.contains('is-middle') || toast.classList.contains('is-back')) {
+                container.appendChild(toast);
+                updateToastStackFallback(container);
+            }
+        });
         container.appendChild(toast);
         updateToastStackFallback(container);
         requestAnimationFrame(() => toast.classList.add('is-show'));
